@@ -38,7 +38,7 @@ setMethod("plot", signature(x="hsigclust", y="missing"),
   sig_segtops <- filter(sig_segs, y == yend & x < xend)
   sig_segtops <- cbind(sig_segtops, 
                        "pval"= format(hsigclust@mpvalnorm[sig_spots, 1], 
-                                      digits=3, scientific=TRUE)
+                                      digits=3, scientific=TRUE))
   
   axis_xref <- max(hsigclust@hc$height)
   axis_xtop <- max(axis_xref)*1.25
@@ -57,10 +57,10 @@ setMethod("plot", signature(x="hsigclust", y="missing"),
     scale_x_continuous(name="",
                        breaks=c(),
                        labels=c()) +
-    ggtitle("these p-values are real") +
+    ggtitle("showing all p-values < 0.4") +
     theme_bw()
   
-  if (length(sig_splots) > 0) {
+  if (length(sig_spots) > 0) {
     plot_dend <- plot_dend +
     geom_segment(data=sig_segs, aes(x=x, y=y, xend=xend, yend=yend), color=sigColor, size=1) +
       geom_text(data=sig_segtops, aes(x=x, y=y, label=pval, hjust=-0.2, vjust=-0.5),

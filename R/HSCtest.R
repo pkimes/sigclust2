@@ -63,7 +63,7 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
   p <- dim(x)[2]
   
   x <- as.matrix(x)
-  xclust <- .initcluster(x, n, p, metric, linkage, square, l)
+  xclust <- .initcluster(x, n, p, metric, linkage, square, l, nCIs)
   xmcindex <- xclust$mcindex
   
   #p-values for all <=(n-1) tests
@@ -85,7 +85,7 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
       xvareigen <- .vareigen(x[subxIdx, ], subn, p, icovest)
       for (i in 1:nsim) {
         xsim <- .simnull(xvareigen$vsimeigval, subn, p, 
-                         metric, linkage, square, l)
+                         metric, linkage, square, l, nCIs)
         asimcindex[k, i, ] <- xsim$mcindex        
       }
       mindex <- colMeans(as.matrix(asimcindex[k, , ]))
@@ -130,7 +130,7 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
 
 #perform hierarchical clustering on the original data and 
 # compute the corresponding cluster indices for each merge
-.initcluster <- function(x, n, p, metric, linkage, square, l) { 
+.initcluster <- function(x, n, p, metric, linkage, square, l, nCIs) { 
 
   #need to implement clustering algorithm
   dmatrix <- dist(x, method=metric, p=l)
@@ -159,7 +159,7 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
 
 #perform hierarchical clustering on a simulated dataset and
 # compute the correspond cluster indices for only the final merge
-.simcluster <- function(sim_x, p, metric, linkage, square, l) { 
+.simcluster <- function(sim_x, p, metric, linkage, square, l, nCIs) { 
   #need to implement clustering algorithm
   dmatrix <- dist(sim_x, method=metric, p=l)
   clusters <- hclust(dmatrix^square, method=linkage)
@@ -255,9 +255,9 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
 
 #given null eigenvalues, simulate Gaussian datasets and compute
 # cluster index - cleaned data simulation and changed to .simcluster(), PKK
-.simnull <- function(vsimeigval, n, p, metric, linkage, square, l) {
+.simnull <- function(vsimeigval, n, p, metric, linkage, square, l, nCIs) {
   simnorm <- matrix(rnorm(n*p, sd=sqrt(vsimeigval)), n, p, byrow=TRUE)
-  simclust <- .simcluster(simnorm, p, metric, linkage, square, l)
+  simclust <- .simcluster(simnorm, p, metric, linkage, square, l, nCIs)
   list(mcindex=simclust$mcindex)
 }
 
