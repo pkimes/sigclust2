@@ -1,11 +1,10 @@
 SigClust2 
 =======================
-_______________________
 
 ### Contents
 1. [Status](#status)
 2. [Introduction](#intro)
-3. [Example use](#use)
+3. [Example](#example)
 4. [References](#refs)
 
 
@@ -15,14 +14,17 @@ Currently, the package only includes a barely-working form of a hierarchical
 extension, HSigClust, with the intention of expanding the package to also 
 include a multi-cluster extension, KSigClust.
 
-A short to-do list for th near future:
- * clean up hsigclust methods:
-  * `diagnostics`
-  * `summary`
-  * `FWERcontrol`
-  * `plot`
-  * `print`
- * translate KSCtest from Matlab to `R`
+A short to-do list for the near future:
+* clean up hsigclust methods:
+  * `show`: produce more useful output
+  * `print`: copy `show` output
+  * `HSCtest`: use `Rclusterpp.hclust` and `WGCNA::cor`
+  * `diagnostics`: make work
+  * `summary`: produce more useful output
+  * `FWERcontrol`: make work
+  * `plot`: update w/ `FWERcontrol`, add labeling option
+* revise `hsigclust` class to be "lighter"
+* translate KSCtest from Matlab to `R`
  * complete vignette - switch to `knitr`?
  * update README along the way (this!)
 
@@ -37,9 +39,10 @@ modifications for hierarchical clustering. The work is ongoing, and may involve
 substantial changes to the current approach (and code).
 
 
-### <a name="use"></a> Example use
-Using the `mtcars` dataset, the HSigClust testing procedure may be applied with 
-the call:
+### <a name="example"></a> Example
+Consider the `mtcars` dataset. The HSigClust testing procedure may be implemented  
+for a specific clustering procedure, e.g. euclidean dissimilarity and average linkage, 
+using the call:
 
 
 ```r
@@ -49,7 +52,8 @@ our_hsc <- HSCtest(mtcars, metric = "euclidean", linkage = "average")
 
 
 
-For easy interpretation of the results, simply plot the output as a dendrogram:
+A quick way to check the results is to simply `plot()` the output. The corresponding 
+dendrogram is returned with significant splits appropriately labeled:
 
 
 ```r
@@ -64,6 +68,6 @@ plot(our_hsc)
 
 * Liu Y, Hayes DN, Nobel A, and Marron JS. (2008). "Statistical significance of clustering for high-dimension, low–sample size data." _Journal of the American Statistical Association_, 103(483).
 * Huang H, Liu Y, Yuan M, and Marron JS. (2013). "Statistical significance of clustering using soft thresholding." _arXiv preprint [arXiv:1305.5879]_.
-* Kimes P, Hayes DN, Liu Y, Marron JS. "HSigClust: Statistical significance of hierarchical clustering." _In preparation_.
+* Kimes P, Hayes DN, Liu Y, and Marron JS. "HSigClust: Statistical significance of hierarchical clustering." _In preparation_.
 
 [arXiv:1305.5879]: http://arxiv.org/abs/1305.5879
