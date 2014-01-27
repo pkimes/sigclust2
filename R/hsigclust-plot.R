@@ -7,103 +7,66 @@
 #' @details
 #' some details
 #' 
-#' @import ggplot2 ggdendro
+#' @import ggplot2 ggdendro dplyr
 #' @name hsigclust-plot
 #' @export
 #' @author Patrick Kimes
 
-.plot.hsigclust <- function(hsigclust, arg="all", ...) {
-  #first plot plain dendrogram
-  plot(hsigclust@hc, xlab="", labels=FALSE, )
-  ntest <- nrow(hsigclust@mpvalnorm)
-  #below taken from pvclust code...
-  usr <- par("usr")
-  xwd <- usr[2] - usr[1]
-  ywd <- usr[4] - usr[3]
-  cin <- par()$cin
-  for (k in ntest:1) {
-    if (hsigclust@mpvalnorm[k, 1] < 0.05) {
-      mi <- unlist(hsigclust@clusterList[k, ])
-      ma <- match(mi, hsigclust@hc$order)
-      
-      xl <- min(ma)
-      xr <- max(ma)
-      mx <- xwd / 3 / ntest
-      
-      yt <- hsigclust@hc$height[k]
-      yb <- usr[3]
-      my <- ywd / 100
-      
-      rect(xl - mx, yt - my, xr + mx, yt + my, border=2, shade=NULL)
-    } 
-  } 
-  {
-  ########### from pvclust
-  col <- c(2, 3, 8) 
-  print.num <- TRUE
-  float <- 0.01 
-  cex <- .8
-  font <- NULL
-  nlabels <- 5
-  plotidx <- tail(1:nrow(hsigclust@mpval), nlabels)
-  
-  axes <- hc2axes(hsigclust@hc)
-  usr  <- par()$usr
-  wid <- usr[4] - usr[3]
-  pv <- format(signif(hsigclust@mpval[plotidx, 1], 2), scientific=TRUE)
-  pvn <- format(signif(hsigclust@mpvalnorm[plotidx, 1], 2), scientific=TRUE)
-  rn <- as.character(plotidx)
-  pv[length(pv)] <- paste0("pval: \n", pv[length(pv)])
-  pvn[length(pvn)] <- paste0("pvalnorm: \n", pvn[length(pvn)])
-  rn[length(rn)] <- paste0("edge #: \n", rn[length(rn)])
-  a <- text(x=axes[plotidx,1], y=axes[plotidx,2] + float * wid, pv,
-            col=col[1], pos=2, offset=.3, cex=cex, font=font)
-  a <- text(x=axes[plotidx,1], y=axes[plotidx,2] + float * wid, pvn,
-            col=col[2], pos=4, offset=.3, cex=cex, font=font)
-  if(print.num)
-    a <- text(x=axes[plotidx,1], y=axes[plotidx,2], rn,
-              col=col[3], pos=1, offset=.3, cex=cex, font=font)
-  } 
-}
 
 setMethod("plot", signature(x="hsigclust", y="missing"),
           function(x, y, arg="all", ...) {
             .plot.hsigclust(x, arg, ...)
           })
 
-
-
-
-# DIRECTLY FROM pvclust, will remove with update 
-# to ggdendro plotting
-hc2axes <- function(x)
-{
-  A <- x$merge # (n,n-1) matrix
-  n <- nrow(A) + 1
-  x.axis <- c()
-  y.axis <- x$height
+.plot.hsigclust <- function(hsigclust, arg="all", ...) {
   
-  x.tmp  <- rep(0,2)
-  zz     <- match(1:length(x$order),x$order)
+  #using average linkage
+#   hc <- hclust(dist(data, "euclidean"), "average")
+  hcd <- as.dendrogram(hsigclust@hc)
   
-  for(i in 1:(n-1)) {
-    ai <- A[i,1]
-    
-    if(ai < 0)
-      x.tmp[1] <- zz[-ai]
-    else
-      x.tmp[1] <- x.axis[ai]
-    
-    ai <- A[i,2]
-    
-    if(ai < 0)
-      x.tmp[2] <- zz[-ai]
-    else
-      x.tmp[2] <- x.axis[ai]
-    
-    x.axis[i] <- mean(x.tmp)
+  labelColors <- c("#CDB380", "#036564", "#EB6841", "#EDC951")
+  sigColor <- "#FF1E66"
+  nullColor <- "gray"
+  
+  #using ggdendro package
+  hcdata <- ggdendro::dendro_data.hclust(hsigclust@hc)
+  hc_segs <- ggdendro::segment(hcdata)
+  hc_labs <- ggdendro::label(hcdata)
+  sig_spots <- (hsigclust@mpvalnorm[, 1] < 0.4) #need to correct, use Meinshuasen correction
+  sig_linkvals <- as.factor(hsigclust@hc$height[sig_spots])
+  sig_segs <- filter(hc_segs, as.factor(y) %in% sig_linkvals)
+  sig_segtops <- filter(sig_segs, y == yend & x < xend)
+  sig_segtops <- cbind(sig_segtops, 
+                       "pval"= format(hsigclust@mpvalnorm[sig_spots, 1], 
+                                      digits=3, scientific=TRUE)
+  
+  axis_xref <- max(hsigclust@hc$height)
+  axis_xtop <- max(axis_xref)*1.25
+  axis_xbot <- -max(axis_xref)*1.25/2
+  axis_xscale <- floor(log10(axis_xtop))
+  
+  plot_dend <- 
+    ggplot() + 
+    geom_segment(data=hc_segs, aes(x=x, y=y, xend=xend, yend=yend), color=nullColor) +
+    geom_text(data=hc_labs, 
+              aes(x=x, y=y-10, label=label, hjust=1, vjust=.5, angle=90), 
+              size=3) +
+    scale_y_continuous(name="linkage",
+                       limits=c(axis_xbot, axis_xtop), 
+                       breaks=seq(0, axis_xtop, by=10^axis_xscale)) +
+    scale_x_continuous(name="",
+                       breaks=c(),
+                       labels=c()) +
+    ggtitle("these p-values are real") +
+    theme_bw()
+  
+  if (length(sig_splots) > 0) {
+    plot_dend <- plot_dend +
+    geom_segment(data=sig_segs, aes(x=x, y=y, xend=xend, yend=yend), color=sigColor, size=1) +
+      geom_text(data=sig_segtops, aes(x=x, y=y, label=pval, hjust=-0.2, vjust=-0.5),
+                col=sigColor, size=4)      
   }
-  
-  return(data.frame(x.axis=x.axis,y.axis=y.axis))
+
+  plot_dend
 }
 

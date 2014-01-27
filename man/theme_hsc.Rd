@@ -2,13 +2,13 @@
 \alias{theme_hsc}
 \title{hsigclust dendrogram theme}
 \usage{
-theme_hsc(base_size = 10)
+theme_hsc(base_size = 12)
 }
 \description{
 my \code{ggplot2} theme for plotting hsigclust output
 }
 \details{
-some detail
+theme is based on
 }
 \author{
 Patrick Kimes

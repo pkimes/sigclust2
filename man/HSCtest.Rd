@@ -12,8 +12,9 @@ HSCtest(x, metric, linkage, square = FALSE, l = 2, nsim = 100,
   \item{metric}{a string specifying the metric to be used
   in the hierarchical clustering procedure.  This must be a
   metric accepted by \code{dist}, e.g. "euclidean." If
-  squared Euclidean distance or any other metric squared is
-  desired, used \code{square} parameter.}
+  squared Euclidean distance (or the square of any other
+  metric) is desired, set the \code{square} parameter to
+  \code{TRUE}.}
 
   \item{linkage}{a string specifying the linkage to be used
   in the hierarchical clustering procedure.  This must be a

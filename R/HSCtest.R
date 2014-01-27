@@ -12,9 +12,11 @@
 #' @param x a dataset with p rows and n columns, with observations in columns.
 #' @param metric a string specifying the metric to be used in the hierarchical clustering procedure.
 #'        This must be a metric accepted by \code{dist}, e.g. "euclidean." If squared Euclidean distance
-#'        or any other metric squared is desired, used \code{square} parameter.
+#'        (or the square of any other metric) is desired, set the \code{square} parameter to \code{TRUE}.
 #' @param linkage a string specifying the linkage to be used in the hierarchical clustering procedure.
 #'        This must be a linkage accepted by \code{hclust}, e.g. "ward."
+#' @param alpha a value between 0 and 1 specifying the desired level of the test. If no FWER control is
+#'        desired, simply set alpha to 1. The default is 0.05.
 #' @param square a logical specifying whether to square the dissimilarity matrix produced by specified 
 #'        \code{metric}. This is necessary, for example, in order to implement Ward's minimum variance
 #'        method with squared Euclidean metric. (Honestly can't think of any other situations when 
@@ -49,7 +51,7 @@
 
 
 #main function for performing HSigClust testing
-HSCtest <- function(x, metric, linkage, square=FALSE, l=2, nsim=100, minObs=10, icovest=1) {  
+HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100, minObs=10, icovest=1) {  
 
   #number of cluster indices
   nCIs <- 1

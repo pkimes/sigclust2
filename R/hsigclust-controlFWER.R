@@ -11,7 +11,7 @@
 #' Meinshausen, N. (2008). Hierarchical testing of variable importance. Biometrika, 95(2), 265-278.
 #'
 #' @exportMethod controlFWER
-#' @export 
+#' @export
 #' @name hsigclust-controlFWER 
 #' @author Patrick Kimes
 

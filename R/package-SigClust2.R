@@ -7,9 +7,9 @@
 #' @details
 #' some details
 #' 
-#' @aliases HSigClust
+#' @aliases SigClust2
 #' @docType package
 #' @keywords package
-#' @name HSigClust-package
+#' @name SigClust2-package
 #' @author Patrick Kimes \email{pkimes@@live.unc.edu}
 NULL
