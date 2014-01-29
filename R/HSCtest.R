@@ -6,8 +6,10 @@
 #'              statistical significance of clustering at each branching along the tree using
 #'              a hypothesis testing procedure. The code is written so that various cluster 
 #'              inidices can be easily introduced by writting new CI function and adding 
-#'              to .initcluster(), .simcluster() and incrementing "nCIs." 
-#'              -- more elegant solution?
+#'              to .initcluster(), .simcluster() and incrementing "nCIs" (more elegant 
+#'              solution?). This function WILL make use \code{Rclusterpp.hclust} package for 
+#'              all choices of clustering except \code{dist="cor"}, for which \code{WGCNA::cor}
+#'              will be used with \code{stats::hclust}.
 #' 
 #' @param x a dataset with p rows and n columns, with observations in columns.
 #' @param metric a string specifying the metric to be used in the hierarchical clustering procedure.
@@ -31,6 +33,11 @@
 #'        2. Use sample covariance estimate (recommended when diagnostics fail); 
 #'        3. Use original background noise thresholded estimate (from Liu et al., (2008)) 
 #'        ("hard thresholding") as described in the \code{sigclust} package documentation.
+#' @param verb a logical value specifying whether the method should print out when testing
+#'        completes along each node along the dendrogram, by default set to FALSE.
+#' @param gpu a logical value specifying whether a GPU process is available and should be 
+#'        used. This calls \code{gputools::gpuDistClust} to perform the clustering within
+#'        each simulation loop. By default set to FALSE.
 #' 
 #' @return The function returns a \code{hsigclust} object containing the resulting p-values.
 #'        The print method call will output a dendrogram with the corresponding p-values placed 
@@ -40,17 +47,11 @@
 #' @details The function extends the \code{sigclust} idea to the hierarchical setting by modifying the
 #'          clustering procedure employed to compute the null distribution of cluster indices.
 #' 
-#' @import sigclust
+#' @import sigclust Rclusterpp WGCNA
 #' @export HSCtest
 #' @author Patrick Kimes
 
-##need to run this since "hclust" isn't a formal S3 class
-##ref: http://stackoverflow.com/questions/12636056/
-#getClassDef("hclust")
-#setOldClass("hclust")
 
-
-#main function for performing HSigClust testing
 HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100, minObs=10, icovest=1) {  
 
   #number of cluster indices
@@ -133,8 +134,16 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
 .initcluster <- function(x, n, p, metric, linkage, square, l, nCIs) { 
 
   #need to implement clustering algorithm
-  dmatrix <- dist(x, method=metric, p=l)
-  clusters <- hclust(dmatrix^square, method=linkage)
+  if (metric == 'cor') {
+    dmatrix <- 1 - WGCNA::cor(x)
+    clusters <- hclust(dmatrix^square, method=linkage)
+  } else if (square == 2) {
+    dmatrix <- dist(x, method=metric, p=l)    
+    clusters <- hclust(dmatrix^square, method=linkage)
+  } else {
+    clusters <- Rclusterpp.hclust(x, method=linkage, 
+                                  distance=metric, p=l)
+  }
 
   #matrix containing cluster indices
   mcindex <- matrix(-1, nrow=n-1, ncol=nCIs)
@@ -161,14 +170,27 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
 # compute the correspond cluster indices for only the final merge
 .simcluster <- function(sim_x, p, metric, linkage, square, l, nCIs) { 
   #need to implement clustering algorithm
-  dmatrix <- dist(sim_x, method=metric, p=l)
-  clusters <- hclust(dmatrix^square, method=linkage)
+  if (metric == 'cor') {
+    dmatrix <- 1 - WGCNA::cor(sim_x)
+    clusters <- hclust(dmatrix^square, method=linkage)
+  } else if (square == 2) {
+    dmatrix <- dist(sim_x, method=metric, p=l)    
+    clusters <- hclust(dmatrix^square, method=linkage)
+  } else {
+    clusters <- Rclusterpp.hclust(sim_x, method=linkage, 
+                                  distance=metric, p=l)
+  }
   sim_split <- cutree(clusters, k=2)
   mcindex <- matrix(-1, nrow=1, ncol=nCIs)
   mcindex[1] <- .calc2CI(sim_x[sim_split==1, , drop=FALSE],
                          sim_x[sim_split==2, , drop=FALSE])  
   return(list(mcindex=mcindex))
 }
+
+
+###############################################################################
+# following reproduced from sigclust package
+###############################################################################
 
 #soft thresholding estimator of Huang et al. 2014+
 # 3 lines added to handle flat case when largest total signal < p*bkgd
@@ -190,19 +212,19 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
   vcumtaucand <- sort(cumsum(sort(vtaucand[vi])),decreasing=TRUE)
   vpowershifted <- (vi-1)*vtaucand[vi] + vcumtaucand
   flag <- vpowershifted < power2shift
-  if(sum(flag)==0){
-    itau <- 0;
-  }else{
+  if (sum(flag) == 0) {
+    itau <- 0
+  } else {
     which <- which(flag>0)
     itau <- which[1]
   }
-  if(itau==1){
+  if (itau == 1) {
     powerprop <- power2shift/vpowershifted[1] #originally (../vpowershifted) no [1] idx
     tau <- powerprop*vtaucand[1]
-  }else if(itau==0){
+  } else if (itau == 0) {
     powerprop <- power2shift/vpowershifted[icut] 
     tau <- powerprop*vtaucand[icut] 
-  }else{
+  } else {
     powerprop <- (power2shift-vpowershifted[itau])/
       (vpowershifted[itau-1]-vpowershifted[itau]) 
     tau <- vtaucand[itau] + powerprop*(vtaucand[itau-1] - vtaucand[itau]) 
@@ -212,6 +234,8 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
   veigvest <- flag*veigvest + (1-flag)*(sig2b*rep(1,d))
   list(veigvest=veigvest, tau=tau)
 }
+
+
 
 #calculate variances of null Gaussian for simulation
 # using factor model w/ eigenvalues of pca and background noise.
@@ -228,11 +252,6 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
     xeig <- eigen(xcov, symmetric=TRUE, only.values =TRUE)
     veigval <- xeig$values
     vsimeigval <- xeig$values
-    
-    #      avgx<-t(t(x)-colMeans(x))
-    #	dv<-svd(avgx)$d
-    #      veigval<-dv^2/(n-1)
-    #	vsimeigval<-veigval
     
     if(icovest==1){
       vsimeigval <- .sigclustcovest(veigval, simbackvar)$veigvest
@@ -253,10 +272,13 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
   }
 }
 
+
+
 #given null eigenvalues, simulate Gaussian datasets and compute
 # cluster index - cleaned data simulation and changed to .simcluster(), PKK
 .simnull <- function(vsimeigval, n, p, metric, linkage, square, l, nCIs) {
-  simnorm <- matrix(rnorm(n*p, sd=sqrt(vsimeigval)), n, p, byrow=TRUE)
+  simnorm <- matrix(rnorm(n*p, sd=sqrt(vsimeigval)), 
+                    n, p, byrow=TRUE)
   simclust <- .simcluster(simnorm, p, metric, linkage, square, l, nCIs)
   list(mcindex=simclust$mcindex)
 }

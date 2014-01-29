@@ -2,10 +2,20 @@ SigClust2
 =======================
 
 ### Contents
-1. [Status](#status)
-2. [Introduction](#intro)
-3. [Example](#example)
-4. [References](#refs)
+1. [Issues](#issues)
+2. [Status](#status)
+3. [Introduction](#intro)
+4. [Example](#example)
+5. [References](#refs)
+
+
+### <a name="issues"></a> Issues
+The current implementation is unable to complete in reasonable time for
+datasets with large $n$ (e.g. $>200$) due to the computational time 
+needed to perform hierarchical clustering on each Monte Carlo 
+simulated dataset. Some increase in speed is possible using the 
+`gputools::gpuDistClust`, but this requires having access to a 
+GPU processor.
 
 
 ### <a name="status"></a> Status
@@ -25,8 +35,8 @@ A short to-do list for the near future:
   * `plot`: update w/ `FWERcontrol`, add labeling option
 * revise `hsigclust` class to be "lighter"
 * translate KSCtest from Matlab to `R`
- * complete vignette - switch to `knitr`?
- * update README along the way (this!)
+* complete vignette - switch to `knitr`?
+* update README along the way (this!)
 
 
 ### <a name="intro"></a> Introduction

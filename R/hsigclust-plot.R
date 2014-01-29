@@ -20,8 +20,6 @@ setMethod("plot", signature(x="hsigclust", y="missing"),
 
 .plot.hsigclust <- function(hsigclust, arg="all", ...) {
   
-  #using average linkage
-#   hc <- hclust(dist(data, "euclidean"), "average")
   hcd <- as.dendrogram(hsigclust@hc)
   
   labelColors <- c("#CDB380", "#036564", "#EB6841", "#EDC951")
@@ -45,8 +43,7 @@ setMethod("plot", signature(x="hsigclust", y="missing"),
   axis_xbot <- -max(axis_xref)*1.25/2
   axis_xscale <- floor(log10(axis_xtop))
   
-  plot_dend <- 
-    ggplot() + 
+  plot_dend <- ggplot() + 
     geom_segment(data=hc_segs, aes(x=x, y=y, xend=xend, yend=yend), color=nullColor) +
     geom_text(data=hc_labs, 
               aes(x=x, y=y-10, label=label, hjust=1, vjust=.5, angle=90), 

@@ -64,7 +64,10 @@ each branching along the tree using a hypothesis testing
 procedure. The code is written so that various cluster
 inidices can be easily introduced by writting new CI
 function and adding to .initcluster(), .simcluster() and
-incrementing "nCIs."  -- more elegant solution?
+incrementing "nCIs" (more elegant solution?). This function
+WILL make use \code{Rclusterpp.hclust} package for all
+choices of clustering except \code{dist="cor"}, for which
+\code{WGCNA::cor} will be used with \code{stats::hclust}.
 }
 \details{
 The function extends the \code{sigclust} idea to the
