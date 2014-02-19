@@ -9,13 +9,10 @@
   \item{object}{Any R object}
 }
 \description{
-quick output to screen when hsigclust object is evaluated.
-I'm not exactly sure how this differs from the \code{print}
-method. Currently under investigation, but defining both
-for safety.
+Quick output to screen when hsigclust object is evaluated.
 }
 \details{
-some details
+some details...
 }
 \author{
 Patrick Kimes

@@ -1,12 +1,8 @@
 #' @title show hsigclust object
 #' 
-#' @description 
-#' quick output to screen when hsigclust object is evaluated.
-#' I'm not exactly sure how this differs from the \code{print} method.
-#' Currently under investigation, but defining both for safety.
+#' @description Quick output to screen when hsigclust object is evaluated.
 #' 
-#' @details
-#' some details
+#' @details some details...
 #' 
 #' @name hsigclust-show
 #' @export 
@@ -18,7 +14,7 @@ setMethod("show", signature(object="hsigclust"),
           })
 
 .show.hsigclust <- function(hsigclust) {
-  cat("This is better than SHOWing everything. Don't y'all agree? \n")
+  cat("This is better than showing everything. \n")
   print( paste("number of p-values < 0.05: ",
                colSums(hsigclust@mpvalnorm<0.05)) )
 }

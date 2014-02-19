@@ -1,16 +1,15 @@
 #' @title hsigclust class 
 #' 
-#' @description 
-#' the hsigclust class used to store output of a HSigClust analysis 
-#' performed using the HSCtest() function
-#' 
-#' @details
-#' some details
-#' 
 #' @name hsigclust
-#' @rdname hsigclust
-#' @exportClass hsigclust
 #' @aliases hsigclust-class
+#' @rdname hsigclust
+#' 
+#' @description The hsigclust class is used to store output of the HSigClust 
+#'              testing procedure implemented in \code{HSCtest}. 
+#' 
+#' @details some details...
+#' 
+#' @exportClass hsigclust
 #' @author Patrick Kimes
 
 setOldClass("hclust")

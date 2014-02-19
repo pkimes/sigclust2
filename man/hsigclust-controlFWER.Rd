@@ -6,10 +6,10 @@ controlFWER(hsc, alpha = 0.05, ...)
 }
 \description{
 Calculate the sequence of p-value cutoffs for FWER control
-as described in Meinshausen (2008)
+as described in Meinshausen (2008).
 }
 \details{
-some details
+some details...
 }
 \author{
 Patrick Kimes

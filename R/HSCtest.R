@@ -1,53 +1,65 @@
-#' Run Statistical Significance of Hierarchical Clustering algorithm
+#' @title Run Statistical Significance of Hierarchical Clustering algorithm
 #'
 #' @name HSCtest
 #'
-#' @description \code{HSCtest} first computes the desired dendrogram, and quantifies the 
-#'              statistical significance of clustering at each branching along the tree using
-#'              a hypothesis testing procedure. The code is written so that various cluster 
-#'              inidices can be easily introduced by writting new CI function and adding 
-#'              to .initcluster(), .simcluster() and incrementing "nCIs" (more elegant 
-#'              solution?). This function WILL make use \code{Rclusterpp.hclust} package for 
-#'              all choices of clustering except \code{dist="cor"}, for which \code{WGCNA::cor}
-#'              will be used with \code{stats::hclust}.
+#' @description \code{HSCtest} first computes the desired dendrogram, and
+#'              quantifies the statistical significance of clustering at each 
+#'              branching along the tree using a hypothesis testing procedure. 
+#'              The code is written so that various cluster indices can be 
+#'              easily introduced by writting new CI function and adding to 
+#'              .initcluster(), .simcluster() and incrementing "nCIs" (more 
+#'              elegant solution?). When possible, this function makes use of a
+#'              C++ implementation of hierarchical clustering available through
+#'              the \code{Rclusterpp.hclust} package for the case of clustering
+#'              by \code{dist="cor"}, we make use of \code{WGCNA::cor} with the
+#'              usual \code{stats::hclust}.
 #' 
-#' @param x a dataset with p rows and n columns, with observations in columns.
-#' @param metric a string specifying the metric to be used in the hierarchical clustering procedure.
-#'        This must be a metric accepted by \code{dist}, e.g. "euclidean." If squared Euclidean distance
-#'        (or the square of any other metric) is desired, set the \code{square} parameter to \code{TRUE}.
-#' @param linkage a string specifying the linkage to be used in the hierarchical clustering procedure.
-#'        This must be a linkage accepted by \code{hclust}, e.g. "ward."
-#' @param alpha a value between 0 and 1 specifying the desired level of the test. If no FWER control is
-#'        desired, simply set alpha to 1. The default is 0.05.
-#' @param square a logical specifying whether to square the dissimilarity matrix produced by specified 
-#'        \code{metric}. This is necessary, for example, in order to implement Ward's minimum variance
-#'        method with squared Euclidean metric. (Honestly can't think of any other situations when 
+#' @param x a dataset with n rows and p columns, with observations in columns.
+#' @param metric a string specifying the metric to be used in the hierarchical 
+#'        clustering procedure. This must be a metric accepted by \code{dist}, 
+#'        e.g. "euclidean." If squared Euclidean distance (or the square of any 
+#'        other metric) is desired, set the \code{square} parameter to 
+#'        \code{TRUE}.
+#' @param linkage a string specifying the linkage to be used in the hierarchical 
+#'        clustering procedure. This must be a linkage accepted by 
+#'        \code{hclust}, e.g. "ward."
+#' @param alpha a value between 0 and 1 specifying the desired level of the 
+#'        test. If no FWER control is desired, simply set alpha to 1. The 
+#'        default is 0.05.
+#' @param square a logical specifying whether to square the dissimilarity matrix
+#'        produced by specified \code{metric}. This is necessary, for example, 
+#'        in order to implement Ward's minimum variance method with squared 
+#'        Euclidean metric. (Honestly can't think of any other situations when 
 #'        you'd want to square the diss. matrix.) Default is FALSE. 
-#' @param l an integer value specifying the power of the Minkowski distance, if used, default is 2.
-#' @param nsim a numeric value specifying the number of simulations for SigClust testing.
-#'        The default is to run 100 simulations at each merge. 
-#' @param minObs an integer specifying the minimum number of observations needed to calculate a p-value,
-#'        default is 10.
+#' @param l an integer value specifying the power of the Minkowski distance, if 
+#'        used, default is 2.
+#' @param nsim a numeric value specifying the number of simulations for SigClust 
+#'        testing. The default is to run 100 simulations at each merge. 
+#' @param minObs an integer specifying the minimum number of observations needed
+#'        to calculate a p-value, default is 10.
 #' @param icovest a numeric value specifying the covariance estimation method: 
 #'        1. Use a soft threshold method as constrained MLE (default); 
 #'        2. Use sample covariance estimate (recommended when diagnostics fail); 
-#'        3. Use original background noise thresholded estimate (from Liu et al., (2008)) 
-#'        ("hard thresholding") as described in the \code{sigclust} package documentation.
-#' @param verb a logical value specifying whether the method should print out when testing
-#'        completes along each node along the dendrogram, by default set to FALSE.
-#' @param gpu a logical value specifying whether a GPU process is available and should be 
-#'        used. This calls \code{gputools::gpuDistClust} to perform the clustering within
-#'        each simulation loop. By default set to FALSE.
+#'        3. Use original background noise thresholded estimate (from Liu et 
+#'        al., (2008)) ("hard thresholding") as described in the \code{sigclust}
+#'        package documentation.
+#' @param verb a logical value specifying whether the method should print out 
+#'        when testing completes along each node along the dendrogram, by 
+#'        default set to FALSE.
+#' @param gpu a logical value specifying whether a GPU process is available and
+#'        should be used. This calls \code{gputools::gpuDistClust} to perform 
+#'        the clustering within each simulation loop. By default set to FALSE.
 #' 
-#' @return The function returns a \code{hsigclust} object containing the resulting p-values.
-#'        The print method call will output a dendrogram with the corresponding p-values placed 
-#'        at each merge. 
+#' @return The function returns a \code{hsigclust} object containing the 
+#'         resulting p-values. The print method call will output a dendrogram
+#'         with the corresponding p-values placed at each merge. 
 #' 
 #' 
-#' @details The function extends the \code{sigclust} idea to the hierarchical setting by modifying the
-#'          clustering procedure employed to compute the null distribution of cluster indices.
+#' @details The function extends the \code{sigclust} idea to the hierarchical 
+#'          setting by modifying the clustering procedure employed to compute 
+#'          the null distribution of cluster indices.
 #' 
-#' @import sigclust Rclusterpp WGCNA
+#' @import Rclusterpp WGCNA
 #' @export HSCtest
 #' @author Patrick Kimes
 
@@ -66,6 +78,12 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
   x <- as.matrix(x)
   xclust <- .initcluster(x, n, p, metric, linkage, square, l, nCIs)
   xmcindex <- xclust$mcindex
+  
+  #need to correct height of merges if using 
+  # Ward clustering w/ Rclusterpp
+  if (linkage=="ward") {
+    xclust$clusters$height <- sqrt(2*xclust$clusters$height)
+  }
   
   #p-values for all <=(n-1) tests
   mpval <- matrix(2, nrow=n-1, ncol=nCIs)
@@ -118,7 +136,7 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
   
 }
 
-#calculate 2-means cluster index
+#calculate 2-means cluster index (nxp matrices)
 .sumsq <- function(x) { norm(sweep(x, 2, colMeans(x), "-"), "F")^2 }
 .calc2CI <- function(x1, x2) {
   if (is.matrix(x1) && is.matrix(x2) && ncol(x1) == ncol(x2)) {
@@ -135,7 +153,7 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
 
   #need to implement clustering algorithm
   if (metric == 'cor') {
-    dmatrix <- 1 - WGCNA::cor(x)
+    dmatrix <- 1 - WGCNA::cor(t(x))
     clusters <- hclust(dmatrix^square, method=linkage)
   } else if (square == 2) {
     dmatrix <- dist(x, method=metric, p=l)    
@@ -147,7 +165,7 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
 
   #matrix containing cluster indices
   mcindex <- matrix(-1, nrow=n-1, ncol=nCIs)
-  
+    
   #list array of cluster indices at each of the n-1 merges
   clusterList <- array(list(), c(2*n-1, 2))
   clusterList[1:n, 1] <- as.list(n:1)
@@ -160,7 +178,7 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
                            x[clusterList[[n+k, 2]], , drop=FALSE])
   }
   clusterList <- clusterList[-(1:n), ]
-  
+    
   return(list(clusters=clusters, 
               clusterList=clusterList,
               mcindex=mcindex))
@@ -171,7 +189,7 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
 .simcluster <- function(sim_x, p, metric, linkage, square, l, nCIs) { 
   #need to implement clustering algorithm
   if (metric == 'cor') {
-    dmatrix <- 1 - WGCNA::cor(sim_x)
+    dmatrix <- 1 - WGCNA::cor(t(sim_x))
     clusters <- hclust(dmatrix^square, method=linkage)
   } else if (square == 2) {
     dmatrix <- dist(sim_x, method=metric, p=l)    
@@ -196,20 +214,27 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
 # 3 lines added to handle flat case when largest total signal < p*bkgd
 .sigclustcovest <- function(vsampeigv, sig2b) {
   d <- length(vsampeigv)
-    #Check have some eigenvalues < sig2b
+  #Check have some eigenvalues < sig2b
   vtaucand <- vsampeigv - sig2b
+  
+  #need to see if any eigenvalues even fall below sig2b
+  if (tail(vtaucand, 1) > 0) {
+    return(list(veigvest=vsampeigv, tau=0))
+  }  
+  
   #need to make sure there is enough total power.
   # if not, just return flat estimate as in Matlab impl, PKK 01/14/2014
   if (sum(vsampeigv) <= d*sig2b) {
     return(list(veigvest=rep(sig2b, d), tau=0))
   }
+  
   #find threshold to preserve power
   which <- which(vtaucand<=0)
   icut <- which[1] - 1
   powertail <- sum(vsampeigv[(icut+1):d])
   power2shift <- sig2b*(d-icut) - powertail
   vi <- c(1:icut)
-  vcumtaucand <- sort(cumsum(sort(vtaucand[vi])),decreasing=TRUE)
+  vcumtaucand <- sort(cumsum(sort(vtaucand[vi])), decreasing=TRUE)
   vpowershifted <- (vi-1)*vtaucand[vi] + vcumtaucand
   flag <- vpowershifted < power2shift
   if (sum(flag) == 0) {

@@ -1,15 +1,33 @@
 \docType{methods}
 \name{hsigclust-plot}
 \alias{hsigclust-plot}
-\title{plot hsigclust object}
+\title{Plot hsigclust object}
 \usage{
-\S4method{plot}{hsigclust,missing}(x, y, arg = "all", ...)
+\S4method{plot}{hsigclust,missing}(x, y, ...)
 }
 \arguments{
-  \item{x}{the coordinates of points in the plot.
-  Alternatively, a single plotting structure, function or
-  \emph{any \R object with a \code{plot} method} can be
-  provided.}
+  \item{x}{a hsigclust object to plot produced by a call to
+  HSCtest()}
+
+  \item{colGroups}{a vector specifying group labels for the
+  clustered objects.  The vector should be in the same
+  order as the rows of the original data matrix. If
+  specified, color blocks will be placed along the bottom
+  of the dendrogram. Useful when the samples have a priori
+  known grouping behavior, default is NULL.}
+
+  \item{textLabs}{a boolean specifyin whether rowlabels
+  should be added as text along the bottom of the
+  dendrogram, default is FALSE.}
+
+  \item{FWER}{a boolean specifying whether the FWER control
+  procedure of Meinshausen et al. 2010 should be used,
+  default is TRUE.}
+
+  \item{alpha}{a double between 0 and 1 specifying the
+  significance cutoff. If FWER is TRUE, the FWER of the
+  entire dendrogram is controlled at alpha, else, each
+  branch is tested at alpha, default is 0.05.}
 
   \item{y}{the y coordinates of points in the plot,
   \emph{optional} if \code{x} is an appropriate structure.}
@@ -41,11 +59,13 @@
   }
 }
 \description{
-visualize results of HSigClust analysis as an annotated
-dendrogram object using the ggdendro and ggplot2 packages
+Visualize the results of HSigClust analysis as an annotated
+dendrogram with significant branches highlighted.
 }
 \details{
-some details
+This function makes use of dendrogram plotting functions
+made available through the ggdendro package which provides
+a ggplot2-like grammer for working with dendrograms.
 }
 \author{
 Patrick Kimes

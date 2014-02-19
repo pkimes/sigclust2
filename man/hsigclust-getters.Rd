@@ -1,16 +1,31 @@
 \docType{methods}
 \name{hsigclust-getters}
 \alias{asimcindex}
+\alias{asimcindex,}
 \alias{clusterList}
+\alias{clusterList,}
+\alias{controlFWER,}
 \alias{hc}
+\alias{hc,}
 \alias{hsigclust-getters}
 \alias{icovest}
+\alias{icovest,}
 \alias{meigval}
+\alias{meigval,}
 \alias{mpval}
+\alias{mpval,}
 \alias{mpvalnorm}
 \alias{msimeigval}
+\alias{msimeigval,}
 \alias{nsim}
+\alias{nsim,}
+\alias{plot,}
+\alias{print,}
+\alias{raw.data,}
+\alias{show,}
+\alias{summary,}
 \alias{vsimbackvar}
+\alias{vsimbackvar,}
 \alias{xmcindex}
 \title{getters for the hsigclust class}
 \usage{
@@ -39,29 +54,35 @@ clusterList(x)
 hc(x)
 }
 \value{
-the original data used in the analysis
+raw.data: the original data used in the analysis
 
-the original data used in the analysis
+meigval: matrix of sample eigenvalues from observed
+subtrees
 
-the original data used in the analysis
+msimeigval: matrix of eigenvalues used for simulating null
+subtrees
 
-the original data used in the analysis
+vsimbackvar: vector of background noise estimates for
+simulating null subtrees
 
-the original data used in the analysis
+icovest: the covariance estimation procedure used for the
+analaysis
 
-the original data used in the analysis
+nsim: number of simulated null datasets for each test
 
-the original data used in the analysis
+asimcindex:
 
-the original data used in the analysis
+mpval: matrix of empirical p-values with ncols = number of
+cluster indicies tested (currently 1)
 
-the original data used in the analysis
+mpvalnorm: matrix of empirical p-values with ncols = number
+of cluster indicies tested (currently 1)
 
-the original data used in the analysis
+xmcindex:
 
-the original data used in the analysis
+clusterList:
 
-the original data used in the analysis
+hc:
 }
 \description{
 Defining getters (no setters) for the hsigclust class.
