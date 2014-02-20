@@ -3,7 +3,8 @@
 \title{Run Statistical Significance of Hierarchical Clustering algorithm}
 \usage{
 HSCtest(x, metric, linkage, alpha = 0.05, square = FALSE, l = 2,
-  nsim = 100, minObs = 10, icovest = 1)
+  nsim = 100, minObs = 10, icovest = 1, testCIs = "2CI",
+  testNulls = "hclust")
 }
 \arguments{
   \item{x}{a dataset with n rows and p columns, with
@@ -59,6 +60,17 @@ HSCtest(x, metric, linkage, alpha = 0.05, square = FALSE, l = 2,
   process is available and should be used. This calls
   \code{gputools::gpuDistClust} to perform the clustering
   within each simulation loop. By default set to FALSE.}
+
+  \item{testCIs}{a string vector specifying the cluster
+  indices to be used for testing along the dendrogram.
+  Currently, options include: "2CI", "linkage". Default is
+  "2CI".}
+
+  \item{testNulls}{a string vector specifying the
+  clustering approach that should be used at each node as
+  the comparison. Currently, options include: "2means",
+  "hclust". Default is "hclust". Note, testNulls and
+  testCIs must be of equal length.}
 }
 \value{
 The function returns a \code{hsigclust} object containing

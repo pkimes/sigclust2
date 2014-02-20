@@ -49,6 +49,14 @@
 #' @param gpu a logical value specifying whether a GPU process is available and
 #'        should be used. This calls \code{gputools::gpuDistClust} to perform 
 #'        the clustering within each simulation loop. By default set to FALSE.
+#' @param testCIs a string vector specifying the cluster indices to be used for 
+#'        testing along the dendrogram. Currently, options include: "2CI", 
+#'        "linkage". Default is "2CI". 
+#' @param testNulls a string vector specifying the clustering approach that 
+#'        should be used at each node as the comparison. Currently, options
+#'        include: "2means", "hclust". Default is "hclust". Note, testNulls and
+#'        testCIs must be of equal length.
+#'
 #' 
 #' @return The function returns a \code{hsigclust} object containing the 
 #'         resulting p-values. The print method call will output a dendrogram
@@ -64,11 +72,18 @@
 #' @author Patrick Kimes
 
 
-HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100, minObs=10, icovest=1) {  
+HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, 
+                    nsim=100, minObs=10, icovest=1, 
+                    testCIs="2CI", testNulls="hclust") {  
 
   #number of cluster indices
-  nCIs <- 1
-
+  nCIs <- length(testCIs)
+  if (length(testCIs) != length(testNulls)) {
+    nCIs <- min(length(testCIs), length(testNulls))
+    cat("!! testCIs and testNulls must be of equal length!  !!")
+    cat(paste("!! Only using the first", nCIs, "entries of each.         !!"))
+  }
+  
   #convert boolean to 1,2
   square <- square+1
   #check the dimension of x to match n and p
@@ -76,7 +91,7 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
   p <- dim(x)[2]
   
   x <- as.matrix(x)
-  xclust <- .initcluster(x, n, p, metric, linkage, square, l, nCIs)
+  xclust <- .initcluster(x, n, p, metric, linkage, square, l, nCIs, testCIs)
   xmcindex <- xclust$mcindex
   
   #need to correct height of merges if using 
@@ -88,7 +103,9 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
   #p-values for all <=(n-1) tests
   mpval <- matrix(2, nrow=n-1, ncol=nCIs)
   mpvalnorm <- matrix(2, nrow=n-1, ncol=nCIs)
-
+  colnames(mpval) <- paste(testNulls, testCIs, sep="_")
+  colnames(mpvalnorm) <- paste(testNulls, testCIs, sep="_")
+  
   #null covariance parameters for all <=(n-1) tests
   meigval <- matrix(-1, nrow=n-1, ncol=p)
   msimeigval <- matrix(-1, nrow=n-1, ncol=p)
@@ -104,7 +121,8 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
       xvareigen <- .vareigen(x[subxIdx, ], subn, p, icovest)
       for (i in 1:nsim) {
         xsim <- .simnull(xvareigen$vsimeigval, subn, p, 
-                         metric, linkage, square, l, nCIs)
+                         metric, linkage, square, l, 
+                         nCIs, testCIs, testNulls)
         asimcindex[k, i, ] <- xsim$mcindex        
       }
       mindex <- colMeans(as.matrix(asimcindex[k, , ]))
@@ -136,6 +154,7 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
   
 }
 
+
 #calculate 2-means cluster index (nxp matrices)
 .sumsq <- function(x) { norm(sweep(x, 2, colMeans(x), "-"), "F")^2 }
 .calc2CI <- function(x1, x2) {
@@ -147,9 +166,11 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
   }      
 }
 
+
 #perform hierarchical clustering on the original data and 
 # compute the corresponding cluster indices for each merge
-.initcluster <- function(x, n, p, metric, linkage, square, l, nCIs) { 
+.initcluster <- function(x, n, p, metric, linkage, square, l, 
+                         nCIs, testCIs) { 
 
   #need to implement clustering algorithm
   if (metric == 'cor') {
@@ -170,23 +191,44 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
   clusterList <- array(list(), c(2*n-1, 2))
   clusterList[1:n, 1] <- as.list(n:1)
   clusterList[(n+1):(2*n-1), ] <- clusters$merge+n+(clusters$merge<0)
-  for (k in 1:(n-1)) {
-    clusterList[[n+k, 1]] <- unlist( clusterList[clusterList[[n+k, 1]], ] )
-    clusterList[[n+k, 2]] <- unlist( clusterList[clusterList[[n+k, 2]], ] )
-    #calculate cluster index(ices) for merge k
-    mcindex[k, 1] <- .calc2CI(x[clusterList[[n+k, 1]], , drop=FALSE],
-                           x[clusterList[[n+k, 2]], , drop=FALSE])
+
+  #calculate cluster index(ices) for merge k
+  for (iCI in 1:nCIs) {
+    if (testCIs[iCI] == "2CI") {
+      for (k in 1:(n-1)) {
+        clusterList[[n+k, 1]] <- unlist(clusterList[clusterList[[n+k, 1]], ])
+        clusterList[[n+k, 2]] <- unlist(clusterList[clusterList[[n+k, 2]], ])
+        mcindex[k, iCI] <- .calc2CI(x[clusterList[[n+k, 1]], , drop=FALSE],
+                                    x[clusterList[[n+k, 2]], , drop=FALSE])
+      }
+    } else if (testCIs[iCI] == "linkage") {
+        mcindex[, iCI] <- clusters$height
+    }
   }
   clusterList <- clusterList[-(1:n), ]
-    
+  
   return(list(clusters=clusters, 
               clusterList=clusterList,
               mcindex=mcindex))
 }
 
+
+#given null eigenvalues, simulate Gaussian datasets and compute
+# cluster index - cleaned data simulation and changed to .simcluster(), PKK
+.simnull <- function(vsimeigval, n, p, metric, linkage, square, l, 
+                     nCIs, testCIs, testNulls) {
+  simnorm <- matrix(rnorm(n*p, sd=sqrt(vsimeigval)), 
+                    n, p, byrow=TRUE)
+  simclust <- .simcluster(simnorm, p, metric, linkage, square, l, 
+                          nCIs, testCIs, testNulls)
+  list(mcindex=simclust$mcindex)
+}
+
+
 #perform hierarchical clustering on a simulated dataset and
 # compute the correspond cluster indices for only the final merge
-.simcluster <- function(sim_x, p, metric, linkage, square, l, nCIs) { 
+.simcluster <- function(sim_x, p, metric, linkage, square, l, 
+                        nCIs, testCIs, testNulls) { 
   #need to implement clustering algorithm
   if (metric == 'cor') {
     dmatrix <- 1 - WGCNA::cor(t(sim_x))
@@ -200,8 +242,20 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
   }
   sim_split <- cutree(clusters, k=2)
   mcindex <- matrix(-1, nrow=1, ncol=nCIs)
-  mcindex[1] <- .calc2CI(sim_x[sim_split==1, , drop=FALSE],
-                         sim_x[sim_split==2, , drop=FALSE])  
+  for (iCI in 1:nCIs) {
+    if (testCIs[iCI] == "2CI") {
+      if (testNulls[iCI] == "hclust") {
+        mcindex[iCI] <- .calc2CI(sim_x[sim_split==1, , drop=FALSE],
+                                 sim_x[sim_split==2, , drop=FALSE])        
+      } else if (testNulls[iCI] == "2means") {
+        kmsol <- kmeans(sim_x, centers=2)
+        mcindex[iCI] <- kmsol$tot.withinss/kmsol$totss
+      }
+    } else if (testCIs[iCI] == "linkage") {
+      mcindex[iCI] <- clusters$height[nrow(sim_x)-1]
+    }
+  }
+
   return(list(mcindex=mcindex))
 }
 
@@ -297,16 +351,6 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, nsim=100,
   }
 }
 
-
-
-#given null eigenvalues, simulate Gaussian datasets and compute
-# cluster index - cleaned data simulation and changed to .simcluster(), PKK
-.simnull <- function(vsimeigval, n, p, metric, linkage, square, l, nCIs) {
-  simnorm <- matrix(rnorm(n*p, sd=sqrt(vsimeigval)), 
-                    n, p, byrow=TRUE)
-  simclust <- .simcluster(simnorm, p, metric, linkage, square, l, nCIs)
-  list(mcindex=simclust$mcindex)
-}
 
 
 
