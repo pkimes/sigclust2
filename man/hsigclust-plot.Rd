@@ -7,27 +7,36 @@
 }
 \arguments{
   \item{x}{a hsigclust object to plot produced by a call to
-  HSCtest()}
+  \code{HSCtest()}}
 
   \item{colGroups}{a vector specifying group labels for the
   clustered objects.  The vector should be in the same
   order as the rows of the original data matrix. If
   specified, color blocks will be placed along the bottom
   of the dendrogram. Useful when the samples have a priori
-  known grouping behavior, default is NULL.}
+  known grouping behavior, default is \code{NULL}.}
 
   \item{textLabs}{a boolean specifyin whether rowlabels
   should be added as text along the bottom of the
-  dendrogram, default is FALSE.}
+  dendrogram, default is \code{TRUE}.}
 
   \item{FWER}{a boolean specifying whether the FWER control
   procedure of Meinshausen et al. 2010 should be used,
-  default is TRUE.}
+  default is \code{TRUE}.  NOTE: only has effect if
+  \code{alphaStop} was not specified, or was set to the
+  default value of 1 when calling \code{HSCtest()}.}
 
   \item{alpha}{a double between 0 and 1 specifying the
   significance cutoff. If FWER is TRUE, the FWER of the
   entire dendrogram is controlled at alpha, else, each
-  branch is tested at alpha, default is 0.05.}
+  branch is tested at \code{alpha}, default is 0.05.  NOTE:
+  only has effect if \code{alphaStop} was not specified, or
+  was set to the default value of 1, when calling
+  \code{HSCtest()}.}
+
+  \item{hang}{a double value corresponding to the
+  \code{hang} parameter for the typical call to \code{plot}
+  for an object of class \code{hsigclust}, default is -1.}
 
   \item{y}{the y coordinates of points in the plot,
   \emph{optional} if \code{x} is an appropriate structure.}

@@ -1,5 +1,6 @@
 \docType{methods}
 \name{hsigclust-getters}
+\alias{FWERcutoffs}
 \alias{asimcindex}
 \alias{asimcindex,}
 \alias{clusterList}
@@ -52,6 +53,8 @@ xmcindex(x)
 clusterList(x)
 
 hc(x)
+
+FWERcutoffs(hsc, alpha)
 }
 \value{
 raw.data: the original data used in the analysis
@@ -83,6 +86,8 @@ xmcindex:
 clusterList:
 
 hc:
+
+FWERcutoffs:
 }
 \description{
 Defining getters (no setters) for the hsigclust class.

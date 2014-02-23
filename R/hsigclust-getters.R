@@ -112,6 +112,20 @@ setMethod("clusterList", "hsigclust", function(x) return(x@clusterList))
 setGeneric("hc", function(x) standardGeneric("hc"))
 setMethod("hc", "hsigclust", function(x) return(x@hc))
 
+#' @name FWERcutoffs
+#' @export
+#' @docType methods
+#' @rdname hsigclust-getters
+#' @return FWERcutoffs: 
+setGeneric("FWERcutoffs", function(hsc, alpha) standardGeneric("FWERcutoffs"))
+setMethod("FWERcutoffs", signature(hsc="hsigclust", alpha="numeric"), 
+          function(hsc, alpha) {
+            alpha * 
+              apply(hsc@clusterList, 1, 
+                    function(x) { length(unlist(x)) }) / 
+              (nrow(hsc@clusterList)+1)
+          })
+
 
 
 # #older approach?

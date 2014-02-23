@@ -1,4 +1,5 @@
-#' @title Run Statistical Significance of Hierarchical Clustering algorithm
+#' @title Statistical Significance of Hierarchical Clustering (HSigClust) 
+#'        algorithm
 #'
 #' @name HSCtest
 #'
@@ -23,9 +24,6 @@
 #' @param linkage a string specifying the linkage to be used in the hierarchical 
 #'        clustering procedure. This must be a linkage accepted by 
 #'        \code{hclust}, e.g. "ward."
-#' @param alpha a value between 0 and 1 specifying the desired level of the 
-#'        test. If no FWER control is desired, simply set alpha to 1. The 
-#'        default is 0.05.
 #' @param square a logical specifying whether to square the dissimilarity matrix
 #'        produced by specified \code{metric}. This is necessary, for example, 
 #'        in order to implement Ward's minimum variance method with squared 
@@ -33,6 +31,15 @@
 #'        you'd want to square the diss. matrix.) Default is FALSE. 
 #' @param l an integer value specifying the power of the Minkowski distance, if 
 #'        used, default is 2.
+#' @param alphaStop a value between 0 and 1 specifying the desired level of the 
+#'        test. If no FWER control is desired, simply set alpha to 1. The 
+#'        default is 1. The testing procedure will terminate when no branches
+#'        meet the corresponding FWER control threshold. This procedure may 
+#'        substantially speed up the procedure by reducing the number of tests 
+#'        considered. NOTE: if p-values are desired for all branches, the FWER
+#'        cutoffs may be provided a posteriori by a call to \code{FWERcutoffs()}.
+#'        Additionally, they may be specified at \code{plot()} using the 
+#'        \code{alpha} and \code{FWER} parameters.
 #' @param nsim a numeric value specifying the number of simulations for SigClust 
 #'        testing. The default is to run 100 simulations at each merge. 
 #' @param minObs an integer specifying the minimum number of observations needed
@@ -46,9 +53,6 @@
 #' @param verb a logical value specifying whether the method should print out 
 #'        when testing completes along each node along the dendrogram, by 
 #'        default set to FALSE.
-#' @param gpu a logical value specifying whether a GPU process is available and
-#'        should be used. This calls \code{gputools::gpuDistClust} to perform 
-#'        the clustering within each simulation loop. By default set to FALSE.
 #' @param testCIs a string vector specifying the cluster indices to be used for 
 #'        testing along the dendrogram. Currently, options include: "2CI", 
 #'        "linkage". Default is "2CI". 
@@ -56,6 +60,13 @@
 #'        should be used at each node as the comparison. Currently, options
 #'        include: "2means", "hclust". Default is "hclust". Note, testNulls and
 #'        testCIs must be of equal length.
+#' @param cutoffCI a single value between 1 and \code{length(testCIs)} 
+#'        specifiying which CI to use for the FWER stopping rule, default is 1.
+#'        This only has an effect if alphaStop is specified to a non-default 
+#'        value.
+#' @param gpu a logical value specifying whether a GPU process is available and
+#'        should be used. This calls \code{gputools::gpuDistClust} to perform 
+#'        the clustering within each simulation loop. By default set to FALSE.
 #'
 #' 
 #' @return The function returns a \code{hsigclust} object containing the 
@@ -63,26 +74,38 @@
 #'         with the corresponding p-values placed at each merge. 
 #' 
 #' 
-#' @details The function extends the \code{sigclust} idea to the hierarchical 
+#' @details The function expands on the \code{sigclust} idea to the hierarchical 
 #'          setting by modifying the clustering procedure employed to compute 
 #'          the null distribution of cluster indices.
+#' 
+#' @usage 
+#' hsc_cars <- HSCtest(mtcars, metric="euclidean", linkage="single")
+#' tail(mpvalnorm(hsc_cars), 10)
 #' 
 #' @import Rclusterpp WGCNA
 #' @export HSCtest
 #' @author Patrick Kimes
 
 
-HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2, 
+HSCtest <- function(x, metric, linkage, alphaStop=1, square=FALSE, l=2, 
                     nsim=100, minObs=10, icovest=1, 
-                    testCIs="2CI", testNulls="hclust") {  
+                    testCIs="2CI", testNulls="hclust", cutoffCI=1) {  
 
   #number of cluster indices
   nCIs <- length(testCIs)
+  #check validity of testCIs/testNulls
   if (length(testCIs) != length(testNulls)) {
     nCIs <- min(length(testCIs), length(testNulls))
-    cat("!! testCIs and testNulls must be of equal length!  !!")
+    cat("!! testCIs and testNulls must be of equal length.  !!")
     cat(paste("!! Only using the first", nCIs, "entries of each.         !!"))
   }
+  
+  #check validity of cutoffCI
+  if (cutoffCI > nCIs) { cutoffCI <- 1 }
+  
+  #check validity of alphaStop
+  if (alphaStop > 1 || alphaStop < 0) { alphaStop <- 1}
+  
   
   #convert boolean to 1,2
   square <- square+1
@@ -94,8 +117,7 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2,
   xclust <- .initcluster(x, n, p, metric, linkage, square, l, nCIs, testCIs)
   xmcindex <- xclust$mcindex
   
-  #need to correct height of merges if using 
-  # Ward clustering w/ Rclusterpp
+  #need to correct height of merges if using Ward clustering w/ Rclusterpp
   if (linkage=="ward") {
     xclust$clusters$height <- sqrt(2*xclust$clusters$height)
   }
@@ -111,11 +133,41 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2,
   msimeigval <- matrix(-1, nrow=n-1, ncol=p)
   vsimbackvar <- rep(-1, n-1)
   asimcindex <- array(-1, dim=c(n-1, nsim, nCIs))
-  
-  for (k in 1:(n-1)) {
 
+  #determine parent branch node for all children nodes along dendrogram
+  allPDpairs <- rbind(cbind(xclust$clusters$merge[,1], 1:(n-1)), 
+                      cbind(xclust$clusters$merge[,2], 1:(n-1)))
+  PDmap <- data.frame(allPDpairs[allPDpairs[, 1]>0, ])
+  names(PDmap) <- c("daughter", "parent")
+  PDmap <- PDmap[order(PDmap$daughter), 2] #the parent of each daughter
+  PDmap <- c(PDmap, n) #add final node without a parent
+  
+  #compute Meinshausen cutoffs for significance at alpha
+  clusterSizes <- apply(xclust$clusterList, 1, 
+                        function(x) { length(unlist(x)) })
+  cutoff <- alphaStop * clusterSizes/n
+  
+  treesig <- rep(TRUE, n)
+  
+  for (k in (n-1):1) { #move through layers in reverse order.
+    
+    #if parent wasn't significant, skip
+    if ( !treesig[PDmap[k]] ) {
+      mpvalnorm[k, ] <- rep(47, nCIs)
+      mpval[k, ] <- rep(47, nCIs)
+      meigval[k, ] <- rep(-47, p)
+      msimeigval[k, ] <- rep(-47, p)
+      vsimbackvar[k] <- -47
+      
+      treesig[k] <- FALSE
+      next 
+      }
+    
+    ##### THESE CALCULATIONS CAN PROBABLY BE ROLLED INTO
+    ##### CLUSTERSIZES/CUTOFF COMPUTATION
     subxIdx <- unlist(xclust$clusterList[k, ])
     subn <- length(subxIdx)
+    
     #only calc p-values for branches w/ more than minObs
     if (subn >= minObs) {
       xvareigen <- .vareigen(x[subxIdx, ], subn, p, icovest)
@@ -134,6 +186,13 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2,
       meigval[k, ] <- xvareigen$veigval
       msimeigval[k, ] <- xvareigen$vsimeigval
       vsimbackvar[k] <- xvareigen$simbackvar
+      
+      #update treesig based on significance threshold if 
+      # short-stopping rule is desired
+      if (alphaStop < 1) {
+        treesig[k] <- (mpvalnorm[k, cutoffCI] < cutoff[k])        
+      }
+      
     }    
     
   }  
@@ -150,7 +209,8 @@ HSCtest <- function(x, metric, linkage, alpha=0.05, square=FALSE, l=2,
              mpvalnorm = mpvalnorm,
              xmcindex = xmcindex,
              clusterList = xclust$clusterList,
-             hc = xclust$clusters))
+             hc = xclust$clusters,
+             alphaStop = alphaStop))
   
 }
 

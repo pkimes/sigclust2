@@ -1,10 +1,10 @@
 \name{HSCtest}
 \alias{HSCtest}
-\title{Run Statistical Significance of Hierarchical Clustering algorithm}
+\title{Statistical Significance of Hierarchical Clustering (HSigClust)
+       algorithm}
 \usage{
-HSCtest(x, metric, linkage, alpha = 0.05, square = FALSE, l = 2,
-  nsim = 100, minObs = 10, icovest = 1, testCIs = "2CI",
-  testNulls = "hclust")
+hsc_cars <- HSCtest(mtcars, metric="euclidean", linkage="single")
+tail(mpvalnorm(hsc_cars), 10)
 }
 \arguments{
   \item{x}{a dataset with n rows and p columns, with
@@ -21,10 +21,6 @@ HSCtest(x, metric, linkage, alpha = 0.05, square = FALSE, l = 2,
   in the hierarchical clustering procedure. This must be a
   linkage accepted by \code{hclust}, e.g. "ward."}
 
-  \item{alpha}{a value between 0 and 1 specifying the
-  desired level of the test. If no FWER control is desired,
-  simply set alpha to 1. The default is 0.05.}
-
   \item{square}{a logical specifying whether to square the
   dissimilarity matrix produced by specified \code{metric}.
   This is necessary, for example, in order to implement
@@ -35,6 +31,18 @@ HSCtest(x, metric, linkage, alpha = 0.05, square = FALSE, l = 2,
 
   \item{l}{an integer value specifying the power of the
   Minkowski distance, if used, default is 2.}
+
+  \item{alphaStop}{a value between 0 and 1 specifying the
+  desired level of the test. If no FWER control is desired,
+  simply set alpha to 1. The default is 1. The testing
+  procedure will terminate when no branches meet the
+  corresponding FWER control threshold. This procedure may
+  substantially speed up the procedure by reducing the
+  number of tests considered. NOTE: if p-values are desired
+  for all branches, the FWER cutoffs may be provided a
+  posteriori by a call to \code{FWERcutoffs()}.
+  Additionally, they may be specified at \code{plot()}
+  using the \code{alpha} and \code{FWER} parameters.}
 
   \item{nsim}{a numeric value specifying the number of
   simulations for SigClust testing. The default is to run
@@ -56,11 +64,6 @@ HSCtest(x, metric, linkage, alpha = 0.05, square = FALSE, l = 2,
   should print out when testing completes along each node
   along the dendrogram, by default set to FALSE.}
 
-  \item{gpu}{a logical value specifying whether a GPU
-  process is available and should be used. This calls
-  \code{gputools::gpuDistClust} to perform the clustering
-  within each simulation loop. By default set to FALSE.}
-
   \item{testCIs}{a string vector specifying the cluster
   indices to be used for testing along the dendrogram.
   Currently, options include: "2CI", "linkage". Default is
@@ -71,6 +74,16 @@ HSCtest(x, metric, linkage, alpha = 0.05, square = FALSE, l = 2,
   the comparison. Currently, options include: "2means",
   "hclust". Default is "hclust". Note, testNulls and
   testCIs must be of equal length.}
+
+  \item{cutoffCI}{a single value between 1 and
+  \code{length(testCIs)} specifiying which CI to use for
+  the FWER stopping rule, default is 1.  This only has an
+  effect if alphaStop is specified to a non-default value.}
+
+  \item{gpu}{a logical value specifying whether a GPU
+  process is available and should be used. This calls
+  \code{gputools::gpuDistClust} to perform the clustering
+  within each simulation loop. By default set to FALSE.}
 }
 \value{
 The function returns a \code{hsigclust} object containing
@@ -93,7 +106,7 @@ by \code{dist="cor"}, we make use of \code{WGCNA::cor} with
 the usual \code{stats::hclust}.
 }
 \details{
-The function extends the \code{sigclust} idea to the
+The function expands on the \code{sigclust} idea to the
 hierarchical setting by modifying the clustering procedure
 employed to compute the null distribution of cluster
 indices.

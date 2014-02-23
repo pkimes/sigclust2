@@ -25,5 +25,6 @@ setClass("hsigclust",
                     mpvalnorm = "matrix",
                     xmcindex = "matrix",
                     clusterList = "matrix",
-                    hc = "hclust")
+                    hc = "hclust",
+                    alphaStop = "numeric")
          )
