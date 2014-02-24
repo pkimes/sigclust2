@@ -168,7 +168,7 @@ setMethod("plot", signature(x="hsigclust", y="missing"),
   
   
   #add colored segments to plot if any branches were significant
-  if (length(sig_spots) > 0) {
+  if (sum(sig_spots) > 0) {
     plot_dend <- plot_dend +
       geom_segment(data=sig_segs,
                    aes(x=x, y=y, xend=xend, yend=yend), 
