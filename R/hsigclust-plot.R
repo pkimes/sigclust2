@@ -99,6 +99,9 @@ setMethod("plot", signature(x="hsigclust", y="missing"),
   hcdata <- ggdendro::dendro_data(hcd)
   hc_segs <- ggdendro::segment(hcdata) #getters
   hc_labs <- ggdendro::label(hcdata) #getters
+  #change label hight to be correct
+  hc_labs$y <- .getLabHeight(hcd)
+  
   if (!is.null(colGroups) && length(colGroups)==n) {
     hc_labs$clusters <- colGroups[hsigclust@hc$order]
   }
@@ -189,3 +192,19 @@ setMethod("plot", signature(x="hsigclust", y="missing"),
   plot_dend
 }
 
+
+
+################################################################################
+################################################################################
+#function to pull label height/information for when hang>0
+# - necessary since ggdendro package won't provide this output
+.getLabHeight <- function(tree, heights=c()) {
+  for (k in seq(length(tree))) {
+    if (is.leaf(tree[[k]])) {
+      heights <- c(heights, attr(tree[[k]], "height"))
+    } else {
+      heights <- getLabHeight(tree[[k]], heights)
+    }
+  }
+  heights
+}
