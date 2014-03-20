@@ -34,6 +34,10 @@
   was set to the default value of 1, when calling
   \code{HSCtest()}.}
 
+  \item{ipval}{a numeric value specifying which p-value to
+  use from the calculated set of p-values, must be <= nCIs,
+  default is 1.}
+
   \item{hang}{a double value corresponding to the
   \code{hang} parameter for the typical call to \code{plot}
   for an object of class \code{hsigclust}, default is -1.}

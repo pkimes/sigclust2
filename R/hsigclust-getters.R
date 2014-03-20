@@ -3,9 +3,9 @@
 #' @description 
 #' Defining getters (no setters) for the hsigclust class.
 #' 
-#' @aliases asimcindex, clusterList, controlFWER, hc, icovest, meigval, mpval,
-#' msimeigval, nsim, plot, print, raw.data, show, summary, vsimbackvar, xmcindex
-#' @genericMethods 
+#' @aliases asimcindex, clusterList, controlFWER, hc, meigval, mpval,
+#' msimeigval, raw.data, vsimbackvar, xmcindex
+#' @genericMethod 
 #' @rdname hsigclust-getters
 #' @name hsigclust-getters
 #' @author Patrick Kimes
@@ -45,22 +45,6 @@ setMethod("msimeigval", "hsigclust", function(x) return(x@msimeigval))
 #'         null subtrees
 setGeneric("vsimbackvar", function(x) standardGeneric("vsimbackvar"))
 setMethod("vsimbackvar", "hsigclust", function(x) return(x@vsimbackvar))
-
-#' @name icovest
-#' @export
-#' @docType methods
-#' @rdname hsigclust-getters
-#' @return icovest: the covariance estimation procedure used for the analaysis
-setGeneric("icovest", function(x) standardGeneric("icovest"))
-setMethod("icovest", "hsigclust", function(x) return(x@icovest))
-
-#' @name nsim
-#' @export
-#' @docType methods
-#' @rdname hsigclust-getters
-#' @return nsim: number of simulated null datasets for each test
-setGeneric("nsim", function(x) standardGeneric("nsim"))
-setMethod("nsim", "hsigclust", function(x) return(x@nsim))
 
 #' @name asimcindex
 #' @export

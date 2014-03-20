@@ -9,8 +9,6 @@
 \alias{hc}
 \alias{hc,}
 \alias{hsigclust-getters}
-\alias{icovest}
-\alias{icovest,}
 \alias{meigval}
 \alias{meigval,}
 \alias{mpval}
@@ -18,13 +16,7 @@
 \alias{mpvalnorm}
 \alias{msimeigval}
 \alias{msimeigval,}
-\alias{nsim}
-\alias{nsim,}
-\alias{plot,}
-\alias{print,}
 \alias{raw.data,}
-\alias{show,}
-\alias{summary,}
 \alias{vsimbackvar}
 \alias{vsimbackvar,}
 \alias{xmcindex}
@@ -37,10 +29,6 @@ meigval(x)
 msimeigval(x)
 
 vsimbackvar(x)
-
-icovest(x)
-
-nsim(x)
 
 asimcindex(x)
 
@@ -67,11 +55,6 @@ subtrees
 
 vsimbackvar: vector of background noise estimates for
 simulating null subtrees
-
-icovest: the covariance estimation procedure used for the
-analaysis
-
-nsim: number of simulated null datasets for each test
 
 asimcindex:
 

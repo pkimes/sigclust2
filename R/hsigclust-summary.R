@@ -16,5 +16,9 @@ setMethod("summary", signature(object="hsigclust"),
           })
 
 .summary.hsigclust <- function(hsigclust, arg="all", ...) {
-  print("This is a horrible summary. Do something with it.")
+  show(hsigclust)
+  cat("\n")
+  cat(paste0("number of p-values < 0.05: ",
+            colSums(hsigclust@mpvalnorm<0.05),
+            ".\n\n") )
 }
