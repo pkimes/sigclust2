@@ -1,8 +1,8 @@
 Package: SigClust2
 Type: Package
 Title: SigClust2: Statistical Significance of Clustering
-Version: 0.99.5
-Date: 2014-02-25
+Version: 0.99.6
+Date: 2014-03-20
 Author: Patrick Kimes
 Maintainer: <pkimes@live.unc.edu>
 Description: Tests for significance of clustering in both non-nested/flat and
