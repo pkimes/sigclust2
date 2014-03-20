@@ -18,13 +18,11 @@ setClass("hsigclust",
                     meigval = "matrix",
                     msimeigval = "matrix",
                     vsimbackvar = "vector",
-                    icovest = "numeric",
-                    nsim = "numeric",
                     asimcindex = "array",
                     mpval = "matrix",
                     mpvalnorm = "matrix",
                     xmcindex = "matrix",
                     clusterList = "matrix",
                     hc = "hclust",
-                    alphaStop = "numeric")
+                    inparams = "list")
          )

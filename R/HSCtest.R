@@ -8,27 +8,20 @@
 #'              branching along the tree using a hypothesis testing procedure. 
 #'              The code is written so that various cluster indices can be 
 #'              easily introduced by writting new CI function and adding to 
-#'              .initcluster(), .simcluster() and incrementing "nCIs" (more 
-#'              elegant solution?). When possible, this function makes use of a
-#'              C++ implementation of hierarchical clustering available through
-#'              the \code{Rclusterpp.hclust} package for the case of clustering
-#'              by \code{dist="cor"}, we make use of \code{WGCNA::cor} with the
-#'              usual \code{stats::hclust}.
+#'              .initcluster(), .simcluster(). When possible, this function 
+#'              makes use of a C++ implementation of hierarchical clustering 
+#'              available through the \code{Rclusterpp.hclust} package for the 
+#'              case of clustering by Pearson correlation (\code{dist="cor"}), 
+#'              we make use of \code{WGCNA::cor} with the usual 
+#'              \code{stats::hclust}.
 #' 
 #' @param x a dataset with n rows and p columns, with observations in columns.
 #' @param metric a string specifying the metric to be used in the hierarchical 
 #'        clustering procedure. This must be a metric accepted by \code{dist}, 
-#'        e.g. "euclidean." If squared Euclidean distance (or the square of any 
-#'        other metric) is desired, set the \code{square} parameter to 
-#'        \code{TRUE}.
+#'        e.g. "euclidean," or "cor."
 #' @param linkage a string specifying the linkage to be used in the hierarchical 
 #'        clustering procedure. This must be a linkage accepted by 
 #'        \code{hclust}, e.g. "ward."
-#' @param square a logical specifying whether to square the dissimilarity matrix
-#'        produced by specified \code{metric}. This is necessary, for example, 
-#'        in order to implement Ward's minimum variance method with squared 
-#'        Euclidean metric. (Honestly can't think of any other situations when 
-#'        you'd want to square the diss. matrix.) Default is FALSE. 
 #' @param l an integer value specifying the power of the Minkowski distance, if 
 #'        used, default is 2.
 #' @param alphaStop a value between 0 and 1 specifying the desired level of the 
@@ -43,30 +36,36 @@
 #' @param nsim a numeric value specifying the number of simulations for SigClust 
 #'        testing. The default is to run 100 simulations at each merge. 
 #' @param minObs an integer specifying the minimum number of observations needed
-#'        to calculate a p-value, default is 10.
+#'        to calculate a p-value. Default is 10.
 #' @param icovest a numeric value specifying the covariance estimation method: 
 #'        1. Use a soft threshold method as constrained MLE (default); 
 #'        2. Use sample covariance estimate (recommended when diagnostics fail); 
 #'        3. Use original background noise thresholded estimate (from Liu et 
 #'        al., (2008)) ("hard thresholding") as described in the \code{sigclust}
 #'        package documentation.
+#' @param bkgdPCA a logical value whether to use principal component scores when
+#'        estimating background noise under the null. Default is TRUE.
+#' @param useCpp a logical value whether to use the \code{Rclusterpp} package.
+#'        Default is TRUE.
+#' @param nThreads a integer value specifying the number of threads to allocate 
+#'        for the Rclusterpp process. Default is 1.
 #' @param verb a logical value specifying whether the method should print out 
-#'        when testing completes along each node along the dendrogram, by 
-#'        default set to FALSE.
+#'        when testing completes along each node along the dendrogram.
+#'        Default is FALSE.
 #' @param testCIs a string vector specifying the cluster indices to be used for 
 #'        testing along the dendrogram. Currently, options include: "2CI", 
 #'        "linkage". Default is "2CI". 
 #' @param testNulls a string vector specifying the clustering approach that 
 #'        should be used at each node as the comparison. Currently, options
-#'        include: "2means", "hclust". Default is "hclust". Note, testNulls and
-#'        testCIs must be of equal length.
+#'        include: "2means", "hclust". Note, testNulls and testCIs must be of
+#'        equal length. Default is "hclust".
 #' @param cutoffCI a single value between 1 and \code{length(testCIs)} 
-#'        specifiying which CI to use for the FWER stopping rule, default is 1.
+#'        specifiying which CI to use for the FWER stopping rule.
 #'        This only has an effect if alphaStop is specified to a non-default 
-#'        value.
+#'        value. Default is 1.
 #' @param gpu a logical value specifying whether a GPU process is available and
 #'        should be used. This calls \code{gputools::gpuDistClust} to perform 
-#'        the clustering within each simulation loop. By default set to FALSE.
+#'        the clustering within each simulation loop. Default is FALSE.
 #'
 #' 
 #' @return The function returns a \code{hsigclust} object containing the 
@@ -87,10 +86,14 @@
 #' @author Patrick Kimes
 
 
-HSCtest <- function(x, metric, linkage, alphaStop=1, square=FALSE, l=2, 
-                    nsim=100, minObs=10, icovest=1, 
+HSCtest <- function(x, metric, linkage, alphaStop=1, l=2, bkgdPCA=TRUE,
+                    nsim=100, minObs=10, icovest=1, useCpp=TRUE, nThreads=1,
                     testCIs="2CI", testNulls="hclust", cutoffCI=1) {  
 
+  if (useCpp) {
+    Rclusterpp.setThreads(nThreads)
+  }
+  
   #number of cluster indices
   nCIs <- length(testCIs)
   #check validity of testCIs/testNulls
@@ -107,14 +110,13 @@ HSCtest <- function(x, metric, linkage, alphaStop=1, square=FALSE, l=2,
   if (alphaStop > 1 || alphaStop < 0) { alphaStop <- 1}
   
   
-  #convert boolean to 1,2
-  square <- square+1
   #check the dimension of x to match n and p
   n <- dim(x)[1]
   p <- dim(x)[2]
   
   x <- as.matrix(x)
-  xclust <- .initcluster(x, n, p, metric, linkage, square, l, nCIs, testCIs)
+  xclust <- .initcluster(x, n, p, metric, linkage, l, 
+                         nCIs, testCIs, useCpp)
   xmcindex <- xclust$mcindex
   
   #need to correct height of merges if using Ward clustering w/ Rclusterpp
@@ -170,19 +172,23 @@ HSCtest <- function(x, metric, linkage, alphaStop=1, square=FALSE, l=2,
     
     #only calc p-values for branches w/ more than minObs
     if (subn >= minObs) {
-      xvareigen <- .vareigen(x[subxIdx, ], subn, p, icovest)
+      xvareigen <- .vareigen(x[subxIdx, ], subn, p, icovest, bkgdPCA)
       for (i in 1:nsim) {
         xsim <- .simnull(xvareigen$vsimeigval, subn, p, 
-                         metric, linkage, square, l, 
-                         nCIs, testCIs, testNulls)
+                         metric, linkage, l, 
+                         nCIs, testCIs, testNulls, useCpp)
         asimcindex[k, i, ] <- xsim$mcindex        
       }
       mindex <- colMeans(as.matrix(asimcindex[k, , ]))
       sindex <- apply(as.matrix(asimcindex[k, , ]), 2, sd)
       mpvalnorm[k, ] <- pnorm(xmcindex[k, ], mindex, sindex)
+      mpvalnorm[k, testCIs=="linkage"] <- 
+        1-mpvalnorm[k, testCIs=="linkage"] #flip for linkage based testing
       mpval[k, ] <- colMeans(as.matrix(asimcindex[k, , ]) <= 
                                matrix(xmcindex[k, ], nrow=nsim, 
                                       ncol=nCIs, byrow=TRUE))
+      mpval[k, testCIs=="linkage"] <-
+        1-mpval[k, testCIs=="linkage"] #flip for linkage based testing
       meigval[k, ] <- xvareigen$veigval
       msimeigval[k, ] <- xvareigen$vsimeigval
       vsimbackvar[k] <- xvareigen$simbackvar
@@ -202,16 +208,23 @@ HSCtest <- function(x, metric, linkage, alphaStop=1, square=FALSE, l=2,
              meigval = meigval,
              msimeigval = msimeigval,
              vsimbackvar = vsimbackvar,
-             icovest = icovest,
-             nsim = nsim,
              asimcindex = asimcindex,
              mpval = mpval,
              mpvalnorm = mpvalnorm,
              xmcindex = xmcindex,
              clusterList = xclust$clusterList,
              hc = xclust$clusters,
-             alphaStop = alphaStop))
-  
+             inparams = list(metric = metric,
+                             linkage = linkage,
+                             alphaStop = alphaStop,
+                             l = l,
+                             bkgdPCA = bkgdPCA,
+                             nsim = nsim,
+                             minObs = minObs,
+                             icovest = icovest,
+                             testCIs = testCIs,
+                             testNulls = testNulls,
+                             cutoffCI = cutoffCI)))
 }
 
 
@@ -229,19 +242,20 @@ HSCtest <- function(x, metric, linkage, alphaStop=1, square=FALSE, l=2,
 
 #perform hierarchical clustering on the original data and 
 # compute the corresponding cluster indices for each merge
-.initcluster <- function(x, n, p, metric, linkage, square, l, 
-                         nCIs, testCIs) { 
+.initcluster <- function(x, n, p, metric, linkage, l, 
+                         nCIs, testCIs, useCpp) { 
 
   #need to implement clustering algorithm
   if (metric == 'cor') {
     dmatrix <- 1 - WGCNA::cor(t(x))
-    clusters <- hclust(dmatrix^square, method=linkage)
-  } else if (square == 2) {
-    dmatrix <- dist(x, method=metric, p=l)    
-    clusters <- hclust(dmatrix^square, method=linkage)
+    clusters <- hclust(as.dist(dmatrix), method=linkage)
   } else {
-    clusters <- Rclusterpp.hclust(x, method=linkage, 
-                                  distance=metric, p=l)
+    if (useCpp) {
+      clusters <- Rclusterpp.hclust(x, method=linkage, 
+                                    distance=metric, p=l)
+    } else {
+      clusters <- hclust(dist(x, method=metric, p=l), method=linkage)
+    }
   }
 
   #matrix containing cluster indices
@@ -275,30 +289,31 @@ HSCtest <- function(x, metric, linkage, alphaStop=1, square=FALSE, l=2,
 
 #given null eigenvalues, simulate Gaussian datasets and compute
 # cluster index - cleaned data simulation and changed to .simcluster(), PKK
-.simnull <- function(vsimeigval, n, p, metric, linkage, square, l, 
-                     nCIs, testCIs, testNulls) {
+.simnull <- function(vsimeigval, n, p, metric, linkage, l, 
+                     nCIs, testCIs, testNulls, useCpp) {
   simnorm <- matrix(rnorm(n*p, sd=sqrt(vsimeigval)), 
                     n, p, byrow=TRUE)
-  simclust <- .simcluster(simnorm, p, metric, linkage, square, l, 
-                          nCIs, testCIs, testNulls)
+  simclust <- .simcluster(simnorm, p, metric, linkage, l, 
+                          nCIs, testCIs, testNulls, useCpp)
   list(mcindex=simclust$mcindex)
 }
 
 
 #perform hierarchical clustering on a simulated dataset and
 # compute the correspond cluster indices for only the final merge
-.simcluster <- function(sim_x, p, metric, linkage, square, l, 
-                        nCIs, testCIs, testNulls) { 
+.simcluster <- function(sim_x, p, metric, linkage, l, 
+                        nCIs, testCIs, testNulls, useCpp) { 
   #need to implement clustering algorithm
   if (metric == 'cor') {
     dmatrix <- 1 - WGCNA::cor(t(sim_x))
-    clusters <- hclust(dmatrix^square, method=linkage)
-  } else if (square == 2) {
-    dmatrix <- dist(sim_x, method=metric, p=l)    
-    clusters <- hclust(dmatrix^square, method=linkage)
+    clusters <- hclust(dmatrix, method=linkage)
   } else {
-    clusters <- Rclusterpp.hclust(sim_x, method=linkage, 
-                                  distance=metric, p=l)
+    if (useCpp) {
+      clusters <- Rclusterpp.hclust(sim_x, method=linkage, 
+                                    distance=metric, p=l)      
+    } else {
+      clusters <- hclust(dist(sim_x, method=metric, p=l), method=linkage)      
+    }
   }
   sim_split <- cutree(clusters, k=2)
   mcindex <- matrix(-1, nrow=1, ncol=nCIs)
@@ -320,8 +335,10 @@ HSCtest <- function(x, metric, linkage, alphaStop=1, square=FALSE, l=2,
 }
 
 
+
 ###############################################################################
-# following reproduced from sigclust package
+#following reproduced from sigclust package
+# copied from sigclust package on 2/23/2014 -- includes updated "soft"
 ###############################################################################
 
 #soft thresholding estimator of Huang et al. 2014+
@@ -331,7 +348,7 @@ HSCtest <- function(x, metric, linkage, alphaStop=1, square=FALSE, l=2,
   #Check have some eigenvalues < sig2b
   vtaucand <- vsampeigv - sig2b
   
-  #need to see if any eigenvalues even fall below sig2b
+  #need to see if any eigenvalues even fall below sig2b, PKK
   if (tail(vtaucand, 1) > 0) {
     return(list(veigvest=vsampeigv, tau=0))
   }  
@@ -341,29 +358,29 @@ HSCtest <- function(x, metric, linkage, alphaStop=1, square=FALSE, l=2,
   if (sum(vsampeigv) <= d*sig2b) {
     return(list(veigvest=rep(sig2b, d), tau=0))
   }
-  
+
   #find threshold to preserve power
   which <- which(vtaucand<=0)
   icut <- which[1] - 1
   powertail <- sum(vsampeigv[(icut+1):d])
   power2shift <- sig2b*(d-icut) - powertail
   vi <- c(1:icut)
-  vcumtaucand <- sort(cumsum(sort(vtaucand[vi])), decreasing=TRUE)
+  vcumtaucand <- sort(cumsum(sort(vtaucand[vi])),decreasing=TRUE)
   vpowershifted <- (vi-1)*vtaucand[vi] + vcumtaucand
   flag <- vpowershifted < power2shift
-  if (sum(flag) == 0) {
-    itau <- 0
-  } else {
+  if(sum(flag)==0){
+    itau <- 0;
+  }else{
     which <- which(flag>0)
     itau <- which[1]
   }
-  if (itau == 1) {
-    powerprop <- power2shift/vpowershifted[1] #originally (../vpowershifted) no [1] idx
+  if(itau==1){
+    powerprop <- power2shift/vpowershifted[1] #originally no [1] idx, PKK
     tau <- powerprop*vtaucand[1]
-  } else if (itau == 0) {
+  }else if(itau==0){
     powerprop <- power2shift/vpowershifted[icut] 
     tau <- powerprop*vtaucand[icut] 
-  } else {
+  }else{
     powerprop <- (power2shift-vpowershifted[itau])/
       (vpowershifted[itau-1]-vpowershifted[itau]) 
     tau <- vtaucand[itau] + powerprop*(vtaucand[itau-1] - vtaucand[itau]) 
@@ -371,29 +388,51 @@ HSCtest <- function(x, metric, linkage, alphaStop=1, square=FALSE, l=2,
   veigvest <- vsampeigv - tau 
   flag <- veigvest > sig2b 
   veigvest <- flag*veigvest + (1-flag)*(sig2b*rep(1,d))
-  list(veigvest=veigvest, tau=tau)
+  list(veigvest=veigvest,tau=tau)
 }
 
 
 
 #calculate variances of null Gaussian for simulation
 # using factor model w/ eigenvalues of pca and background noise.
-# copied from sigclust package
-.vareigen <- function(x, n, p, icovest) {  
+# modified to allow for PCA based background noise estimation
+.vareigen <- function(x, n, p, icovest, bkgdPCA) {  
   #check the dimension of x to
   #match n and p
-  if(dim(x)[1]==n & dim(x)[2]==p){
-    mad1 <- mad(x)
-    simbackvar <- mad1^2
+  if(dim(x)[1]==n & dim(x)[2]==p) { #PKK 03/05/2014
+    if (bkgdPCA) { #PKK 03/05/2014
+      mad1 <- mad(as.matrix(prcomp(x)$x)) / sqrt(p/(n-1)) #PKK 03/05/2014
+    } else { #PKK 03/05/2014
+      mad1 <- mad(as.matrix(x))
+    }
+    simbackvar<-mad1^2
     # Jan. 23, 07; replace eigen by
     #svd to save memory
-    xcov <- cov(x)
-    xeig <- eigen(xcov, symmetric=TRUE, only.values =TRUE)
-    veigval <- xeig$values
-    vsimeigval <- xeig$values
+    xcov<-cov(x)
+    xeig<-eigen(xcov, symmetric=TRUE, only.values =TRUE)
+    veigval<-xeig$values
+    vsimeigval<-xeig$values
+    
+    #      avgx<-t(t(x)-colMeans(x))
+    #	dv<-svd(avgx)$d
+    #      veigval<-dv^2/(n-1)
+    #	vsimeigval<-veigval
     
     if(icovest==1){
-      vsimeigval <- .sigclustcovest(veigval, simbackvar)$veigvest
+      taub <- 0
+      tauu <- .sigclustcovest(veigval, simbackvar)$tau
+      etau <- (tauu-taub)/100
+      ids <- rep(0, 100)
+      for(i in 1:100){
+        taus = taub + (i-1)*etau
+        eigval.temp <- veigval - taus
+        eigval.temp[eigval.temp<simbackvar] <- simbackvar
+        ids[i] <- eigval.temp[1]/sum(eigval.temp)
+      }
+      tau <- taub + (which.max(ids)-1)*etau
+      vsimeigval <- veigval - tau
+      vsimeigval[vsimeigval<simbackvar] <- simbackvar
+      #vsimeigval <- .sigclustcovest(veigval,simbackvar)$veigvest
     }
     
     if(icovest==2){
@@ -410,6 +449,7 @@ HSCtest <- function(x, metric, linkage, alphaStop=1, square=FALSE, l=2,
     return(0)
   }
 }
+
 
 
 

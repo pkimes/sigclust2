@@ -12,22 +12,12 @@ tail(mpvalnorm(hsc_cars), 10)
 
   \item{metric}{a string specifying the metric to be used
   in the hierarchical clustering procedure. This must be a
-  metric accepted by \code{dist}, e.g. "euclidean." If
-  squared Euclidean distance (or the square of any other
-  metric) is desired, set the \code{square} parameter to
-  \code{TRUE}.}
+  metric accepted by \code{dist}, e.g. "euclidean," or
+  "cor."}
 
   \item{linkage}{a string specifying the linkage to be used
   in the hierarchical clustering procedure. This must be a
   linkage accepted by \code{hclust}, e.g. "ward."}
-
-  \item{square}{a logical specifying whether to square the
-  dissimilarity matrix produced by specified \code{metric}.
-  This is necessary, for example, in order to implement
-  Ward's minimum variance method with squared Euclidean
-  metric. (Honestly can't think of any other situations
-  when you'd want to square the diss. matrix.) Default is
-  FALSE.}
 
   \item{l}{an integer value specifying the power of the
   Minkowski distance, if used, default is 2.}
@@ -49,7 +39,7 @@ tail(mpvalnorm(hsc_cars), 10)
   100 simulations at each merge.}
 
   \item{minObs}{an integer specifying the minimum number of
-  observations needed to calculate a p-value, default is
+  observations needed to calculate a p-value. Default is
   10.}
 
   \item{icovest}{a numeric value specifying the covariance
@@ -60,9 +50,20 @@ tail(mpvalnorm(hsc_cars), 10)
   et al., (2008)) ("hard thresholding") as described in the
   \code{sigclust} package documentation.}
 
+  \item{bkgdPCA}{a logical value whether to use principal
+  component scores when estimating background noise under
+  the null. Default is TRUE.}
+
+  \item{useCpp}{a logical value whether to use the
+  \code{Rclusterpp} package.  Default is TRUE.}
+
+  \item{nThreads}{a integer value specifying the number of
+  threads to allocate for the Rclusterpp process. Default
+  is 1.}
+
   \item{verb}{a logical value specifying whether the method
   should print out when testing completes along each node
-  along the dendrogram, by default set to FALSE.}
+  along the dendrogram.  Default is FALSE.}
 
   \item{testCIs}{a string vector specifying the cluster
   indices to be used for testing along the dendrogram.
@@ -72,18 +73,19 @@ tail(mpvalnorm(hsc_cars), 10)
   \item{testNulls}{a string vector specifying the
   clustering approach that should be used at each node as
   the comparison. Currently, options include: "2means",
-  "hclust". Default is "hclust". Note, testNulls and
-  testCIs must be of equal length.}
+  "hclust". Note, testNulls and testCIs must be of equal
+  length. Default is "hclust".}
 
   \item{cutoffCI}{a single value between 1 and
   \code{length(testCIs)} specifiying which CI to use for
-  the FWER stopping rule, default is 1.  This only has an
-  effect if alphaStop is specified to a non-default value.}
+  the FWER stopping rule.  This only has an effect if
+  alphaStop is specified to a non-default value. Default is
+  1.}
 
   \item{gpu}{a logical value specifying whether a GPU
   process is available and should be used. This calls
   \code{gputools::gpuDistClust} to perform the clustering
-  within each simulation loop. By default set to FALSE.}
+  within each simulation loop. Default is FALSE.}
 }
 \value{
 The function returns a \code{hsigclust} object containing
@@ -97,13 +99,12 @@ quantifies the statistical significance of clustering at
 each branching along the tree using a hypothesis testing
 procedure.  The code is written so that various cluster
 indices can be easily introduced by writting new CI
-function and adding to .initcluster(), .simcluster() and
-incrementing "nCIs" (more elegant solution?). When
+function and adding to .initcluster(), .simcluster(). When
 possible, this function makes use of a C++ implementation
 of hierarchical clustering available through the
 \code{Rclusterpp.hclust} package for the case of clustering
-by \code{dist="cor"}, we make use of \code{WGCNA::cor} with
-the usual \code{stats::hclust}.
+by Pearson correlation (\code{dist="cor"}), we make use of
+\code{WGCNA::cor} with the usual \code{stats::hclust}.
 }
 \details{
 The function expands on the \code{sigclust} idea to the

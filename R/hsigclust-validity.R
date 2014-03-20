@@ -23,10 +23,6 @@
     return("'msimeigval' is not a matrix")
   else if (!is.vector(object@vsimbackvar))
     return("'vsimbackvar' is not a vector")
-  else if (!is.numeric(object@icovest))
-    return("'icovest' is not a numeric")
-  else if (!is.numeric(object@nsim)) #also check length==1
-    return("'nsim' is not a numeric")
   else if (!is.array(object@asimcindex)) #check dims
     return("'asimcindex' is not an array")
   else if (!is.matrix(object@mpval))
@@ -53,10 +49,6 @@
     return("'msimeigval' is not a matrix")
   else if (!is.vector(object@vsimbackvar))
     return("'vsimbackvar' is not a vector")
-  else if (!is.numeric(object@icovest))
-    return("'icovest' is not a numeric")
-  else if (!is.numeric(object@nsim)) #also check length==1
-    return("'nsim' is not a numeric")
   else if (!is.array(object@asimcindex)) #check dims
     return("'asimcindex' is not an array")
   else if (!is.matrix(object@mpval))
