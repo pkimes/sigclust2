@@ -3,8 +3,9 @@
 \title{Statistical Significance of Hierarchical Clustering (HSigClust)
        algorithm}
 \usage{
-hsc_cars <- HSCtest(mtcars, metric="euclidean", linkage="single")
-tail(mpvalnorm(hsc_cars), 10)
+HSCtest(x, metric, linkage, alphaStop = 1, l = 2, bkgdPCA = TRUE,
+  nsim = 100, minObs = 10, icovest = 1, useCpp = TRUE, nThreads = 1,
+  testCIs = "2CI", testNulls = "hclust", cutoffCI = 1)
 }
 \arguments{
   \item{x}{a dataset with n rows and p columns, with
@@ -111,6 +112,10 @@ The function expands on the \code{sigclust} idea to the
 hierarchical setting by modifying the clustering procedure
 employed to compute the null distribution of cluster
 indices.
+}
+\examples{
+hsc_cars <- HSCtest(mtcars, metric="euclidean", linkage="single")
+tail(mpvalnorm(hsc_cars), 10)
 }
 \author{
 Patrick Kimes

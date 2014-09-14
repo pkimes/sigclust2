@@ -2,23 +2,16 @@
 \name{hsigclust-getters}
 \alias{FWERcutoffs}
 \alias{asimcindex}
-\alias{asimcindex,}
 \alias{clusterList}
-\alias{clusterList,}
-\alias{controlFWER,}
+\alias{controlFWER}
 \alias{hc}
-\alias{hc,}
 \alias{hsigclust-getters}
 \alias{meigval}
-\alias{meigval,}
 \alias{mpval}
-\alias{mpval,}
 \alias{mpvalnorm}
 \alias{msimeigval}
-\alias{msimeigval,}
-\alias{raw.data,}
+\alias{raw.data}
 \alias{vsimbackvar}
-\alias{vsimbackvar,}
 \alias{xmcindex}
 \title{getters for the hsigclust class}
 \usage{
