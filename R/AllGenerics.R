@@ -14,21 +14,19 @@ setGeneric("shc",
 
 ## ###################################################################
 ## ###################################################################
-## plot methods
+## misc methods
 
-#' plot graphlet correlation matrices (GCMs)
+#' null assumption diagnostic plots
 #'
-#' Method for plotting GCMs from either \code{gdv} or \code{cga} objects
-#' for analyzing the graphlet topology at various correlation cutoffs.
+#' Method for generating diagnostic plots for statistical significance
+#' of clustering analysis
 #' 
-#' @name plot_gcm
+#' @name diagnostic
 #' @export
 #' @docType methods
-#' @seealso plot_gdrop plot_gdv
-#' @rdname plot_gcm
-setGeneric("plot_gcm",
-           function(obj, ...)  standardGeneric("plot_gcm"))
-
+#' @rdname diagnostic
+setGeneric("diagnostic",
+           function(obj, ...)  standardGeneric("diagnostic"))
 
 
 
@@ -82,7 +80,7 @@ setGeneric("eigval_sim", function(obj) standardGeneric("eigval_sim"))
 setGeneric("backvar", function(obj) standardGeneric("backvar"))
 
 #' ci_sim
-#' return \code{sim_ci} slot
+#' return \code{ci_sim} slot
 #' @export
 #' @docType methods
 #' @param obj object with slot \code{ci_sim}
@@ -134,4 +132,20 @@ setGeneric("idx_hc", function(obj) standardGeneric("idx_hc"))
 #' @keywords internal
 #' @rdname hc_dat
 setGeneric("hc_dat", function(obj) standardGeneric("hc_dat"))
+
+
+
+## ###################################################################
+## ###################################################################
+## getter functions
+
+#' fwer_cutoff
+#' return Family-Wise Error Rate (FWER) cutoffs
+#' @export
+#' @docType methods
+#' @param obj currently only for objects of class \code{shc-class}
+#' @param alpha a numeric value between 0 and 1
+#' @keywords internal
+#' @rdname fwer_cutoff
+setGeneric("fwer_cutoff", function(obj, alpha) standardGeneric("fwer_cutoff"))
 

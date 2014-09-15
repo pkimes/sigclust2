@@ -1,48 +1,41 @@
-#' @title show hsigclust object
-#' 
-#' @description Quick output to screen when hsigclust object is evaluated.
-#' 
-#' @details some details...
-#' 
-#' @name hsigclust-show
-#' @export 
-#' @author Patrick Kimes
 
-setMethod("show", signature(object="hsigclust"),
+#' @describeIn shc show brief summary of \code{shc} object
+#' @aliases show,shc-method
+setMethod("show", signature(object="shc"),
           function(object) {
-            .show.hsigclust(object)
+            .show.shc(object)
           })
 
-.show.hsigclust <- function(hsigclust) {
-  cat("hsigclust object created using HSCtest()\n\n")
+.show.shc <- function(shc) {
+  cat("shc object created using shc(..)\n\n")
   cat(paste0("clustered using:",
              "\n    linkage = ",
-             hsigclust@inparams$linkage,
+             shc@in_args$linkage,
              "\n    dissimilarity = ",
-             hsigclust@inparams$metric,
+             shc@in_args$metric,
              "\n"))
   
-  cat(paste0("HSigClust applied with:",
+  cat(paste0("SHC applied with:",
              "\n    nsim = ",
-             hsigclust@inparams$nsim,
+             shc@in_args$nsim,
              "\n    icovest = ",
-             hsigclust@inparams$icovest,
+             shc@in_args$icovest,
              "\n    testCIs = ",
-             paste0(hsigclust@inparams$testCIs, collapse=", "),
+             paste0(shc@in_args$testCIs, collapse=", "),
              "\n    testNulls = ",
-             paste0(hsigclust@inparams$testNulls, collapse=", "),
+             paste0(shc@in_args$testNulls, collapse=", "),
              "\n"))
   
   cat(paste0("FWER control:",
              "\n    ", 
-             hsigclust@inparams$alphaStop<1,
-             if(hsigclust@inparams$alphaStop<1)
+             (shc@in_args$alphaStop < 1),
+             if (shc@in_args$alphaStop < 1)
                paste0(" [w/ alpha = ", 
-                      hsigclust@inparams$alphaStop,
+                      shc@in_args$alphaStop,
                       ", determined using CI# ",
-                      hsigclust@inparams$cutoffCI,
+                      shc@in_args$cutoffCI,
                       "]"),
              "\n    min obs for testing = ",
-             hsigclust@inparams$minObs,
+             shc@in_args$minObs,
              "\n"))
 }

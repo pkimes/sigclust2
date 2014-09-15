@@ -6,10 +6,10 @@
 #' @param n an integer number of samples
 #' @param p an integer number of features/covariates
 #' @param icovest an integer between 1 and 3 corresponding to the covariance
-#'        estimation procedure to use, default is 3. See details for more
-#'        information on the possible estimation procedures
+#'        estimation procedure to use. See details for more
+#'        information on the possible estimation procedures (default = 1)
 #' @param bkgd_pca a logical value specifying whether to use scaled PCA scores
-#'        or raw data to estimate the background noise, default = TRUE
+#'        or raw data to estimate the background noise (default = TRUE)
 #' 
 #' @return
 #' The function returns a \code{hsigclust} object containing the 
@@ -39,7 +39,7 @@
 #' @name null_eigval
 #' @author Patrick Kimes
 
-null_eigval <- function(x, n, p, icovest, bkgd_pca) {
+null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = TRUE) {
 
     if (nrow(x) != n | ncol(x) != p)
         stop("Wrong size of matrix x!")

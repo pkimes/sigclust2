@@ -2,19 +2,10 @@ SigClust2
 =======================
 
 ### Contents
-1. [Issues](#issues)
-2. [Status](#status)
+1. [Status](#status)
 3. [Introduction](#intro)
 4. [Example](#example)
 5. [References](#refs)
-
-
-### <a name="issues"></a> Issues
-The current implementation takes a few mintues to complete for
-datasets with moderately 'large' data (e.g. ~5min for n>400, d>2000) 
-due to the computational time needed to perform hierarchical clustering 
-on each Monte Carlo simulated dataset. Some increase in speed is possible 
-using `gputools::gpuDistClust`, but this requires access to a GPU processor. 
 
 
 ### <a name="status"></a> Status
@@ -25,30 +16,27 @@ include a multi-cluster extension, KSigClust (`KSCtest()`).
 
 A short to-do list for the near future:
 * clean up `hsigclust-class` methods:
-  * `show`: produce more useful output
   * `diagnostics`: make work
-  * `summary`: produce more useful output
-* revise `hsigclust` class to be "lighter"
+  * `validity`: remove, not allowing setting 
+  * `FWERcutoffs`: improve using structure of tree
 * allow for more flexibility in `plot` of `hsigclust-class`
-  * print p-value cutoff
+  * print p-value cutoffs
+  * decouple p-value printing and branch highlighting
   * add text flexibility to title of plot
-  * make clear that output is a `ggplot` object, 
-  i.e. can call `plot() + ggtitle('new title')` to change the title 
-  of the figure
-* translate `KSCtest()` from Matlab to `R`
 * complete vignette, replace .Rnw w/ .pdf (also switch to `knitr`?)
+* translate `KSCtest()` from Matlab to `R`
 * update README along the way
 
 
 
 ### <a name="intro"></a> Introduction
-This package may be used to assess the statistical significance of clustering in
-hieararchical clustering. Given the results of hierarchical clustering,
+This package may be used to assess the statistical significance in
+hierarchical clustering. Given the results of hierarchical clustering,
 the approach sequentially tests starting from the root node whether each 
 split/join corresponds to "true" clustering. The hypothesis test performed at 
 each node is based on the approach described in Liu et al. (2008) with 
 appropriate modifications for hierarchical clustering. The work is ongoing, and 
-may involve substantial changes to the current approach (and code).
+may involve changes to the current approach (and code).
 
 
 ### <a name="example"></a> Example
@@ -59,6 +47,7 @@ and average linkage, using the call:
 
 ```r
 library(SigClust2)
+# run HSigClust on toy dataset using Ward linkage
 our_hsc <- HSCtest(mtcars, metric = "euclidean", linkage = "ward", alphaStop = 1)
 ```
 
@@ -71,6 +60,8 @@ originally described in Meinshausen et al. 2010.
 
 
 ```r
+# run HSigClust on toy dataset with FWER control at 0.05 algorithm will skip
+# all tests ignored by sequential FWER procedure.
 short_hsc <- HSCtest(mtcars, metric = "euclidean", linkage = "ward", alphaStop = 0.05)
 ```
 
@@ -80,26 +71,19 @@ We can access the p-values at each node by calling the getter function,
 
 
 ```r
-mpvalnorm(our_hsc)[25:31, ]
+# only print p-values for the last 5 merges
+mpvalnorm(short_hsc)[27:31, ]
 ```
 
 ```
-## [1] 0.1570 2.0000 2.0000 0.4371 2.0000 0.2245 0.0127
-```
-
-```r
-mpvalnorm(short_hsc)[25:31, ]
-```
-
-```
-## [1] 47.00000 47.00000 47.00000  0.41554 47.00000  0.23108  0.01622
+## [1] 47.00000  0.56312 47.00000  0.21264  0.01027
 ```
 
 
 The order of the p-values is according to the height of each branch, i.e. 
 `mpvalnorm(our_hsc[31, ])` corresponds to the highest, (n-1)st branch, at the 
 top of the dendrogram. p-values of `2` correspond to branches not having enough
-samples to test according to the `minObs` parameter. Further, p-values of `47`
+samples to test according to the `minObs` parameter. p-values of `47`
 correspond to branches skipped according to the FWER control procedure (these 
 will supercede `2` values).  
 
@@ -120,9 +104,11 @@ how Mercedes cars might be distributed along the dendrogram.
 
 
 ```r
+# extract car maker names
 makers <- sapply(strsplit(rownames(mtcars), " "), "[[", 1)
 mylabs <- ifelse(makers == "Merc", "Mercedes", "other")
 
+# plot dendrogram showing all p-values and include 'mercedes' label
 plot(our_hsc, colGroups = mylabs, textLabs = TRUE, FWER = FALSE, alpha = 1)
 ```
 
@@ -130,19 +116,7 @@ plot(our_hsc, colGroups = mylabs, textLabs = TRUE, FWER = FALSE, alpha = 1)
 
 
 Note that the call to `plot()` returns a `ggplot` object. Therefore, we can 
-easily adjust the dimensions of the plot using any function from  `ggplot2`.
-
-
-```r
-a <- plot(our_hsc, colGroups = mylabs, textLabs = TRUE)
-a + ggplot2::scale_y_continuous("linkage", limits = c(-1000, 1200), breaks = 0)
-```
-
-```
-## Scale for 'y' is already present. Adding another scale for 'y', which will replace the existing scale.
-```
-
-![plot of chunk unnamed-chunk-6](figure/unnamed-chunk-6.png) 
+easily adjust the plot using any function from the `ggplot2` package. 
 
 
 ### <a name="refs"></a> References

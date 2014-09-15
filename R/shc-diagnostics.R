@@ -1,24 +1,23 @@
-#' @title plot sigclust diagnostic plots for hsigclust object
-#' 
-#' @description
-#' generates various sigclust diagnostic plots defined in the 
-#' sigclust package for evaluating the Gaussian null covariance
-#' assumptions of the SigClust hypothesis test
-#' 
-#' @details
-#' some details
-#' 
-#' @exportMethod diagnostics
-#' @export 
-#' @name hsigclust-diagnostics
-#' @author Patrick Kimes
-
-setGeneric("diagnostics", function(x, plot=FALSE, ...) standardGeneric("diagnostics"))
-setMethod("diagnostics", signature(x="hsigclust"), function(x,  ...) .diagnostics.hsigclust(x, ...))
-
-.diagnostics.hsigclust <- function(x, ...) {
-  print("it worked!")
+##shc signature method
+.diagnostic.shc <- function(obj, K = 1, fname = "shc_diagnostic") {
+    print("function not yet implemented. sorry.")
 }
+
+#' @param obj a \code{shc} object
+#' @param K an integer value specifying the number of nodes (starting from the
+#'        root) for which to create diagnostic plots (default = 1)
+#' @param fname a character string specifying the name of the output file,
+#'        (default = "shc_diagnostic") 
+#' 
+#' @return
+#' prints plots to \code{fname}.
+#' 
+#' @aliases diagnostic,shc-method
+#' @author Patrick Kimes
+setMethod("diagnostic",
+          signature(obj="shc"),
+          .diagnostic.shc)
+
 
 {
   #code taken from the original sigclust package

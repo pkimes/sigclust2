@@ -72,8 +72,9 @@
 #' 
 #' @examples
 #' hsc_cars <- shc(mtcars, metric="euclidean", linkage="single")
-#' tail(mpvalnorm(hsc_cars), 10)
-#' 
+#' tail(p_norm(hsc_cars), 10)
+#'
+#' @seealso \code{\link{plot-shc}} \code{\link{diagnostic}}
 #' @import Rclusterpp WGCNA
 #' @export shc
 #' @author Patrick Kimes

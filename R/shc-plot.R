@@ -1,49 +1,10 @@
-#' @title Plot hsigclust object
-#'
-#' @name hsigclust-plot
-#' 
-#' @description Visualize the results of HSigClust analysis as an annotated 
-#'              dendrogram with significant branches highlighted.
-#' 
-#' @details This function makes use of dendrogram plotting functions made
-#'          available through the ggdendro package which provides a ggplot2-like
-#'          grammer for working with dendrograms.
-#' @param x a hsigclust object to plot produced by a call to \code{HSCtest()}
-#' @param colGroups a vector specifying group labels for the clustered objects.
-#'        The vector should be in the same order as the rows of the original 
-#'        data matrix. If specified, color blocks will be placed along the 
-#'        bottom of the dendrogram. Useful when the samples have a priori known
-#'        grouping behavior, default is \code{NULL}.
-#' @param textLabs a boolean specifyin whether rowlabels should be added as 
-#'        text along the bottom of the dendrogram, default is \code{TRUE}.
-#' @param FWER a boolean specifying whether the FWER control procedure of 
-#'        Meinshausen et al. 2010 should be used, default is \code{TRUE}. 
-#'        NOTE: only has effect if \code{alphaStop} was not specified, or was
-#'        set to the default value of 1 when calling \code{HSCtest()}.
-#' @param alpha a double between 0 and 1 specifying the significance cutoff. If 
-#'        FWER is TRUE, the FWER of the entire dendrogram is controlled at 
-#'        alpha, else, each branch is tested at \code{alpha}, default is 0.05.
-#'        NOTE: only has effect if \code{alphaStop} was not specified, or was
-#'        set to the default value of 1, when calling \code{HSCtest()}.
-#' @param ipval a numeric value specifying which p-value to use from the 
-#'        calculated set of p-values, must be <= nCIs, default is 1. 
-#' @param hang a double value corresponding to the \code{hang} parameter for 
-#'        the typical call to \code{plot} for an object of class
-#'        \code{hsigclust}, default is -1.
-#' 
-#' @import ggplot2 ggdendro dplyr
-#' @export 
-#' @author Patrick Kimes
+## ###################################################################
+## ###################################################################
+## shc signature method
 
-
-setMethod("plot", signature(x="hsigclust", y="missing"),
-          function(x, y, ...) {
-            .plot.hsigclust(x, ...)
-          })
-
-.plot.hsigclust <- function(hsigclust, colGroups=NULL, textLabs=TRUE, 
-                            FWER=TRUE, alpha=0.05, hang=-1, ipval=1) {
-
+.plot.shc <- function(shc, colGroups = NULL, textLabs = TRUE, 
+                      FWER = TRUE, alpha = 0.05, hang = -1,
+                      ipval = 1) {
   
   if (ipval > ncol(hsigclust@mpvalnorm)) {
     ipval <- 1
@@ -284,10 +245,60 @@ setMethod("plot", signature(x="hsigclust", y="missing"),
 
 
 
-################################################################################
-################################################################################
-#function to pull label height/information for when hang>0
-# - necessary since ggdendro package won't provide this output
+## ###################################################################
+## ###################################################################
+## assign method to generic
+
+#' plot shc object
+#'
+#' Visualize the results of SHC analysis as an annotated 
+#' dendrogram with significant branches highlighted
+#' 
+#' @param x a hsigclust object to plot produced by a call to \code{HSCtest()}
+#' @param groups a vector specifying group labels for the clustered objects.
+#'        The vector should be in the same order as the rows of the original 
+#'        data matrix. If specified, color blocks will be placed along the 
+#'        bottom of the dendrogram. Useful when the samples have a priori known
+#'        grouping behavior, default is \code{NULL}.
+#' @param labs a boolean specifyin whether rowlabels should be added as 
+#'        text along the bottom of the dendrogram, default is \code{TRUE}.
+#' @param fwer a boolean specifying whether the FWER control procedure of 
+#'        Meinshausen et al. 2010 should be used, default is \code{TRUE}. 
+#'        NOTE: only has effect if \code{alphaStop} was not specified, or was
+#'        set to the default value of 1 when calling \code{HSCtest()}.
+#' @param alpha a double between 0 and 1 specifying the significance cutoff. If 
+#'        FWER is TRUE, the FWER of the entire dendrogram is controlled at 
+#'        alpha, else, each branch is tested at \code{alpha}, default is 0.05.
+#'        NOTE: only has effect if \code{alphaStop} was not specified, or was
+#'        set to the default value of 1, when calling \code{HSCtest()}.
+#' @param p_idx a numeric value specifying which p-value to use from the 
+#'        calculated set of p-values, must be <= nCIs, default is 1. 
+#' @param hang a double value corresponding to the \code{hang} parameter for 
+#'        the typical call to \code{plot} for an object of class
+#'        \code{hsigclust}, default is -1.
+#' 
+#' @details This function makes use of dendrogram plotting functions made
+#'          available through the ggdendro package which provides a ggplot2-like
+#'          grammer for working with dendrograms.
+#' 
+#' @import ggplot2 ggdendro dplyr
+#' @export
+#' @rdname plot-shc
+#' @aliases plot,shc,missing-method
+#' @author Patrick Kimes
+setMethod("plot", signature(x="hsc", y="missing"),
+          function(x, y, ...) {
+            .plot.shc(x, ...)
+          })
+
+
+
+## ###################################################################
+## ###################################################################
+## helper function
+
+##pull label information for when hang > 0
+## necessary since ggdendro package won't provide this output
 .getLabHeight <- function(tree, heights=c()) {
   for (k in seq(length(tree))) {
     if (is.leaf(tree[[k]])) {

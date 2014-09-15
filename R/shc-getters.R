@@ -1,99 +1,55 @@
 
-#' @describeIn shc get \code{data} slot
-#' @aliases data,shc-method
-setMethod("data", "shc", function(obj) return(obj@data))
+#' @describeIn shc get \code{in_mat} slot
+#' @aliases in_mat,shc-method
+setMethod("in_mat", "shc", function(obj) return(obj@in_mat))
 
-#' @name meigval
-#' @export
-#' @docType methods
-#' @rdname hsigclust-getters
-#' @return meigval: matrix of sample eigenvalues from observed subtrees
-setGeneric("meigval", function(x) standardGeneric("meigval"))
-setMethod("meigval", "hsigclust", function(x) return(x@meigval))
+#' @describeIn shc get \code{in_args} slot
+#' @aliases in_args,shc-method
+setMethod("in_args", "shc", function(obj) return(obj@in_args))
 
-#' @name msimeigval
-#' @export
-#' @docType methods
-#' @rdname hsigclust-getters
-#' @return msimeigval: matrix of eigenvalues used for simulating null subtrees
-setGeneric("msimeigval", function(x) standardGeneric("msimeigval"))
-setMethod("msimeigval", "hsigclust", function(x) return(x@msimeigval))
+#' @describeIn shc get \code{eigval_dat} slot
+#' @aliases eigval_dat,shc-method
+setMethod("eigval_dat", "shc", function(obj) return(obj@eigval_dat))
 
-#' @name vsimbackvar
-#' @export
-#' @docType methods
-#' @rdname hsigclust-getters
-#' @return vsimbackvar: vector of background noise estimates for simulating 
-#'         null subtrees
-setGeneric("vsimbackvar", function(x) standardGeneric("vsimbackvar"))
-setMethod("vsimbackvar", "hsigclust", function(x) return(x@vsimbackvar))
+#' @describeIn shc get \code{eigval_sim} slot
+#' @aliases eigval_sim,shc-method
+setMethod("eigval_sim", "shc", function(obj) return(obj@eigval_sim))
 
-#' @name asimcindex
-#' @export
-#' @docType methods
-#' @rdname hsigclust-getters
-#' @return asimcindex: 
-setGeneric("asimcindex", function(x) standardGeneric("asimcindex"))
-setMethod("asimcindex", "hsigclust", function(x) return(x@asimcindex))
+#' @describeIn shc get \code{backvar} slot
+#' @aliases backvar,shc-method
+setMethod("backvar", "shc", function(obj) return(obj@backvar))
 
-#' @name mpval
-#' @export
-#' @docType methods
-#' @rdname hsigclust-getters
-#' @return mpval: matrix of empirical p-values with ncols = number of cluster 
-#'         indicies tested (currently 1)
-setGeneric("mpval", function(x) standardGeneric("mpval"))
-setMethod("mpval", "hsigclust", function(x) return(x@mpval))
+#' @describeIn shc get \code{ci_sim} slot
+#' @aliases ci_sim,shc-method
+setMethod("ci_sim", "shc", function(obj) return(obj@ci_sim))
 
-#' @name mpvalnorm
-#' @export
-#' @docType methods
-#' @rdname hsigclust-getters
-#' @return mpvalnorm: matrix of empirical p-values with ncols = number of 
-#'         cluster indicies tested (currently 1)
-setGeneric("mpvalnorm", function(x) standardGeneric("mpvalnorm"))
-setMethod("mpvalnorm", "hsigclust", function(x) return(x@mpvalnorm))
+#' @describeIn shc get \code{ci_dat} slot
+#' @aliases ci_dat,shc-method
+setMethod("ci_dat", "shc", function(obj) return(obj@ci_dat))
 
-#' @name xmcindex
-#' @export
-#' @docType methods
-#' @rdname hsigclust-getters
-#' @return xmcindex:
-setGeneric("xmcindex", function(x) standardGeneric("xmcindex"))
-setMethod("xmcindex", "hsigclust", function(x) return(x@xmcindex))
+#' @describeIn shc get \code{p_emp} slot
+#' @aliases p_emp,shc-method
+setMethod("p_emp", "shc", function(obj) return(obj@p_emp))
 
-#' @name clusterList
-#' @export
-#' @docType methods
-#' @rdname hsigclust-getters
-#' @return clusterList: 
-setGeneric("clusterList", function(x) standardGeneric("clusterList"))
-setMethod("clusterList", "hsigclust", function(x) return(x@clusterList))
+#' @describeIn shc get \code{p_norm} slot
+#' @aliases p_norm,shc-method
+setMethod("p_norm", "shc", function(obj) return(obj@p_norm))
 
-#' @name hc
-#' @export
-#' @docType methods
-#' @rdname hsigclust-getters
-#' @return hc: 
-setGeneric("hc", function(x) standardGeneric("hc"))
-setMethod("hc", "hsigclust", function(x) return(x@hc))
+#' @describeIn shc get \code{idx_hc} slot
+#' @aliases idx_hc,shc-method
+setMethod("idx_hc", "shc", function(obj) return(obj@idx_hc))
 
-#' @name FWERcutoffs
-#' @export
-#' @docType methods
-#' @rdname hsigclust-getters
-#' @return FWERcutoffs: 
-setGeneric("FWERcutoffs", function(hsc, alpha) standardGeneric("FWERcutoffs"))
-setMethod("FWERcutoffs", signature(hsc="hsigclust", alpha="numeric"), 
-          function(hsc, alpha) {
-            alpha * 
-              apply(hsc@clusterList, 1, 
-                    function(x) { length(unlist(x)) }) / 
-              (nrow(hsc@clusterList)+1)
+#' @describeIn shc get \code{hc_dat} slot
+#' @aliases hc_dat,shc-method
+setMethod("hc_dat", "shc", function(obj) return(obj@hc_dat))
+
+
+#' @describeIn shc return FWER cutoffs based on \code{idx_hc} slot
+#' @aliases fwer_cutoff,shc,numeric-method
+setMethod("fwer_cutoff", signature(shc="obj", alpha="numeric"),
+          function(obj, alpha) {
+              alpha * 
+                  apply(obj@idx_hc, 1, 
+                        function(x) { length(unlist(x)) }) / 
+                            (nrow(obj@idx_hc)+1)
           })
-
-
-
-# #older approach?
-# mpval <- function(x) {UseMethod('mpval', x)}
-# mpval.hsigclust <- function(hsigclust) {return(hsigclust@mpval)}
