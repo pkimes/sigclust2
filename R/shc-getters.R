@@ -19,6 +19,10 @@ setMethod("eigval_sim", "shc", function(obj) return(obj@eigval_sim))
 #' @aliases backvar,shc-method
 setMethod("backvar", "shc", function(obj) return(obj@backvar))
 
+#' @describeIn shc get \code{nd_type} slot
+#' @aliases nd_type,shc-method
+setMethod("nd_type", "shc", function(obj) return(obj@nd_type))
+
 #' @describeIn shc get \code{ci_sim} slot
 #' @aliases ci_sim,shc-method
 setMethod("ci_sim", "shc", function(obj) return(obj@ci_sim))

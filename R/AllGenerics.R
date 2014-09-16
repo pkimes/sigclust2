@@ -79,6 +79,15 @@ setGeneric("eigval_sim", function(obj) standardGeneric("eigval_sim"))
 #' @rdname backvar
 setGeneric("backvar", function(obj) standardGeneric("backvar"))
 
+#' nd_type
+#' return \code{nd_type} slot
+#' @export
+#' @docType methods
+#' @param obj object with slot \code{nd_type}
+#' @keywords internal
+#' @rdname nd_type
+setGeneric("nd_type", function(obj) standardGeneric("nd_type"))
+
 #' ci_sim
 #' return \code{ci_sim} slot
 #' @export

@@ -142,7 +142,7 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
     
     ##p-values for all <=(n-1) tests
     p_emp <- matrix(2, nrow=n-1, ncol=n_ci)
-    p_nrom <- matrix(2, nrow=n-1, ncol=n_ci)
+    p_norm <- matrix(2, nrow=n-1, ncol=n_ci)
     colnames(p_emp) <- paste(ci_null, ci, sep="_")
     colnames(p_norm) <- paste(ci_null, ci, sep="_")
     
@@ -165,14 +165,18 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
     cutoff <- alpha * c_size/n
 
     ##keep track of which nodes were significant
-    v_sig <- rep(TRUE, n)   
+    v_sig <- rep(TRUE, n)
 
+    ##keep track of whether each node was tested
+    nd_type <- rep("n_small", n-1)
+    
     ##move through nodes of dendrogram in reverse order
     for (k in (n-1):1) { 
-        
+
         ##if parent wasn't significant, skip
         if ( !v_sig[pd_map[k]] ) {
             v_sig[k] <- FALSE
+            nd_type[k] <- "no_test"
             next 
         }
 
@@ -184,6 +188,9 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
         if (n_sub >= n_min) {
             next
         }
+
+        ##node is tested
+        nd_type[k] <- "tested"
 
         ##estimate null Gaussian
         x_knull <- null_eigval(x[idx_sub, ], n_sub, p, icovest, bkgd_pca)
@@ -230,13 +237,14 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
                               l = l, bkgd_pca = bkgd_pca, n_sim = n_sim,
                               n_min = n_min, icovest = icovest, ci = ci,
                               ci_null = ci_null, ci_idx = ci_idx, ci_emp = ci_emp),
-               eigval_dat = meigval,
-               eigval_sim = msimeigval,
-               backvar = vsimbackvar,
-               ci_sim = asimcindex,
-               p_emp = mpval,
-               p_norm = mpvalnorm,
-               ci_dat = xmcindex,
+               eigval_dat = eigval_dat,
+               eigval_sim = eigval_sim,
+               backvar = backvar,
+               nd_type = nd_type,
+               ci_dat = ci_dat,
+               ci_sim = ci_sim,
+               p_emp = p_emp,
+               p_norm = p_norm,
                idx_hc = idx_hc,
                hc_dat = hc_dat))
 }
@@ -268,7 +276,7 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
     } else {
         if (rcpp) {
             hc_dat <- Rclusterpp.hclust(x, method=linkage, 
-                                          distance=metric, p=l)
+                                        distance=metric, p=l)
         } else {
             hc_dat <- hclust(dist(x, method=metric, p=l), method=linkage)
         }
