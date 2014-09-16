@@ -98,7 +98,7 @@ setGeneric("ci_sim", function(obj) standardGeneric("ci_sim"))
 setGeneric("ci_dat", function(obj) standardGeneric("ci_dat"))
 
 #' p_emp
-#' return \code{[p_emp} slot
+#' return \code{p_emp} slot
 #' @export
 #' @docType methods
 #' @param obj object with slot \code{p_emp}

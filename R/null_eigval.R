@@ -12,9 +12,13 @@
 #'        or raw data to estimate the background noise (default = TRUE)
 #' 
 #' @return
-#' The function returns a \code{hsigclust} object containing the 
-#' resulting p-values. The print method call will output a dendrogram
-#' with the corresponding p-values placed at each merge. 
+#' The function returns a list of estimated parameters for the null Gaussian
+#' distribution used in significance of clustering testing. The list includes:
+#' \itemize{
+#'     \item \code{eigval_dat}: eigenvalues for sample covariance matrix
+#'     \item \code{backvar}: background noise, \sigma_b^2
+#'     \item \code{eigval_sim}: eigenvalues to be used for simulation
+#' }
 #' 
 #' @details
 #' The following possible options are given for null covariance estimation
@@ -50,38 +54,38 @@ null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = TRUE) {
     } else {
         mad1 <- mad(as.matrix(x))
     }
-    simbackvar <- mad1^2
+    backvar <- mad1^2
     
     avgx <- t(t(x) - colMeans(x))
     dv <- svd(avgx)$d
-    veigval <- dv^2/(n-1)
-    vsimeigval <- veigval
+    eigval_dat <- dv^2/(n-1)
+    eigval_sim <- eigval_dat
     
     if (icovest == 1) { #use soft 
         taub <- 0
-        tauu <- .soft_covest(veigval, simbackvar)$tau
-        etau <- (tauu-taub)/100
+        tauu <- .soft_covest(eigval_dat, backvar)$tau
+        etau <- (tauu-taub) / 100
         ids <- rep(0, 100)
         for(i in 1:100){
             taus = taub + (i-1)*etau
-            eigval.temp <- veigval - taus
-            eigval.temp[eigval.temp<simbackvar] <- simbackvar
-            ids[i] <- eigval.temp[1]/sum(eigval.temp)
+            eigval_temp <- eigval_dat - taus
+            eigval_temp[eigval_temp < backvar] <- backvar
+            ids[i] <- eigval_temp[1] / sum(eigval_temp)
         }
         tau <- taub + (which.max(ids)-1)*etau
-        vsimeigval <- veigval - tau
-        vsimeigval[vsimeigval<simbackvar] <- simbackvar
+        eigval_sim <- eigval_dat - tau
+        eigval_sim[eigval_sim < backvar] <- backvar
 
     } else if (icovest == 2) { #use sample eigenvalues
-        vsimeigval[vsimeigval < 0] <- 0
+        eigval_sim[eigval_sim < 0] <- 0
         
     } else if (icovest == 3) { #use hard thresholding
-        vsimeigval[veigval<simbackvar] <- simbackvar
+        eigval_sim[eigval_dat < backvar] <- backvar
     }
 
-    list(veigval=veigval,
-         simbackvar=simbackvar,
-         vsimeigval=vsimeigval)
+    list(eigval_dat = eigval_dat,
+         backvar= backvar,
+         eigval_sim = eigval_sim)
 }
 
 
@@ -112,6 +116,7 @@ null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = TRUE) {
     vi <- c(1:icut)
     vcumtaucand <- sort(cumsum(sort(vtaucand[vi])), decreasing=TRUE)
     vpowershifted <- (vi-1)*vtaucand[vi] + vcumtaucand
+
     flag <- (vpowershifted < power2shift)
     if (sum(flag) == 0) {
         itau <- 0
@@ -119,6 +124,7 @@ null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = TRUE) {
         which <- which(flag > 0)
         itau <- which[1]
     }
+
     if (itau == 1) {
         powerprop <- power2shift/vpowershifted[1] #originally no [1] idx, PKK
         tau <- powerprop*vtaucand[1]
@@ -130,6 +136,7 @@ null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = TRUE) {
             (vpowershifted[itau-1]-vpowershifted[itau]) 
         tau <- vtaucand[itau] + powerprop*(vtaucand[itau-1] - vtaucand[itau]) 
     }
+
     veigvest <- vsampeigv - tau 
     flag <- (veigvest > sig2b) 
     veigvest <- flag*veigvest + (1-flag)*(sig2b*rep(1, p))
