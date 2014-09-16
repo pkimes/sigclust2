@@ -272,7 +272,7 @@
 #' @rdname plot-shc
 #' @aliases plot,shc,missing-method
 #' @author Patrick Kimes
-setMethod("plot", signature(x="hsc", y="missing"),
+setMethod("plot", signature(x="shc", y="missing"),
           function(x, y, ...) {
               .plot.shc(x, ...)
           })

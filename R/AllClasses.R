@@ -1,3 +1,6 @@
+## treat hclust class as formal clas
+setOldClass("hclust")
+
 #' significance for hierarchical clustering (shc) object
 #'
 #' S4 class encapsulating various elements of a SHC analysis.
@@ -29,13 +32,12 @@
 #' 
 #' @param obj \code{shc} object
 #'
+#' @import methods
 #' @exportClass shc
 #' @name shc-class
 #' @aliases shc-class
 #' @rdname shc-class
 #' @author Patrick Kimes
-
-setOldClass("shc")
 setClass("shc",
          slots=list(in_mat = "matrix",
                     in_args = "list",
