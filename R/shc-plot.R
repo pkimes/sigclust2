@@ -1,285 +1,271 @@
-## ###################################################################
-## ###################################################################
-## shc signature method
-
-.plot.shc <- function(shc, colGroups = NULL, textLabs = TRUE, 
-                      FWER = TRUE, alpha = 0.05, hang = -1,
-                      ipval = 1) {
-  
-  if (ipval > ncol(hsigclust@mpvalnorm)) {
-    ipval <- 1
-  }
-  
-  #handling of significance calls
-  # 1. if alphaStop was specified in original call
-  #    then dendrogram can only be plotted
-  #    with p-values satisfying FWER control procedure
-  # 2. else, if FWER is true
-  #    need to determine FWER cutoffs as in HSCtest()
-  # 3. else,
-  #    no FWER cutoff needed, just make sig_spots() determination
-  
-  if (hsigclust@inparams$alphaStop < 1) {#HSCtest() w/ FWER control
-    cat('HSigClust procedure was applied with FWER control.')
-    cat('Using original cutoff values.')
-    FWER <- TRUE
-    alpha <- hsigclust@inparams$alphaStop
-    ipval <- hsigclust@inparams$cutoffCI
-    FWERstop_spots <- (hsigclust@mpvalnorm[, ipval] == 47)
-    test_spots <- !FWERstop_spots
+.plot.shc <- function(shc, groups = NULL, use_labs = TRUE, 
+                      fwer = TRUE, alpha = 0.05, hang = -1,
+                      ci_idx = 1, ci_emp = TRUE) {
+    ##determine number of samples
+    n <- nrow(shc@p_emp) + 1
+        
+    ##colors to be used in figure
+    col_tx_sig <- "#A60A3C"
+    col_nd_null <- "gray"
+    ##col_nd_sig <- "#FF1E66"
+    ##col_nd_small <- "#53A60A"
+    ##col_nd_skip <- "#096272"
     
-    cutoff <- FWERcutoffs(hsigclust, alpha) #cutoff for "sig_spot" check
-    
-    
-  } else {#HSCtest() w/out FWER control
-    if (alpha < 0 || alpha > 1) { 
-      cat('alpha must be between (0,1). Using default value of 0.05.')
-      alpha <- 0.05
+    ##check validity of ci_idx
+    if (ci_idx > ncol(shc@p_emp)) {
+        ci_idx <- 1
+        cat("!!  invalid choice for ci_idx, using default of ci_idx = 1.  !!")
     }
-    n <- nrow(hsigclust@mpvalnorm)+1
     
+    ##check validity of alpha
+    if (alpha > 1 || alpha < 0) {
+        alpha <- 1
+        cat("!!  invalid choice for alpha, using default of alpha = 1.  !!")
+    }
+
+    ##if method originally implemented with fwer control
+    ## must use FWER and same ci_emp, ci_idx
+    if (shc@in_args$alpha < 1) {
+        if (!fwer) {
+            fwer <- TRUE
+            cat("!!  shc constructed using FWER control, using fwer = TRUE.  !!")
+        }
+        if (shc@in_args$ci_emp != ci_emp) {
+            ci_emp <- shc@in_args$ci_emp
+            cat(paste0("!!  shc constructed using FWER control, ",
+                       "using ci_emp from in_args(shc).  !!"))
+        }
+        if (shc@in_args$ci_idx != ci_idx) {
+            ci_idx <- shc@in_args$ci_idx
+            cat(paste0("!!  shc constructed using FWER control, ",
+                       "using ci_idx from in_args(shc).  !!"))
+        }
+    }
+
+    ##for easier calling
+    if (ci_emp) {
+        p_use <- p_emp[, ci_idx]
+    } else {
+        p_use <- p_norm[, ci_idx]
+    }
     
-    if (FWER) {
-      cutoff <- FWERcutoffs(hsigclust, alpha)
-      
-      allPDpairs <- rbind(cbind(hsigclust@hc$merge[,1], 1:(n-1)), 
-                          cbind(hsigclust@hc$merge[,2], 1:(n-1)))
-      PDmap <- data.frame(allPDpairs[allPDpairs[, 1]>0, ])
-      names(PDmap) <- c("daughter", "parent")
-      PDmap <- PDmap[order(PDmap$daughter), 2] #the parent of each daughter
-      PDmap <- c(PDmap, n) #add final node without a parent
-      
-      #1: collect all insignificant/not-tested branches
-      FWERstop_spots <- rep(FALSE, n)
-      test_spots <- rep(FALSE, n-1)
-      for (k in seq(n-1, by=-1)) {
-        FWERstop_spots[k] <- (hsigclust@mpvalnorm[k, ipval]>cutoff[k]) ||
-                              FWERstop_spots[PDmap[k]]
-      }
-      #2: break into insignificant and not-tested branches
-      for (k in seq(n-1, by=-1)) {
-        test_spots[k] <- !FWERstop_spots[PDmap[k]]
-      }
-      FWERstop_spots <- FWERstop_spots[-n] & !test_spots 
-      
-      
-    } else {#if no FWER anywhere
+    ##if specified alpha is less stringent than original analysis
+    if (fwer & alpha >= shc@in_args$alpha) {
+        if (alpha > shc@in_args$alpha) {
+            alpha <- shc@in_args$alpha
+            cat("!!  shc constructed using smaller alpha than specified to plot.  !!")
+            cat("!!  using alpha from in_args(shc).  !!")
+        }
+        cutoff <- fwer_cutoff(shc, alpha)
+        nd_type <- shc@nd_type
+        
+    } else if (fwer) {
+        cutoff <- fwer_cutoff(shc, alpha)
+        pd_map <- .pd_map(shc$hc_dat, n)
+
+        nd_type <- rep("", n)
+        nd_type[n] <- "sig"
+        for (k in seq(n-1, by=-1)) {
+            ##check if subtree is large enough
+            if (length(unlist(shc@idx_hc[k, ])) < shc@in_args$n_min) {
+                nd_type[k] <- "n_small"
+                next
+            }
+            ##check if parent was significant
+            if (nd_type[pd_map[k]] != "sig") {
+                nd_type[k] <- "no_test"
+                next
+            }
+            ##compare against p-value cutoff
+            if (alpha < 1) {
+                nd_type[k] <- ifelse(p_use[k] < cutoff[k], "sig", "not_sig")
+            }
+        }
+        nd_type <- nd_type[-n]
+        
+    } else {
+        ##if not using FWER control, use alpha as flat cutoff
         cutoff <- rep(alpha, n-1)
+        nd_type <- ifelse(p_use < alpha, "sig", "not_sig")
+        nd_type[shc@nd_type == "n_small"] <- "n_small"
+    }
+        
+
+    ##using ggdendro package
+    shc_dend <- as.dendrogram(shc@hc_dat, hang=hang)
+    shc_dendat <- ggdendro::dendro_data(shc_dend)
+    shc_segs <- ggdendro::segment(shc_dendat)
+    shc_labs <- ggdendro::label(shc_dendat)
+
+    ##change label hight to be correct
+    shc_labs$y <- .lab_height(shc_dendat)
+    
+    if (!is.null(groups) & length(groups) == n) {
+        shc_labs$clusters <- groups[shc@hc_dat$order]
     }
     
-  }
-  
-  
-  #colors to be used in figure
-  sigColor <- "#FF1E66"
-  sigtextColor <- "#A60A3C"
-  nullColor <- "gray"
-  nsmallColor <- "#53A60A"
-  skipColor <- "#096272"
-  
-  
-  #using ggdendro package
-  hcd <- as.dendrogram(hsigclust@hc, hang=hang)
-  hcdata <- ggdendro::dendro_data(hcd)
-  hc_segs <- ggdendro::segment(hcdata) #getters
-  hc_labs <- ggdendro::label(hcdata) #getters
-  #change label hight to be correct
-  hc_labs$y <- .getLabHeight(hcd)
-  
-  
-  #
-  if (!is.null(colGroups) && length(colGroups)==n) {
-    hc_labs$clusters <- colGroups[hsigclust@hc$order]
-  }
-  
-  
-  #determine significant branches/nodes
-  # -- have to determine which branches to color significant by 
-  #    their linkage values, not sure if there is a better way
-  # : sig_
-  sig_spots <- (hsigclust@mpvalnorm[, ipval] < cutoff)
-  sig_linkvals <- as.factor(hsigclust@hc$height[sig_spots])
-  sig_segs <- filter(hc_segs, as.factor(y) %in% sig_linkvals)
-  sig_segtops <- filter(sig_segs, (y == yend) & (x < xend))
-  sig_segtops <- sig_segtops[order(sig_segtops[, 2]), ]
-
-  
-  #determine tested branches to print p-values for
-  if (FWER) {#print all testing branches
-    test_linkvals <- as.factor(hsigclust@hc$height[test_spots])
-    test_segs <- filter(hc_segs, as.factor(y) %in% test_linkvals)
+    ##significant nodes
+    sig_linkvals <- as.factor(shc@hc_dat$height[nd_type == "sig"])
+    sig_segs <- filter(shc_segs, as.factor(y) %in% sig_linkvals)
+    sig_segtops <- filter(sig_segs, (y == yend) & (x < xend))
+    sig_segtops <- sig_segtops[order(sig_segtops[, 2]), ]
+    
+    ##tested nodes
+    test_linkvals <- as.factor(shc@hc_dat$height[grep("sig", nd_type)])
+    test_segs <- filter(shc_segs, as.factor(y) %in% test_linkvals)
     test_segtops <- filter(test_segs, (y == yend) & (x < xend))
-    test_segtops <- test_segtops[order(test_segtops[, 2]), ]    
+    test_segtops <- test_segtops[order(test_segtops[, 2]), ]
+    test_segtops <- cbind(test_segtops, 
+                          "pval"=format(p_use[grep("sig", nd_type)], 
+                                        digits=3, scientific=TRUE),
+                          "cutoff"=format(cutoff[grep("sig", nd_type)],
+                                          digits=3, scientific=TRUE))
     
-  } else {#then test_segs is same as sig_segs
-    test_spots <- sig_spots
-    test_segtops <- sig_segtops
-  }
-  test_segtops <- cbind(test_segtops, 
-                        "pval"=format(hsigclust@mpvalnorm[test_spots, ipval], 
-                                      digits=3, scientific=TRUE),
-                        "cutoff"=format(cutoff[test_spots]))
-  
-  
-  
-  
-  #determine branches/nodes w/ not enough samples (pval=2)
-  # : skip_
-  skip_spots <- (hsigclust@mpvalnorm[, ipval] == 2)
-  skip_linkvals <- as.factor(hsigclust@hc$height[skip_spots])
-  skip_segs <- filter(hc_segs, as.factor(y) %in% skip_linkvals)
-  
-  
-  #determine branches/nodes not tested (pval=47)
-  # : FWERstop_
-  if (FWER) {
-    FWERstop_linkvals <- as.factor(hsigclust@hc$height[FWERstop_spots])
-    FWERstop_segs <- filter(hc_segs, as.factor(y) %in% FWERstop_linkvals)
-  }
-  
-  
-  #calculate various plotting dimensions prior to actual ggplot call
-  axis_xref <- max(hsigclust@hc$height)
-  axis_xtop <- max(axis_xref)*1.25
-  axis_xbot <- -max(axis_xref)/4
-  axis_xscale <- floor(log10(axis_xtop))
-  y_range <- max(hc_segs$y) - min(hc_segs$y)  
-  
-  
-  #make initial ggplot object with dendrogram outline
-  # also coloring segments with not enough samples 
-  plot_dend <- ggplot() + 
-    geom_segment(data=hc_segs, 
-                 aes(x=x, y=y, xend=xend, yend=yend), 
-                 color=nullColor) +
-    theme_bw()
-  
-  
-  #add appropriate title
-  plot_dend <- plot_dend + 
-                ggtitle(paste("showing all p-values below", 
-                              alpha, "cutoff", 
-                              ifelse(FWER, "(FWER corrected)","")))
-  
-  
-  #add color group labels for objects if specified
-  if (!is.null(colGroups)) {
-    hc_labs$colory <- hc_labs$y - y_range/30
-    plot_dend <- plot_dend +
-      geom_tile(data=hc_labs,
-              aes(x=x, y=colory, fill=as.factor(clusters), vjust=0), 
-              alpha=1, height=y_range/30) +
-      scale_fill_discrete('Labels')
-  }
-  
-  
-  #add text labels for each object if desired
-  if (textLabs) {
-    hc_labs$texty <- hc_labs$y - (2-is.null(colGroups))*y_range/30
-    plot_dend <- plot_dend +
-          geom_text(data=hc_labs, 
-                    aes(x=x, y=texty, label=label, 
-                        hjust=1, vjust=.5, angle=90), 
-                    size=3)
-  }
-  
-  
-  #add colored segments to plot if any branches were significant
-  if (sum(sig_spots) > 0) {
-    plot_dend <- plot_dend +
-      geom_segment(data=sig_segs,
-                   aes(x=x, y=y, xend=xend, yend=yend, color="sig"), 
-                  size=1)
-  }
-
-  
-  #add p-values for segments if they were tested
-  if (sum(test_spots) > 0) {
-    plot_dend <- plot_dend +
-      geom_text(data=test_segtops, 
-                aes(x=x, y=y, label=pval, hjust=-0.2, vjust=-0.5),
-                col=sigtextColor, size=4)
-  }
-  
-  
-  #add FWER controlled segments if any branches were controlled
-  if (FWER) {
-    if (sum(FWERstop_spots) > 0) {
-      plot_dend <- plot_dend +
-        geom_segment(data=FWERstop_segs,
-                     aes(x=x, y=y, xend=xend, yend=yend, color="no_test"), 
-                     size=1)
+    ##small sample nodes
+    skip_linkvals <- as.factor(shc@hc_dat$height[nd_type == "n_small"])
+    skip_segs <- filter(shc_segs, as.factor(y) %in% skip_linkvals)
+    
+    ##un-tested nodes (non-significant parent node)
+    if (fwer) {
+        fwer_linkvals <- as.factor(shc@hc_dat$height[nd_type == "no_test"])
+        fwer_segs <- filter(shc_segs, as.factor(y) %in% fwer_linkvals)
     }
-  } else { #skip spots only exist if no FWER control is used
-    if (sum(skip_spots) > 0) {
-      plot_dend <- plot_dend +
-        geom_segment(data=skip_segs,
-                     aes(x=x, y=y, xend=xend, yend=yend, color="n_small"), 
-                    size=1)
+        
+    ##calculate various plotting dimensions prior to actual ggplot call
+    ax_x_ref <- max(shc@hc_dat$height)
+    ax_x_top <- max(ax_x_ref)*1.25
+    ax_x_bot <- -max(ax_x_ref)/4
+    ax_x_scale <- floor(log10(ax_x_top))
+    ax_y_range <- max(shc_segs$y) - min(shc_segs$y)  
+    
+    
+    ##make initial ggdendro with null color
+    plot_dend <- ggplot() + 
+        geom_segment(data=shc_segs, 
+                     aes(x=x, y=y, xend=xend, yend=yend), 
+                     color=col_nd_null) +
+        theme_bw()
+    
+    ##add appropriate title
+    plot_dend <- plot_dend + 
+        ggtitle(paste("showing all p-values below", 
+                      alpha, "cutoff", 
+                      ifelse(fwer, "(FWER corrected)", "")))
+    
+    ##add color group labels for objects if specified
+    if (!is.null(groups)) {
+        shc_labs$color_y <- shc_labs$y - ax_y_range/30
+        plot_dend <- plot_dend +
+            geom_tile(data=shc_labs,
+                      aes(x=x, y=color_y, fill=as.factor(clusters), vjust=0), 
+                      alpha=1, height=y_range/30) +
+            scale_fill_discrete('Labels')
     }
-  }
+    
+    ##add text labels for each object if desired
+    if (use_labs) {
+        shc_labs$txt_y <- shc_labs$y - (2-is.null(groups))*ax_y_range/30
+        plot_dend <- plot_dend +
+            geom_text(data=shc_labs, 
+                      aes(x=x, y=txt_y, label=label, 
+                          hjust=1, vjust=.5, angle=90), 
+                      size=3)
+    }
+    
+    ##add colored segments to plot if any branches were significant
+    if (sum(nd_type == "sig") > 0) {
+        plot_dend <- plot_dend +
+            geom_segment(data=sig_segs,
+                         aes(x=x, y=y, xend=xend, yend=yend, color="sig"), 
+                         size=1)
+    }
 
+    
+    ##add p-values for segments if they were tested
+    if (length(grep("sig", nd_type)) > 0) {
+        plot_dend <- plot_dend +
+            geom_text(data=test_segtops, 
+                      aes(x=x, y=y, label=pval, hjust=-0.2, vjust=-0.5),
+                      col=col_tx_sig, size=4)
+    }
+    
+    
+    ##add FWER controlled segments if any branches were controlled
+    if (fwer & sum(nd_type == "no_test") > 0) {
+        plot_dend <- plot_dend +
+            geom_segment(data=fwer_segs,
+                         aes(x=x, y=y, xend=xend, yend=yend, color="no_test"), 
+                         size=1)
+    }
 
-  plot_dend <- plot_dend +
-    scale_y_continuous(name="linkage", expand=c(.25, 0),
-                       breaks=seq(0, axis_xtop, by=10^axis_xscale)) +
-    scale_x_continuous(name="", expand=c(.1, 0),
-                       breaks=c(),
-                       labels=c())
-  
-  
-  #attach appropriate labels for colored branches along dendrogram
-  plot_dend + scale_color_manual(name='Branches',
-                                 values=c('sig'='#FF1E66',
-                                          'n_small'='#53A60A',
-                                          'no_test'='#096272'),
-                                 breaks=c('sig',
-                                          'n_small',
-                                          'no_test'),
-                                 labels=c('Significant',
-                                          'cluster too small',
-                                          'untested by FWER'),
-                                 drop=TRUE)
+    ##add colored segments if any branches had size < n_min
+    if (sum(nd_type == "n_small") > 0) {
+        plot_dend <- plot_dend +
+            geom_segment(data=skip_segs,
+                         aes(x=x, y=y, xend=xend, yend=yend, color="n_small"), 
+                         size=1)
+    }
+    
 
+    plot_dend <- plot_dend +
+        scale_y_continuous(name="linkage", expand=c(.25, 0),
+                           breaks=seq(0, ax_x_top, by=10^ax_x_scale)) +
+                               scale_x_continuous(name="", expand=c(.1, 0),
+                                                  breaks=c(),
+                                                  labels=c())
+    
+    
+    ##attach appropriate labels for colored branches along dendrogram
+    plot_dend + scale_color_manual(name='Nodes',
+                                   values=c('sig'='#FF1E66',
+                                            'n_small'='#53A60A',
+                                            'no_test'='#096272'),
+                                   breaks=c('sig',
+                                            'n_small',
+                                            'no_test'),
+                                   labels=c('Significant',
+                                            'cluster too small',
+                                             'untested by FWER'),
+                                   drop=TRUE)
 }
 
 
-
-## ###################################################################
-## ###################################################################
-## assign method to generic
 
 #' plot shc object
 #'
 #' Visualize the results of SHC analysis as an annotated 
 #' dendrogram with significant branches highlighted
 #' 
-#' @param x a hsigclust object to plot produced by a call to \code{HSCtest()}
+#' @param x a hsigclust object to plot produced by a call to \code{shc}
 #' @param groups a vector specifying group labels for the clustered objects.
 #'        The vector should be in the same order as the rows of the original 
 #'        data matrix. If specified, color blocks will be placed along the 
 #'        bottom of the dendrogram. Useful when the samples have a priori known
-#'        grouping behavior, default is \code{NULL}.
-#' @param labs a boolean specifyin whether rowlabels should be added as 
-#'        text along the bottom of the dendrogram, default is \code{TRUE}.
+#'        groupi behavior. (default = \code{NULL})
+#' @param use_labs a boolean specifyin whether rowlabels should be added as 
+#'        text along the bottom of the dendrogram (default = \code{TRUE})
 #' @param fwer a boolean specifying whether the FWER control procedure of 
 #'        Meinshausen et al. 2010 should be used, default is \code{TRUE}. 
-#'        NOTE: only has effect if \code{alphaStop} was not specified, or was
-#'        set to the default value of 1 when calling \code{HSCtest()}.
+#'        NOTE: only has effect if \code{alpha} was not specified, or was
+#'        set to the default value of 1 when calling \code{shc}.
 #' @param alpha a double between 0 and 1 specifying the significance cutoff. If 
-#'        FWER is TRUE, the FWER of the entire dendrogram is controlled at 
-#'        alpha, else, each branch is tested at \code{alpha}, default is 0.05.
-#'        NOTE: only has effect if \code{alphaStop} was not specified, or was
-#'        set to the default value of 1, when calling \code{HSCtest()}.
-#' @param p_idx a numeric value specifying which p-value to use from the 
-#'        calculated set of p-values, must be <= nCIs, default is 1. 
+#'        \code{fwer} is TRUE, the FWER of the entire dendrogram is controlled at 
+#'        \code{alpha}, else, each branch is tested at \code{alpha}. Only has
+#'        effect if \code{alpha(shc)} = 1. (default = 0.05)
+#' @param ci_idx a numeric value between 1 and \code{length(ci)} 
+#'        specifiying which CI to use for the FWER stopping rule.
+#'        This only has an effect if \code{alpha} < 1. (default = 1)
+#' @param ci_emp a logical value specifying whether to use the empirical
+#'        p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
+#'        As with \code{ci_idx} this only has an effect if \code{alpha} < 1.
+#'        (default = TRUE)
 #' @param hang a double value corresponding to the \code{hang} parameter for 
 #'        the typical call to \code{plot} for an object of class
-#'        \code{hsigclust}, default is -1.
+#'        \code{hsigclust} (default = -1)
 #' 
 #' @details This function makes use of dendrogram plotting functions made
-#'          available through the ggdendro package which provides a ggplot2-like
-#'          grammer for working with dendrograms.
+#'          available through the \pkg{ggdendro} package which provides a
+#'          \pkg{ggplot2}-like grammer for working with dendrograms.
 #' 
 #' @import ggplot2 ggdendro dplyr
 #' @export
@@ -288,26 +274,26 @@
 #' @author Patrick Kimes
 setMethod("plot", signature(x="hsc", y="missing"),
           function(x, y, ...) {
-            .plot.shc(x, ...)
+              .plot.shc(x, ...)
           })
 
 
 
-## ###################################################################
-## ###################################################################
-## helper function
+## #############################################################################
+## #############################################################################
+## helper functions
 
 ##pull label information for when hang > 0
 ## necessary since ggdendro package won't provide this output
-.getLabHeight <- function(tree, heights=c()) {
-  for (k in seq(length(tree))) {
-    if (is.leaf(tree[[k]])) {
-      heights <- c(heights, attr(tree[[k]], "height"))
-    } else {
-      heights <- .getLabHeight(tree[[k]], heights)
+.lab_height <- function(tree, heights = c()) {
+    for (k in seq(length(tree))) {
+        if (is.leaf(tree[[k]])) {
+            heights <- c(heights, attr(tree[[k]], "height"))
+        } else {
+            heights <- .lab_height(tree[[k]], heights)
+        }
     }
-  }
-  heights
+    heights
 }
 
 

@@ -1,101 +1,7 @@
-#' statistical Significance for Hierarchical Clustering (SHC) 
-#' algorithm
-#'
-#' \code{shc} implements the Monte Carlo simulation based
-#' significance testing procedure described in Kimes et al. (pre-print).
-#' Statistical significance is evaluated at each node along the tree
-#' starting from the root using a Gaussian null hypothesis test. 
-#' A corresponding family-wise error rate (FWER) controlling procedure is
-#' provided.
-#' 
-#' @param x a dataset with n rows and p columns, with observations in rows
-#' @param metric a string specifying the metric to be used in the hierarchical 
-#'        clustering procedure. This must be a metric accepted by \code{dist}, 
-#'        e.g. "euclidean," or "cor."
-#' @param linkage a string specifying the linkage to be used in the hierarchical 
-#'        clustering procedure. This must be a linkage accepted by 
-#'        \code{hclust}, e.g. "ward."
-#' @param l an integer value specifying the power of the Minkowski distance, if 
-#'        used, default is 2.
-#' @param alpha a value between 0 and 1 specifying the desired level of the 
-#'        test. If no FWER control is desired, simply set alpha to 1. The 
-#'        default is 1. The testing procedure will terminate when no branches
-#'        meet the corresponding FWER control threshold. This procedure may 
-#'        substantially speed up the procedure by reducing the number of tests 
-#'        considered. NOTE: if p-values are desired for all branches, the FWER
-#'        cutoffs may be provided a posteriori by a call to \code{FWERcutoffs()}.
-#'        Additionally, they may be specified at \code{plot()} using the 
-#'        \code{alpha} and \code{FWER} parameters.
-#' @param n_sim a numeric value specifying the number of simulations for SigClust 
-#'        testing. The default is to run 100 simulations at each merge. 
-#' @param n_min an integer specifying the minimum number of observations needed
-#'        to calculate a p-value. Default is 10.
-#' @param icovest a numeric value specifying the covariance estimation method: 
-#'        1. Use a soft threshold method as constrained MLE (default); 
-#'        2. Use sample covariance estimate (recommended when diagnostics fail); 
-#'        3. Use original background noise thresholded estimate (from Liu et 
-#'        al., (2008)) ("hard thresholding") as described in the \code{sigclust}
-#'        package documentation.
-#' @param bkgd_pca a logical value whether to use principal component scores when
-#'        estimating background noise under the null. Default is TRUE.
-#' @param rcpp a logical value whether to use the \code{Rclusterpp} package.
-#'        Default is TRUE.
-#' @param threads a integer value specifying the number of threads to allocate 
-#'        for the Rclusterpp process. Default is 1.
-#' @param verb a logical value specifying whether the method should print out 
-#'        when testing completes along each node along the dendrogram.
-#'        Default is FALSE.
-#' @param ci a string vector specifying the cluster indices to be used for 
-#'        testing along the dendrogram. Currently, options include: "2CI", 
-#'        "linkage". Default is "2CI". 
-#' @param ci_null a string vector specifying the clustering approach that 
-#'        should be used at each node as the comparison. Currently, options
-#'        include: "2means", "hclust". Note, testNulls and testCIs must be of
-#'        equal length. Default is "hclust".
-#' @param ci_idx a single value between 1 and \code{length(testCIs)} 
-#'        specifiying which CI to use for the FWER stopping rule.
-#'        This only has an effect if \code{alpha} is specified to a non-default 
-#'        value. Default is 1.
-#' @param ci_emp a logical value specifying whether to use the empirical
-#'        p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
-#'        As with \code{ci_idx} this only has an effect if \code{alpha} is
-#'        specified to a non-default value. (default = TRUE)
-#' 
-#' @return The function returns a \code{shc} object containing the 
-#'         resulting p-values. The print method call will output a dendrogram
-#'         with the corresponding p-values placed at each merge. 
-#' 
-#' @details The function expands on the \code{sigclust} idea to the hierarchical 
-#'          setting by modifying the clustering procedure employed to compute 
-#'          the null distribution of cluster indices.
-#' The code is written so that various cluster indices can be 
-#' easily introduced by writting new CI function and adding to 
-#' .initcluster(), .simcluster(). When possible, this function 
-#' makes use of a C++ implementation of hierarchical clustering 
-#' available through the \code{Rclusterpp.hclust} package for the 
-#' case of clustering by Pearson correlation (\code{dist="cor"}), 
-#' we make use of \code{WGCNA::cor} with the usual 
-#' code{stats::hclust}.
-#'  
-#' @examples
-#' hsc_cars <- shc(mtcars, metric="euclidean", linkage="single")
-#' tail(p_norm(hsc_cars), 10)
-#'
-#' @references
-#' Kimes, P. K., Hayes, D. N., Liu Y., and Marron, J. S. (2014)
-#' Statistical Significance for Hierarchical Clustering.
-#' pre-print.
-#' 
-#' @seealso \code{\link{plot-shc}} \code{\link{diagnostic}}
-#' @import Rclusterpp WGCNA
-#' @export shc
-#' @author Patrick Kimes
-
-
-shc <- function(x, metric, linkage, l = 2, alpha = 1,
-                icovest = 1, bkgd_pca = TRUE,
-                n_sim = 100, n_min = 10, rcpp = TRUE,
-                ci = "2CI", ci_null = "hclust", ci_idx = 1, ci_emp = TRUE) {  
+.shc.base <- function(x, metric, linkage, l = 2, alpha = 1,
+                      icovest = 1, bkgd_pca = TRUE,
+                      n_sim = 100, n_min = 10, rcpp = TRUE,
+                      ci = "2CI", ci_null = "hclust", ci_idx = 1, ci_emp = TRUE) {  
 
     ##take min length of ci and ci_null
     n_ci <- length(ci)
@@ -152,45 +58,35 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
     backvar <- rep(-1, n-1)
     ci_sim <- array(-1, dim=c(n-1, n_sim, n_ci))
     
-    ##determine parent branch node for all children nodes along dendrogram
-    pd_pairs <- rbind(cbind(hc_dat$merge[, 1], 1:(n-1)), 
-                      cbind(hc_dat$merge[, 2], 1:(n-1)))
-    pd_map <- data.frame(pd_pairs[pd_pairs[, 1]>0, ])
-    names(pd_map) <- c("dtr", "prt")
-    pd_map <- pd_map[order(pd_map$dtr), 2] #the parent of each daughter
-    pd_map <- c(pd_map, n) #add final node without a parent
+    ##determine parent nodes for all nodes
+    pd_map <- .pd_map(hc_dat, n)
     
     ##compute Meinshausen cutoffs for significance at alpha
-    c_size <- apply(idx_hc, 1, function(x) { length(unlist(x)) })
-    cutoff <- alpha * c_size/n
+    cutoff <- fwer_control(idx_hc, alpha)
 
-    ##keep track of which nodes were significant
-    v_sig <- rep(TRUE, n)
-
-    ##keep track of whether each node was tested
-    nd_type <- rep("n_small", n-1)
+    ##keep track of each node was tested
+    nd_type <- rep("", n)
+    nd_type[n] <- "sig"
     
     ##move through nodes of dendrogram in reverse order
     for (k in (n-1):1) { 
-
-        ##if parent wasn't significant, skip
-        if ( !v_sig[pd_map[k]] ) {
-            v_sig[k] <- FALSE
-            nd_type[k] <- "no_test"
-            next 
-        }
 
         ##indices for subtree
         idx_sub <- unlist(idx_hc[k, ])
         n_sub <- length(idx_sub)
         
         ##only calc p-values for branches w/ more than n_min
-        if (n_sub >= n_min) {
+        if (n_sub < n_min) {
+            nd_type[k] <- "n_small"
             next
         }
 
-        ##node is tested
-        nd_type[k] <- "tested"
+        ##if parent wasn't significant, skip
+        ## - placed after n_min check on purpose
+        if (nd_type[pd_map[k]] != "sig") {
+            nd_type[k] <- "no_test"
+            next 
+        }
 
         ##estimate null Gaussian
         x_knull <- null_eigval(x[idx_sub, ], n_sub, p, icovest, bkgd_pca)
@@ -212,21 +108,25 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
                                           ncol=n_ci, byrow=TRUE))
 
         ##flip p-values for linkage based testing
-        p_norm[k, ci=="linkage"] <- 1-p_norm[k, ci=="linkage"]
         p_norm[k, ci == "linkage"] <- 1-p_norm[k, ci == "linkage"]
+        p_emp[k, ci == "linkage"] <- 1-p_emp[k, ci == "linkage"]
 
-        ##keep 
+        ##keep everything
         eigval_dat[k, ] <- x_knull$eigval_dat
         eigval_sim[k, ] <- x_knull$eigval_sim
         backvar[k] <- x_knull$backvar
         
-        ##update v_sig based on significance threshold
+        ##update nd_type
         if (alpha < 1) {
             if (ci_emp) {
-                v_sig[k] <- (p_emp[k, ci_idx] < cutoff[k])
+                nd_type[k] <- ifelse(p_emp[k, ci_idx] < cutoff[k],
+                                     "sig", "not_sig")
             } else {
-                v_sig[k] <- (p_norm[k, ci_idx] < cutoff[k])
+                nd_type[k] <- ifelse(p_norm[k, ci_idx] < cutoff[k],
+                                     "sig", "not_sig")
             }
+        } else {
+            nd_type[k] <- "sig"
         }
         
     }
@@ -240,7 +140,7 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
                eigval_dat = eigval_dat,
                eigval_sim = eigval_sim,
                backvar = backvar,
-               nd_type = nd_type,
+               nd_type = nd_type[-n],
                ci_dat = ci_dat,
                ci_sim = ci_sim,
                p_emp = p_emp,
@@ -250,9 +150,142 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
 }
 
 
+#' statistical Significance for Hierarchical Clustering (SHC) 
+#' algorithm
+#'
+#' implements the Monte Carlo simulation based
+#' significance testing procedure described in Kimes et al. (pre-print).
+#' Statistical significance is evaluated at each node along the tree
+#' starting from the root using a Gaussian null hypothesis test. 
+#' A corresponding family-wise error rate (FWER) controlling procedure is
+#' provided.
+#' 
+#' @param x a dataset with n rows and p columns, with observations in rows
+#' @param metric a string specifying the metric to be used in the hierarchical 
+#'        clustering procedure. This must be a metric accepted by \code{dist}, 
+#'        e.g. "euclidean," or "cor."
+#' @param linkage a string specifying the linkage to be used in the hierarchical 
+#'        clustering procedure. This must be a linkage accepted by 
+#'        \code{hclust}, e.g. "ward."
+#' @param l an integer value specifying the power of the Minkowski distance, if 
+#'        used (default = 2)
+#' @param alpha a value between 0 and 1 specifying the desired level of the 
+#'        test. If no FWER control is desired, simply set alpha to 1 (default = 1)
+#' @param n_sim a numeric value specifying the number of simulations for Monte Carlo 
+#'        testing (default = 100) 
+#' @param n_min an integer specifying the minimum number of observations needed
+#'        to calculate a p-value (default = 10)
+#' @param icovest a numeric value between 1 and 3 specifying the null covariance
+#'        estimation method to be used. See \code{\link{null_eigval}} for more
+#'        details (default = 1)
+#' @param bkgd_pca a logical value whether to use principal component scores when
+#'        estimating background noise under the null (default = TRUE)
+#' @param rcpp a logical value whether to use the \code{Rclusterpp} package
+#'        (default = TRUE)
+#' @param verb a logical value specifying whether the method should print out 
+#'        when testing completes along each node along the dendrogram
+#'        (default = FALSE)
+#' @param ci a string vector specifying the cluster indices to be used for 
+#'        testing along the dendrogram. Currently, options include: "2CI", 
+#'        "linkage". (default = "2CI")
+#' @param ci_null a string vector specifying the clustering approach that 
+#'        should be used at each node as the comparison. Currently, options
+#'        include: "2means", "hclust". Note, \code{ci_null} and \code{ci} must be of
+#'        equal length. (default = "hclust")
+#' @param ci_idx a numeric value between 1 and \code{length(ci)} 
+#'        specifiying which CI to use for the FWER stopping rule.
+#'        This only has an effect if \code{alpha} is specified to a non-default 
+#'        value. (default = 1)
+#' @param ci_emp a logical value specifying whether to use the empirical
+#'        p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
+#'        As with \code{ci_idx} this only has an effect if \code{alpha} is
+#'        specified to a non-default value. (default = TRUE)
+#' 
+#' @return The function returns a \code{shc} object containing the 
+#'         resulting p-values. The print method call will output a dendrogram
+#'         with the corresponding p-values placed at each merge. 
+#' 
+#' @details The function expands on the \code{sigclust} idea to the hierarchical 
+#'          setting by modifying the clustering procedure employed to compute 
+#'          the null distribution of cluster indices.
+#' 
+#' The code is written so that various cluster indices can be 
+#' easily introduced by writting new CI function and adding to 
+#' .initcluster(), .simcluster(). When possible, this function 
+#' makes use of a C++ implementation of hierarchical clustering 
+#' available through the \code{Rclusterpp.hclust} package for the 
+#' case of clustering by Pearson correlation (\code{dist="cor"}), 
+#' we make use of \code{WGCNA::cor} with the usual 
+#' code{stats::hclust}.
+#' 
+#'        The testing procedure will terminate when no branches
+#'        meet the corresponding FWER control threshold. This procedure may 
+#'        substantially speed up the procedure by reducing the number of tests 
+#'        considered. NOTE: if p-values are desired for all branches, the FWER
+#'        cutoffs may be provided a posteriori by a call to \code{FWERcutoffs()}.
+#'        Additionally, they may be specified at \code{plot()} using the 
+#'        \code{alpha} and \code{FWER} parameters.
+#' 
+#' @examples
+#' hsc_cars <- shc(mtcars, metric="euclidean", linkage="single")
+#' tail(p_norm(hsc_cars), 10)
+#'
+#' @references
+#' Kimes, P. K., Hayes, D. N., Liu Y., and Marron, J. S. (2014)
+#' Statistical Significance for Hierarchical Clustering.
+#' pre-print.
+#' 
+#' @seealso \code{\link{plot-shc}} \code{\link{diagnostic}}
+#' @import Rclusterpp WGCNA
+#' @export shc
+#' @author Patrick Kimes
+setMethod("shc",
+          signature(x = "matrix"),
+          .shc.base)
 
-##calculate 2-means cluster index (nxp matrices)
+
+
+## #############################################################################
+## #############################################################################
+## helper functions
+
+##identify parent node of each node in dendrogram
+.pd_map <- function(hc, n) {
+    ##determine parent branch node for all children nodes along dendrogram
+    pd_pairs <- rbind(cbind(hc$merge[, 1], 1:(n-1)), 
+                      cbind(hc$merge[, 2], 1:(n-1)))
+    pd_map <- data.frame(pd_pairs[pd_pairs[, 1]>0, ])
+    names(pd_map) <- c("dtr", "prt")
+    pd_map <- pd_map[order(pd_map$dtr), 2] #the parent of each daughter
+    pd_map <- c(pd_map, n) #add final node without a parent
+
+    pd_map
+}
+
+
+##determine obs indices at each node of the denrogram
+.idx_hc <- function(hc, n) {
+    ##list array of cluster indices at each of the n-1 merges
+    idx_hc <- array(list(), c(2*n-1, 2))
+    idx_hc[1:n, 1] <- as.list(n:1)
+    idx_hc[(n+1):(2*n-1), ] <- hc$merge + n + (hc$merge<0)
+    
+    ##complete idx_hc
+    for (k in 1:(n-1)) {
+        idx_hc[[n+k, 1]] <- unlist(idx_hc[idx_hc[[n+k, 1]], ])
+        idx_hc[[n+k, 2]] <- unlist(idx_hc[idx_hc[[n+k, 2]], ])
+    }
+    idx_hc <- idx_hc[-(1:n), ]
+
+    idx_hc
+}
+
+
+##calculate sum of squares
 .sumsq <- function(x) { norm(sweep(x, 2, colMeans(x), "-"), "F")^2 }
+
+
+##calculate 2-means cluster index (n x p matrices)
 .calc2CI <- function(x1, x2) {
     if (is.matrix(x1) && is.matrix(x2) && ncol(x1) == ncol(x2)) {
         (.sumsq(x1) + .sumsq(x2)) / .sumsq(rbind(x1, x2))
@@ -261,7 +294,6 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
                     "for 2CI calculation"))
     }      
 }
-
     
 
 ##perform hierarchical clustering on the original data and 
@@ -284,36 +316,26 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
 
     ##matrix containing cluster indices
     ci_dat <- matrix(-1, nrow=n-1, ncol=n_ci)
-    
-    ##list array of cluster indices at each of the n-1 merges
-    idx_hc <- array(list(), c(2*n-1, 2))
-    idx_hc[1:n, 1] <- as.list(n:1)
-    idx_hc[(n+1):(2*n-1), ] <- hc_dat$merge + n + (hc_dat$merge<0)
-    
-    ##complete idx_hc
-    for (k in 1:(n-1)) {
-        idx_hc[[n+k, 1]] <- unlist(idx_hc[idx_hc[[n+k, 1]], ])
-        idx_hc[[n+k, 2]] <- unlist(idx_hc[idx_hc[[n+k, 2]], ])
-    }
+
+    ##list array of cluster indices at each of the n-1 nodes
+    idx_hc <- .idx_hc(hc_dat, n)
     
     ##calculate cluster index(ices) for merge k
     for (i_ci in 1:n_ci) {
         if (ci[i_ci] == "2CI") {
             for (k in 1:(n-1)) {
-                ci_dat[k, i_ci] <- .calc2CI(x[idx_hc[[n+k, 1]], , drop=FALSE],
-                                            x[idx_hc[[n+k, 2]], , drop=FALSE])
+                ci_dat[k, i_ci] <- .calc2CI(x[idx_hc[[k, 1]], , drop=FALSE],
+                                            x[idx_hc[[k, 2]], , drop=FALSE])
             }
         } else if (ci[i_ci] == "linkage") {
             ci_dat[, i_ci] <- hc_dat$height
         }
     }
-    idx_hc <- idx_hc[-(1:n), ]
     
     list(hc_dat = hc_dat, 
          idx_hc = idx_hc,
          ci_dat = ci_dat)
 }
-
 
 
 ##given null eigenvalues, simulate Gaussian datasets and compute
@@ -329,12 +351,11 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
 }
 
 
-
 ##perform hierarchical clustering on a simulated dataset and
 ## compute the correspond cluster indices for only the final merge
 .simcluster <- function(sim_x, p, metric, linkage, l, 
                         n_ci, ci, ci_null, rcpp) { 
-    ##need to implement clustering algorithm
+
     if (metric == "cor") {
         dmat <- 1 - WGCNA::cor(t(sim_x))
         hc_isim <- hclust(as.dist(dmat), method=linkage)

@@ -137,6 +137,6 @@ clustering for high-dimension, low–sample size data."
 _Journal of the American Statistical Association_, 103(483).
 * Huang H, Liu Y, Yuan M, and Marron JS. (2014). "Statistical significance of 
 clustering using soft thresholding." _Journal of Computational and Graphical Statistics_, pre-print.
-* Kimes P, Hayes DN, Liu Y, and Marron JS. "Statistical significance 
+* Kimes PK, Hayes DN, Liu Y, and Marron JS. "Statistical significance 
 for hierarchical clustering." _submitting soon!_
 

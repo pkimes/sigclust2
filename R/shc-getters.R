@@ -51,10 +51,13 @@ setMethod("hc_dat", "shc", function(obj) return(obj@hc_dat))
 #' @describeIn shc return FWER cutoffs based on \code{idx_hc} slot
 #' @aliases fwer_cutoff,shc,numeric-method
 setMethod("fwer_cutoff", signature(obj="shc", alpha="numeric"),
-          function(obj, alpha) {
-              alpha * 
-                  apply(obj@idx_hc, 1, 
-                        function(x) { length(unlist(x)) }) / 
-                            (nrow(obj@idx_hc)+1)
-          })
+          function(obj, alpha) { fwer_cutoff(obj@idx_hc, alpha) })
 
+#' compute cutoffs based on hierachical clustering output from idx_hc
+#' @keywords internal
+#' @aliases fwer_cutoff,list,numeric-method
+setMethod("fwer_cutoff", signature(obj="list", alpha="numeric"),
+          function(obj, alpha) {
+              alpha/(nrow(obj)+1) *
+                  apply(obj, 1, function(x) { length(unlist(x)) })
+          })
