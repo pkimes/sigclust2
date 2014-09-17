@@ -21,9 +21,9 @@ setOldClass("hclust")
 #'       data matrix passed to the constructor
 #' @slot ci_sim a 3-dimensional array containing the simulated cluster
 #'       indices at each subtree tested along the dendrogram
-#' @slot pval_emp a matrix containing the emprical p-values computed at each
+#' @slot p_emp a matrix containing the emprical p-values computed at each
 #'       subtree tested along the dendrogram
-#' @slot pval_norm a matrix containing the Gaussian approximate p-values
+#' @slot p_norm a matrix containing the Gaussian approximate p-values
 #'       computed at each subtree tested along the dendrogram
 #' @slot idx_hc a list of tuples containing the indices of clusters joined
 #'       at each step of the hierarchical clustering procedure
