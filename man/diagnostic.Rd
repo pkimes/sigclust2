@@ -2,12 +2,33 @@
 \docType{methods}
 \name{diagnostic}
 \alias{diagnostic}
+\alias{diagnostic,shc-method}
 \title{null assumption diagnostic plots}
 \usage{
 diagnostic(obj, ...)
+
+\S4method{diagnostic}{shc}(obj, K = 1, fname = "shc_diagnostic")
+}
+\arguments{
+\item{obj}{a \code{shc} object}
+
+\item{K}{an integer value specifying the number of nodes (starting from the
+root) for which to create diagnostic plots (default = 1)}
+
+\item{fname}{a character string specifying the name of the output file,
+       (default = "shc_diagnostic")}
+}
+\value{
+prints plots to \code{fname}.
 }
 \description{
 Method for generating diagnostic plots for statistical significance
 of clustering analysis
+
+Provides visualizations to check the null Gaussian assumption at a specified
+range of nodes along the dendrogram
+}
+\author{
+Patrick Kimes
 }
 

@@ -62,7 +62,7 @@
     pd_map <- .pd_map(hc_dat, n)
     
     ##compute Meinshausen cutoffs for significance at alpha
-    cutoff <- fwer_control(idx_hc, alpha)
+    cutoff <- fwer_cutoff(idx_hc, alpha)
 
     ##keep track of each node was tested
     nd_type <- rep("", n)
@@ -227,7 +227,7 @@
 #'        \code{alpha} and \code{FWER} parameters.
 #' 
 #' @examples
-#' hsc_cars <- shc(mtcars, metric="euclidean", linkage="single")
+#' hsc_cars <- shc(as.matrix(mtcars), metric="euclidean", linkage="single")
 #' tail(p_norm(hsc_cars), 10)
 #'
 #' @references
@@ -237,7 +237,7 @@
 #' 
 #' @seealso \code{\link{plot-shc}} \code{\link{diagnostic}}
 #' @import Rclusterpp WGCNA
-#' @export shc
+#' @rdname shc-constructor
 #' @author Patrick Kimes
 setMethod("shc",
           signature(x = "matrix"),

@@ -24,7 +24,7 @@ The function returns a list of estimated parameters for the null Gaussian
 distribution used in significance of clustering testing. The list includes:
 \itemize{
     \item \code{eigval_dat}: eigenvalues for sample covariance matrix
-    \item \code{backvar}: background noise, \sigma_b^2
+    \item \code{backvar}: background noise, sigma_b^2
     \item \code{eigval_sim}: eigenvalues to be used for simulation
 }
 }
@@ -46,11 +46,7 @@ The following possible options are given for null covariance estimation
 Patrick Kimes
 }
 \references{
-Huang, H., Liu, Y., Yuan, M., and Marron, J. S. (2014).
- Statistical Significance of Clustering using Soft Thresholding.
- Journal of Computational and Graphical Statistics, preprint. \n
-Liu, Y., Hayes, D. N., Nobel, A. B., and Marron, J. S. (2008).
- Statistical Significance of Clustering for High-Dimension, Low-Sample Size Data.
- Journal of the American Statistical Association, 103(483):1281–1293.
+Huang, H., Liu, Y., Yuan, M., and Marron, J. S. (2014). Statistical Significance of Clustering using Soft Thresholding. Journal of Computational and Graphical Statistics, preprint.
+Liu, Y., Hayes, D. N., Nobel, A. B., and Marron, J. S. (2008). Statistical Significance of Clustering for High-Dimension, Low-Sample Size Data. Journal of the American Statistical Association, 103(483):1281–1293.
 }
 

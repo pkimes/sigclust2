@@ -3,6 +3,11 @@
     print("function not yet implemented. sorry.")
 }
 
+#' plot diagnostics for shc object
+#'
+#' Provides visualizations to check the null Gaussian assumption at a specified
+#' range of nodes along the dendrogram
+#' 
 #' @param obj a \code{shc} object
 #' @param K an integer value specifying the number of nodes (starting from the
 #'        root) for which to create diagnostic plots (default = 1)
@@ -13,6 +18,7 @@
 #' prints plots to \code{fname}.
 #' 
 #' @aliases diagnostic,shc-method
+#' @rdname diagnostic
 #' @author Patrick Kimes
 setMethod("diagnostic",
           signature(obj="shc"),

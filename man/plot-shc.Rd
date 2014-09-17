@@ -10,7 +10,7 @@ plot(x, y, ...)
 \S4method{plot}{shc,missing}(x, y, ...)
 }
 \arguments{
-\item{x}{a hsigclust object to plot produced by a call to \code{shc}}
+\item{x}{a \code{shc} object to plot produced by a call to \code{shc}}
 
 \item{groups}{a vector specifying group labels for the clustered objects.
 The vector should be in the same order as the rows of the original
@@ -44,14 +44,18 @@ As with \code{ci_idx} this only has an effect if \code{alpha} < 1.
        the typical call to \code{plot} for an object of class
        \code{hsigclust} (default = -1)}
 }
+\value{
+\code{ggplot} object containing a dendrogram annotated by the results of the
+corresponding \code{shc} analysis
+}
 \description{
 Visualize the results of SHC analysis as an annotated
 dendrogram with significant branches highlighted
 }
 \details{
 This function makes use of dendrogram plotting functions made
-         available through the \pkg{ggdendro} package which provides a
-         \pkg{ggplot2}-like grammer for working with dendrograms.
+available through the \pkg{ggdendro} package which provides a
+\pkg{ggplot2}-like grammer for working with dendrograms.
 }
 \author{
 Patrick Kimes

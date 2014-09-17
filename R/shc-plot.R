@@ -236,7 +236,7 @@
 #' Visualize the results of SHC analysis as an annotated 
 #' dendrogram with significant branches highlighted
 #' 
-#' @param x a hsigclust object to plot produced by a call to \code{shc}
+#' @param x a \code{shc} object to plot produced by a call to \code{shc}
 #' @param groups a vector specifying group labels for the clustered objects.
 #'        The vector should be in the same order as the rows of the original 
 #'        data matrix. If specified, color blocks will be placed along the 
@@ -262,10 +262,15 @@
 #' @param hang a double value corresponding to the \code{hang} parameter for 
 #'        the typical call to \code{plot} for an object of class
 #'        \code{hsigclust} (default = -1)
+#'
+#' @return
+#' \code{ggplot} object containing a dendrogram annotated by the results of the
+#' corresponding \code{shc} analysis
 #' 
-#' @details This function makes use of dendrogram plotting functions made
-#'          available through the \pkg{ggdendro} package which provides a
-#'          \pkg{ggplot2}-like grammer for working with dendrograms.
+#' @details
+#' This function makes use of dendrogram plotting functions made
+#' available through the \pkg{ggdendro} package which provides a
+#' \pkg{ggplot2}-like grammer for working with dendrograms.
 #' 
 #' @import ggplot2 ggdendro dplyr
 #' @export

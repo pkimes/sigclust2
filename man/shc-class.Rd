@@ -16,7 +16,6 @@
 \alias{p_norm,shc-method}
 \alias{shc-class}
 \alias{show,shc-method}
-\alias{summary,shc-method}
 \title{significance for hierarchical clustering (shc) object}
 \usage{
 \S4method{in_mat}{shc}(obj)
@@ -46,8 +45,6 @@
 \S4method{fwer_cutoff}{shc,numeric}(obj, alpha)
 
 \S4method{show}{shc}(object)
-
-\S4method{summary}{shc}(object, ...)
 }
 \arguments{
 \item{obj}{\code{shc} object}
@@ -84,8 +81,6 @@ S4 class encapsulating various elements of a SHC analysis.
 \item \code{fwer_cutoff}: return FWER cutoffs based on \code{idx_hc} slot
 
 \item \code{show}: show brief summary of \code{shc} object
-
-\item \code{summary}: show brief summary of shc object
 }}
 \section{Slots}{
 

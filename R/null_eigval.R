@@ -16,7 +16,7 @@
 #' distribution used in significance of clustering testing. The list includes:
 #' \itemize{
 #'     \item \code{eigval_dat}: eigenvalues for sample covariance matrix
-#'     \item \code{backvar}: background noise, \sigma_b^2
+#'     \item \code{backvar}: background noise, sigma_b^2
 #'     \item \code{eigval_sim}: eigenvalues to be used for simulation
 #' }
 #' 
@@ -32,12 +32,8 @@
 #' }
 #' 
 #' @references
-#' Huang, H., Liu, Y., Yuan, M., and Marron, J. S. (2014).
-#'  Statistical Significance of Clustering using Soft Thresholding.
-#'  Journal of Computational and Graphical Statistics, preprint. \n
-#' Liu, Y., Hayes, D. N., Nobel, A. B., and Marron, J. S. (2008).
-#'  Statistical Significance of Clustering for High-Dimension, Low-Sample Size Data.
-#'  Journal of the American Statistical Association, 103(483):1281–1293.
+#' Huang, H., Liu, Y., Yuan, M., and Marron, J. S. (2014). Statistical Significance of Clustering using Soft Thresholding. Journal of Computational and Graphical Statistics, preprint.
+#' Liu, Y., Hayes, D. N., Nobel, A. B., and Marron, J. S. (2008). Statistical Significance of Clustering for High-Dimension, Low-Sample Size Data. Journal of the American Statistical Association, 103(483):1281–1293.
 #' 
 #' @export null_eigval
 #' @name null_eigval
@@ -59,6 +55,8 @@ null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = TRUE) {
     avgx <- t(t(x) - colMeans(x))
     dv <- svd(avgx)$d
     eigval_dat <- dv^2/(n-1)
+    ##pad with 0s
+    eigval_dat <- c(eigval_dat, rep(0, p-length(eigval_dat)))
     eigval_sim <- eigval_dat
     
     if (icovest == 1) { #use soft 
@@ -66,7 +64,7 @@ null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = TRUE) {
         tauu <- .soft_covest(eigval_dat, backvar)$tau
         etau <- (tauu-taub) / 100
         ids <- rep(0, 100)
-        for(i in 1:100){
+        for (i in 1:100) {
             taus = taub + (i-1)*etau
             eigval_temp <- eigval_dat - taus
             eigval_temp[eigval_temp < backvar] <- backvar

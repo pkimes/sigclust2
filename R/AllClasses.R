@@ -32,7 +32,6 @@ setOldClass("hclust")
 #' 
 #' @param obj \code{shc} object
 #'
-#' @import methods
 #' @exportClass shc
 #' @name shc-class
 #' @aliases shc-class

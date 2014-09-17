@@ -1,10 +1,19 @@
-#' @describeIn shc show brief summary of shc object
-#' @aliases summary,shc-method
-
+#' provide summary of shc object
+#'
+#' Provides information about \code{shc} object similar to call to \code{show}
+#'
+#' @param object a \code{shc} object
+#'
+#' @export
+#' @rdname summary-shc
+#' @aliases summary summary,shc-method
+#' @author Patrick Kimes
 setMethod("summary", signature(object="shc"),
           function(object, ...) {
             .summary.shc(object, ...)
           })
+
+
 
 .summary.shc <- function(shc, ...) {
   show(shc)
