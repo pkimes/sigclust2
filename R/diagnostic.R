@@ -1,7 +1,14 @@
-##shc signature method
-.diagnostic.shc <- function(obj, K = 1, fname = "shc_diagnostic") {
-    print("function not yet implemented. sorry.")
+#' null assumption diagnostic plots
+#'
+#' @name diagnostic-generic
+#' @docType methods
+#' @export
+#' @keywords internal
+diagnostic <- function(obj, ...) {
+    UseMethod("diagnostic", obj)
 }
+
+
 
 #' plot diagnostics for shc object
 #'
@@ -12,30 +19,45 @@
 #' @param K an integer value specifying the number of nodes (starting from the
 #'        root) for which to create diagnostic plots (default = 1)
 #' @param fname a character string specifying the name of the output file,
-#'        (default = "shc_diagnostic") 
+#'        (default = "shc_diagnostic")
+#' @param ... other parameters to be used by the function
 #' 
 #' @return
 #' prints plots to \code{fname}.
-#' 
-#' @aliases diagnostic,shc-method
-#' @rdname diagnostic
+#'
+#' @export
+#' @name diagnostic-shc
 #' @author Patrick Kimes
-setMethod("diagnostic",
-          signature(obj="shc"),
-          .diagnostic.shc)
+diagnostic.shc <- function(obj, K = 1, fname = "shc_diagnostic", ...) {
+    print("function not yet implemented. sorry.")
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 {
-  #code taken from the original sigclust package
-  #
-  # .plot.sigclust <- function(sigclust, arg="all", ...) {
-  #   
-  #   raw.data <- sigclust@raw.data
-  #   veigval <- sigclust@veigval
-  #   simbackvar <- sigclust@simbackvar
-  #   vsimeigval <- sigclust@vsimeigval
-  #   icovest <- sigclust@icovest
-  #   nsim <- sigclust@nsim
+    ##code taken from the original sigclust package
+    ##
+    ## .plot.sigclust <- function(sigclust, arg="all", ...) {
+    ##   
+    ##   raw.data <- sigclust@raw.data
+    ##   veigval <- sigclust@veigval
+    ##   simbackvar <- sigclust@simbackvar
+    ##   vsimeigval <- sigclust@vsimeigval
+    ##   icovest <- sigclust@icovest
+    ##   nsim <- sigclust@nsim
   #   simcindex <- sigclust@simcindex
   #   pval <- sigclust@pval
   #   pvalnorm <- sigclust@pvalnorm

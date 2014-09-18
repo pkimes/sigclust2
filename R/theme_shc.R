@@ -1,17 +1,14 @@
-#' @title hsigclust dendrogram theme
+#' hsigclust dendrogram theme
 #'
-#' @description 
-#' my \code{ggplot2} theme for plotting hsigclust output
+#' \code{ggplot2} theme for plotting hsigclust output, currently just using
+#' \code{theme_bw()}
 #'
-#' @details
-#' theme is based on
-#' 
+#' @param base_size a numeric value specifying base size of text
+#'
+#' @export
 #' @importFrom grid unit
 #' @import ggplot2
-#' @name theme_hsc
 #' @author Patrick Kimes
-
-
 theme_hsc <- function(base_size = 12) {
   structure(list(
     axis.line =         element_blank(),

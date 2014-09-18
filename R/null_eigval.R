@@ -1,6 +1,8 @@
-#' Eigenvalue estimation for shc/sigclust testing procedures
+#' Eigenvalue estimation for null Gaussian based testing procedures
 #'
 #' function to compute the eigenvalues of the null Gaussian distribution for
+#' significance of clustering testing procedures which rely on a null Gaussian
+#' factor model assumption
 #' 
 #' @param x a matrix of size n by p containing the original data
 #' @param n an integer number of samples
@@ -32,13 +34,17 @@
 #' }
 #' 
 #' @references
-#' Huang, H., Liu, Y., Yuan, M., and Marron, J. S. (2014). Statistical Significance of Clustering using Soft Thresholding. Journal of Computational and Graphical Statistics, preprint.
-#' Liu, Y., Hayes, D. N., Nobel, A. B., and Marron, J. S. (2008). Statistical Significance of Clustering for High-Dimension, Low-Sample Size Data. Journal of the American Statistical Association, 103(483):1281–1293.
-#' 
-#' @export null_eigval
-#' @name null_eigval
+#' \itemize{
+#'     \item Huang, H., Liu, Y., Yuan, M., and Marron, J. S. (2014).
+#'           Statistical Significance of Clustering using Soft Thresholding.
+#'           Journal of Computational and Graphical Statistics, preprint.
+#'     \item Liu, Y., Hayes, D. N., Nobel, A. B., and Marron, J. S. (2008).
+#'           Statistical Significance of Clustering for High-Dimension, Low-Sample Size Data.
+#'           Journal of the American Statistical Association, 103(483):1281-1293.
+#' }
+#'
+#' @export
 #' @author Patrick Kimes
-
 null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = TRUE) {
 
     if (nrow(x) != n | ncol(x) != p)

@@ -5,11 +5,12 @@
 \usage{
 theme_hsc(base_size = 12)
 }
-\description{
-my \code{ggplot2} theme for plotting hsigclust output
+\arguments{
+\item{base_size}{a numeric value specifying base size of text}
 }
-\details{
-theme is based on
+\description{
+\code{ggplot2} theme for plotting hsigclust output, currently just using
+\code{theme_bw()}
 }
 \author{
 Patrick Kimes

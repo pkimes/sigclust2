@@ -1,8 +1,93 @@
-.shc.base <- function(x, metric, linkage, l = 2, alpha = 1,
-                      icovest = 1, bkgd_pca = TRUE,
-                      n_sim = 100, n_min = 10, rcpp = TRUE,
-                      ci = "2CI", ci_null = "hclust", ci_idx = 1, ci_emp = TRUE) {  
-
+#' statistical Significance for Hierarchical Clustering (SHC) 
+#' algorithm
+#'
+#' implements the Monte Carlo simulation based
+#' significance testing procedure described in Kimes et al. (2014+).
+#' Statistical significance is evaluated at each node along the tree
+#' starting from the root using a Gaussian null hypothesis test. 
+#' A corresponding family-wise error rate (FWER) controlling procedure is
+#' provided.
+#' 
+#' @param x a dataset with n rows and p columns, with observations in rows
+#' @param metric a string specifying the metric to be used in the hierarchical 
+#'        clustering procedure. This must be a metric accepted by \code{dist}, 
+#'        e.g. "euclidean," or "cor."
+#' @param linkage a string specifying the linkage to be used in the hierarchical 
+#'        clustering procedure. This must be a linkage accepted by 
+#'        \code{hclust}, e.g. "ward."
+#' @param l an integer value specifying the power of the Minkowski distance, if 
+#'        used (default = 2)
+#' @param alpha a value between 0 and 1 specifying the desired level of the 
+#'        test. If no FWER control is desired, simply set alpha to 1 (default = 1)
+#' @param n_sim a numeric value specifying the number of simulations for Monte Carlo 
+#'        testing (default = 100) 
+#' @param n_min an integer specifying the minimum number of observations needed
+#'        to calculate a p-value (default = 10)
+#' @param icovest a numeric value between 1 and 3 specifying the null covariance
+#'        estimation method to be used. See \code{\link{null_eigval}} for more
+#'        details (default = 1)
+#' @param bkgd_pca a logical value whether to use principal component scores when
+#'        estimating background noise under the null (default = TRUE)
+#' @param rcpp a logical value whether to use the \code{Rclusterpp} package
+#'        (default = TRUE)
+#' @param ci a string vector specifying the cluster indices to be used for 
+#'        testing along the dendrogram. Currently, options include: "2CI", 
+#'        "linkage". (default = "2CI")
+#' @param ci_null a string vector specifying the clustering approach that 
+#'        should be used at each node as the comparison. Currently, options
+#'        include: "2means", "hclust". Note, \code{ci_null} and \code{ci} must be of
+#'        equal length. (default = "hclust")
+#' @param ci_idx a numeric value between 1 and \code{length(ci)} 
+#'        specifiying which CI to use for the FWER stopping rule.
+#'        This only has an effect if \code{alpha} is specified to a non-default 
+#'        value. (default = 1)
+#' @param ci_emp a logical value specifying whether to use the empirical
+#'        p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
+#'        As with \code{ci_idx} this only has an effect if \code{alpha} is
+#'        specified to a non-default value. (default = TRUE)
+#' @param ... other parameters to be used by the function
+#' 
+#' @return The function returns a \code{shc} object containing the 
+#'         resulting p-values. The print method call will output a dendrogram
+#'         with the corresponding p-values placed at each merge. 
+#' 
+#' @details
+#' When possible, the function makes use of a C++ implementation of
+#' hierarchical clustering available through the \code{Rclusterpp.hclust} package
+#' for the case of clustering by Pearson correlation (\code{dist="cor"}), 
+#' we make use of \code{WGCNA::cor} with the usual code{stats::hclust}.
+#' 
+#' The testing procedure will terminate when no nodes
+#' meet the corresponding FWER control threshold specified by \code{alpha}
+#' and \code{fwer}. Controlling the FWER  may also substantially speed up
+#' the procedure by reducing the number of tests considered.
+#'
+#' If p-values are desired for all nodes, simply set \code{fwer} to \code{FALSE}
+#' and \code{alpha} to 1. The FWER cutoffs may still be computed using
+#' \code{fwer_cutoff} or by specifying \code{alpha} when calling \code{plot}.
+#'
+#' @examples
+#' hsc_cars <- shc(as.matrix(mtcars), metric="euclidean", linkage="single")
+#' tail(hsc_cars$p_norm, 10)
+#' 
+#' @references
+#' \itemize{
+#'     \item Kimes, P. K., Hayes, D. N., Liu Y., and Marron, J. S. (2014)
+#'           Statistical significance for hierarchical clustering.
+#'           in preparation.
+#' }
+#'
+#' @export
+#' @seealso \code{\link{plot-shc}} \code{\link{diagnostic}}
+#' @import Rclusterpp WGCNA methods
+#' @name shc
+#' @aliases shc-constructor
+#' @author Patrick Kimes
+shc <- function(x, metric, linkage, l = 2, alpha = 1,
+                icovest = 1, bkgd_pca = TRUE,
+                n_sim = 100, n_min = 10, rcpp = TRUE,
+                ci = "2CI", ci_null = "hclust", ci_idx = 1, ci_emp = TRUE) {  
+    
     ##take min length of ci and ci_null
     n_ci <- length(ci)
     if (length(ci_null) != n_ci) {
@@ -131,117 +216,24 @@
         
     }
     
-    return(new("shc", 
-               in_mat = x,
-               in_args = list(metric = metric, linkage = linkage, alpha = alpha,
-                              l = l, bkgd_pca = bkgd_pca, n_sim = n_sim,
-                              n_min = n_min, icovest = icovest, ci = ci,
-                              ci_null = ci_null, ci_idx = ci_idx, ci_emp = ci_emp),
-               eigval_dat = eigval_dat,
-               eigval_sim = eigval_sim,
-               backvar = backvar,
-               nd_type = nd_type[-n],
-               ci_dat = ci_dat,
-               ci_sim = ci_sim,
-               p_emp = p_emp,
-               p_norm = p_norm,
-               idx_hc = idx_hc,
-               hc_dat = hc_dat))
+    structure(
+        list(in_mat = x,
+             in_args = list(metric = metric, linkage = linkage, alpha = alpha,
+                 l = l, bkgd_pca = bkgd_pca, n_sim = n_sim,
+                 n_min = n_min, icovest = icovest, ci = ci,
+                 ci_null = ci_null, ci_idx = ci_idx, ci_emp = ci_emp),
+             eigval_dat = eigval_dat,
+             eigval_sim = eigval_sim,
+             backvar = backvar,
+             nd_type = nd_type[-n],
+             ci_dat = ci_dat,
+             ci_sim = ci_sim,
+             p_emp = p_emp,
+             p_norm = p_norm,
+             idx_hc = idx_hc,
+             hc_dat = hc_dat),
+        class = "shc")
 }
-
-
-#' statistical Significance for Hierarchical Clustering (SHC) 
-#' algorithm
-#'
-#' implements the Monte Carlo simulation based
-#' significance testing procedure described in Kimes et al. (pre-print).
-#' Statistical significance is evaluated at each node along the tree
-#' starting from the root using a Gaussian null hypothesis test. 
-#' A corresponding family-wise error rate (FWER) controlling procedure is
-#' provided.
-#' 
-#' @param x a dataset with n rows and p columns, with observations in rows
-#' @param metric a string specifying the metric to be used in the hierarchical 
-#'        clustering procedure. This must be a metric accepted by \code{dist}, 
-#'        e.g. "euclidean," or "cor."
-#' @param linkage a string specifying the linkage to be used in the hierarchical 
-#'        clustering procedure. This must be a linkage accepted by 
-#'        \code{hclust}, e.g. "ward."
-#' @param l an integer value specifying the power of the Minkowski distance, if 
-#'        used (default = 2)
-#' @param alpha a value between 0 and 1 specifying the desired level of the 
-#'        test. If no FWER control is desired, simply set alpha to 1 (default = 1)
-#' @param n_sim a numeric value specifying the number of simulations for Monte Carlo 
-#'        testing (default = 100) 
-#' @param n_min an integer specifying the minimum number of observations needed
-#'        to calculate a p-value (default = 10)
-#' @param icovest a numeric value between 1 and 3 specifying the null covariance
-#'        estimation method to be used. See \code{\link{null_eigval}} for more
-#'        details (default = 1)
-#' @param bkgd_pca a logical value whether to use principal component scores when
-#'        estimating background noise under the null (default = TRUE)
-#' @param rcpp a logical value whether to use the \code{Rclusterpp} package
-#'        (default = TRUE)
-#' @param verb a logical value specifying whether the method should print out 
-#'        when testing completes along each node along the dendrogram
-#'        (default = FALSE)
-#' @param ci a string vector specifying the cluster indices to be used for 
-#'        testing along the dendrogram. Currently, options include: "2CI", 
-#'        "linkage". (default = "2CI")
-#' @param ci_null a string vector specifying the clustering approach that 
-#'        should be used at each node as the comparison. Currently, options
-#'        include: "2means", "hclust". Note, \code{ci_null} and \code{ci} must be of
-#'        equal length. (default = "hclust")
-#' @param ci_idx a numeric value between 1 and \code{length(ci)} 
-#'        specifiying which CI to use for the FWER stopping rule.
-#'        This only has an effect if \code{alpha} is specified to a non-default 
-#'        value. (default = 1)
-#' @param ci_emp a logical value specifying whether to use the empirical
-#'        p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
-#'        As with \code{ci_idx} this only has an effect if \code{alpha} is
-#'        specified to a non-default value. (default = TRUE)
-#' 
-#' @return The function returns a \code{shc} object containing the 
-#'         resulting p-values. The print method call will output a dendrogram
-#'         with the corresponding p-values placed at each merge. 
-#' 
-#' @details The function expands on the \code{sigclust} idea to the hierarchical 
-#'          setting by modifying the clustering procedure employed to compute 
-#'          the null distribution of cluster indices.
-#' 
-#' The code is written so that various cluster indices can be 
-#' easily introduced by writting new CI function and adding to 
-#' .initcluster(), .simcluster(). When possible, this function 
-#' makes use of a C++ implementation of hierarchical clustering 
-#' available through the \code{Rclusterpp.hclust} package for the 
-#' case of clustering by Pearson correlation (\code{dist="cor"}), 
-#' we make use of \code{WGCNA::cor} with the usual 
-#' code{stats::hclust}.
-#' 
-#'        The testing procedure will terminate when no branches
-#'        meet the corresponding FWER control threshold. This procedure may 
-#'        substantially speed up the procedure by reducing the number of tests 
-#'        considered. NOTE: if p-values are desired for all branches, the FWER
-#'        cutoffs may be provided a posteriori by a call to \code{FWERcutoffs()}.
-#'        Additionally, they may be specified at \code{plot()} using the 
-#'        \code{alpha} and \code{FWER} parameters.
-#' 
-#' @examples
-#' hsc_cars <- shc(as.matrix(mtcars), metric="euclidean", linkage="single")
-#' tail(p_norm(hsc_cars), 10)
-#'
-#' @references
-#' Kimes, P. K., Hayes, D. N., Liu Y., and Marron, J. S. (2014)
-#' Statistical Significance for Hierarchical Clustering.
-#' pre-print.
-#' 
-#' @seealso \code{\link{plot-shc}} \code{\link{diagnostic}}
-#' @import Rclusterpp WGCNA
-#' @rdname shc-constructor
-#' @author Patrick Kimes
-setMethod("shc",
-          signature(x = "matrix"),
-          .shc.base)
 
 
 

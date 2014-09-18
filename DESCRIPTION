@@ -13,13 +13,15 @@ Depends:
     R(>= 3.0.2),
     Rcpp (>= 0.10.6)
 Imports:
-    sigclust,
     Rclusterpp,
     WGCNA,
     dplyr,
     ggdendro,
     ggplot2,
-    grid
+    grid,
+    methods
 Suggests:
-    BiocStyle
+    BiocStyle,
+    knitr
 LinkingTo: Rcpp
+VignetteBuilder: knitr
