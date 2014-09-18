@@ -47,9 +47,36 @@
 #'        specified to a non-default value. (default = TRUE)
 #' @param ... other parameters to be used by the function
 #' 
-#' @return The function returns a \code{shc} object containing the 
-#'         resulting p-values. The print method call will output a dendrogram
-#'         with the corresponding p-values placed at each merge. 
+#' @return
+#' The function returns a \code{shc} object containing the 
+#' resulting p-values. The print method call will output a dendrogram
+#' with the corresponding p-values placed at each merge. \code{shc}
+#' object has following attributes:
+#' \itemize{
+#' \item{\code{in_mat}}: {the original data matrix passed to the constructor}
+#' \item{\code{in_args}}: {a list of the original parameters passed to the constructor}
+#' \item{\code{eigval_dat}}: {a matrix containing the sample eigenvalues for each subtree
+#'     tested along the dendrogram}
+#' \item{\code{eigval_sim}}: {a matrix containing the estimated eigenvalues used to
+#'     simulate null data at each subtree tested along the dendrogram}
+#' \item{\code{backvar}}: {a vector containing the estimated background variances used for
+#'     computing \code{eigval_sim}}
+#' \item{\code{nd_type}}: {a vector of length n-1 taking values in "\code{n_small}",
+#'     "\code{no_test}", "\code{tested}" specifying how each node along the
+#'     dendrogram was handled by the iterative testing procedure}
+#' \item{\code{ci_dat}}: {a matrix containing the cluster indices for the original
+#'     data matrix passed to the constructor}
+#' \item{\code{ci_sim}}: {a 3-dimensional array containing the simulated cluster
+#'     indices at each subtree tested along the dendrogram}
+#' \item{\code{p_emp}}: {a matrix containing the emprical p-values computed at each
+#'     subtree tested along the dendrogram}
+#' \item{\code{p_norm}}: {a matrix containing the Gaussian approximate p-values
+#'     computed at each subtree tested along the dendrogram}
+#' \item{\code{idx_hc}}: {a list of tuples containing the indices of clusters joined
+#'     at each step of the hierarchical clustering procedure}
+#' \item{\code{hc_dat}}: {a \code{hclust} object constructed from the original data matrix and
+#'     arguments passed to the constructor}
+#' }
 #' 
 #' @details
 #' When possible, the function makes use of a C++ implementation of
