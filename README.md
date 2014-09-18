@@ -13,14 +13,14 @@ The package implements Monte Carlo based significance testing procedures for
 clustering. Currently, the package includes a test for hierarchical clustering,
 statisical Significance for Hierarchical Clustering  (`shc`), with the intention of
 implementing a multi-cluster testing procedure. In the future, the package may be
-merged with the `sigclust` package currently available through CRAN.
+merged with the `sigclust` package currently available through CRAN. The package was
+originally written using [S4 objects](http://adv-r.had.co.nz/S4.html), but was switched
+to the simpler [S3](http://adv-r.had.co.nz/S3.html) style.
 
 A short to-do list for the near future:
 * `shc-class` methods:
-  * `diagnostic`: implement
-  * `plot`: improve flexibility (e.g. add option to print p-vals, title of plot, etc.)
-* implement multicluster approach
-* compile as package
+  * implement `diagnostic`
+  * add flexibility to `plot`
 
 
 ### <a name="intro"></a> Introduction
@@ -34,7 +34,7 @@ appropriate modifications for hierarchical clustering.
 
 <!--
 ### <a name="example"></a> Example
-Consider the `mtcars` dataset. The HSigClust testing procedure may be 
+Consider the `mtcars` dataset. The SHC testing procedure may be 
 implemented for a specific clustering procedure, e.g. euclidean dissimilarity 
 and average linkage, using the call:
 
@@ -80,15 +80,15 @@ We can access the p-values at each node by calling the getter function,
 
 ```r
 ##only print p-values for the last 5 merges
-tail(p_norm(short_hsc))
+tail(short_hsc$p_norm)
 ```
 
 ```
-## Error: could not find function "p_norm"
+## Error: object 'short_hsc' not found
 ```
 
 The order of the p-values is according to the height of each branch, i.e. 
-`p_norm(our_hsc[31, ])` corresponds to the highest, (n-1)st branch, at the 
+`our_hsc$p_norm[31, ]` corresponds to the highest, (n-1)st branch, at the 
 top of the dendrogram. p-values of `2` correspond to branches not having enough
 samples to test according to the `min_n` parameter. p-values of `-1`
 correspond to branches skipped according to the FWER control procedure (these 
@@ -118,7 +118,7 @@ mylabs <- ifelse(makers == "Merc",
                  "Mercedes", "other")
 
 ##plot dendrogram showing all p-values and include "mercedes" label
-plot(our_hsc, colGroups=mylabs, textLabs=TRUE, FWER=FALSE, alpha=1)
+plot(our_hsc, groups=mylabs, labs=TRUE, fwer=FALSE, alpha=1)
 ```
 
 ```
