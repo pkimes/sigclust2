@@ -30,33 +30,68 @@ In this tutorial we describe our algorithm using one of the simulation settings 
 
 
 \subsection{Citation} 
-For a more in depth discussion of the apporach including the multiple testing correction procedure implemented in \Rpackage{sigclust2}, contact Patrick. The corresponding manuscript is still in preparation.
+The corresponding manuscript is currently under preparation, and should be available on arXiv soon, i.e. mid-October 2014.
 \begin{quote}
-Kimes, P. K., Hayes, D. N., Liu Y., and Marron, J. S. (2014)
+Kimes, P.K., Hayes, D.N., Liu Y., and Marron, J.S. (2014)
 Statistical significance for hierarchical clustering.
 \textit{in preparation}.
 \end{quote}
 
 
 \section{\texttt{shc} Implementation}
+We first generate a simple toy dataset, consisting of 3 Gaussian subpopulations in 2 dimensions. The dataset is shown below.
 <<>>=
-# library(sigclust2)
-# generate some data
-# apply the method to the data
-# reader: "wow! that was so easy!"
-@
+library(RColorBrewer)
+library(ggplot2)
+
+## generate the dataset
+n_k <- 100
+p <- 2
+data <- cbind(matrix(rnorm(n_k*2) + c(1, 4), nrow=2),
+              matrix(rnorm(n_k*2) + c(-2, -2), nrow=2),
+              matrix(rnorm(n_k*2) + c(2, -1), nrow=2))
+data <- t(data)
+
+## plot the dataset
+data_df<- as.data.frame(data)
+data_df$group <- factor(rep(1:3, each=n_k))
+qplot(data=data_df, x=V1, y=V2, color=group) +
+    scale_color_brewer(palette="Set1") +
+    theme_bw()
+@ 
+
+We apply the significance of hierarchical clustering (SHC) approach the the generated dataset.
+<<>>=
+library(sigclust2)
+
+## compute significance of clustering
+out <- shc(data, "euclidean", "ward")
+summary(out)
+@ 
+
+The testing procedure may be applied using either \textit{linkage} or the \textit{2-means CI} to measure the strength of clustering. Additionally, while Ward's linkage is the default method for clustering, other dissimilarities and linkages may also be used in the high-dimensional setting, including:
+\begin{itemize}
+  \item \textbf{dissimilarity}
+    \begin{itemize}
+      \item Euclidean
+      \item Squared Euclidean
+    \end{itemize}
+  \item \textbf{linkage}
+    \begin{itemize}
+      \item single linkage
+      \item complete linkage
+      \item average linkage
+      \end{itemize}
+\end{itemize}
+
+When the number of observations is much larger than the dimension of the dataset, as in the example, the choice of dissimilarity and linkage is unrestricted.
 
 
 \section{Visualization}
-The results of \Rpackage{sigclust} may be summarized in a dendrogram.
+The results of \Rpackage{sigclust2} may be summarized in a dendrogram.
 <<>>=
-# plot the results of the implementation from above
-
+plot(out)
 @
-
-
-\section{Full Simulation}
-In this section we show how the code from the previous sections were combined to obtain the simulation results presented in the accompanying manuscript. 
 
 
 \begin{thebibliography}{9}

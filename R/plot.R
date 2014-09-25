@@ -94,9 +94,9 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
 
     ##for easier calling
     if (ci_emp) {
-        p_use <- p_emp[, ci_idx]
+        p_use <- shc$p_emp[, ci_idx]
     } else {
-        p_use <- p_norm[, ci_idx]
+        p_use <- shc$p_norm[, ci_idx]
     }
     
     ##if specified alpha is less stringent than original analysis
