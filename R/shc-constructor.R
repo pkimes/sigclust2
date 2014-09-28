@@ -43,7 +43,7 @@
 #'        value. (default = 1)
 #' @param ci_emp a logical value specifying whether to use the empirical
 #'        p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
-#'        As with \code{ci_idx} this only has an effect if \code{alpha} is
+#'        As with \code{ci_idx}, this only has an effect if \code{alpha} is
 #'        specified to a non-default value. (default = TRUE)
 #' @param ... other parameters to be used by the function
 #' 
@@ -55,10 +55,10 @@
 #' \itemize{
 #' \item{\code{in_mat}}: {the original data matrix passed to the constructor}
 #' \item{\code{in_args}}: {a list of the original parameters passed to the constructor}
-#' \item{\code{eigval_dat}}: {a matrix containing the sample eigenvalues for each subtree
-#'     tested along the dendrogram}
-#' \item{\code{eigval_sim}}: {a matrix containing the estimated eigenvalues used to
-#'     simulate null data at each subtree tested along the dendrogram}
+#' \item{\code{eigval_dat}}: {a matrix with each row containing the sample eigenvalues for a
+#'     subtree tested along the dendrogram}
+#' \item{\code{eigval_sim}}: {a matrix with each row containing the estimated eigenvalues used to
+#'     simulate null data at a subtree tested along the dendrogram}
 #' \item{\code{backvar}}: {a vector containing the estimated background variances used for
 #'     computing \code{eigval_sim}}
 #' \item{\code{nd_type}}: {a vector of length n-1 taking values in "\code{n_small}",
