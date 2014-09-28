@@ -16,12 +16,14 @@ diagnostic <- function(obj, ...) {
 #' range of nodes along the dendrogram
 #' 
 #' @param obj a \code{shc} object
-#' @param K an integer value specifying the range of nodes (starting from the
-#'        root) for which to create diagnostic plots (default = 1)
+#' @param K an integer value specifying the range of nodes for which to 
+#'        create diagnostic plots (default = nrow(obj$p_norm)-1)
 #' @param fname a character string specifying the name of the output file,
 #'        see details for more information on default behavior depending on
 #'        \code{length(K)} (default = NULL)
-#' @param arg other parameters to be used by the function
+#' @param ci_idx a numeric value between 1 and \code{length(obj$in_args$ci)}
+#'        specifying which cluster index to use for creating plots (default = 1)
+#' @param arg other parameters to be passed to function
 #' 
 #' @return
 #' prints plots to \code{fname}.
@@ -36,7 +38,8 @@ diagnostic <- function(obj, ...) {
 #' @export
 #' @name diagnostic-shc
 #' @author Patrick Kimes
-diagnostic.shc <- function(obj, K = 1, fname = NULL, ...) {
+diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
+                           fname = NULL, ci_idx = 1, ...) {
     print("function not yet implemented. sorry.")
     to_file <- FALSE
 
@@ -55,31 +58,35 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ...) {
 
     ##loop over K
     for (k in K) {
-        .daignostic_k(obj, k, fname, arg)
+        .daignostic_k(obj, k, fname, ci_idx)
     }
 }
 
 
 
 ##code taken from the original sigclust package
-.diagnostic_k <- function(shc, k, fname, arg) { ##formerly shc : sigclust
-    raw.data <- sigclust@raw.data
-    veigval <- sigclust@veigval
-    simbackvar <- sigclust@simbackvar
-    vsimeigval <- sigclust@vsimeigval
-    icovest <- sigclust@icovest
-    nsim <- sigclust@nsim
-    simcindex <- sigclust@simcindex
-    pval <- sigclust@pval
-    pvalnorm <- sigclust@pvalnorm
-    xcindex <- sigclust@xcindex
+.diagnostic_k <- function(shc, k, fname, ci_idx, arg) { ##formerly shc : sigclust
+
+    ##null covariance estimation
+    icovest <- shc$in_args$icovest
+    veigval <- shc$eigval_dat[k, ]
+    simbackvar <- shc$backvar[k]
+    vsimeigval <- shc$eigval_sim[k, ]
+
+    ##
+    nsim <- shc$in_args$n_sim
+    simcindex <- shc$ci_sim[k, , ci_idx]
+    xcindex <- shc$ci_dat[k, ci_idx]
+    pval <- shc$p_emp[k, ci_idx]
+    pvalnorm <- shc$p_norm[k, ci_idx]
     
-    n <- dim(raw.data)[1]
-    d <- dim(raw.data)[2]
+    n <- dim(shc$in_mat)[1]
+    d <- dim(shc$in_mat)[2]
+
     
     ##Background Standard Deviation Diagnostic Plot
-    
-    overlay.x <- as.vector(raw.data)
+    ## -should only take subtree at x (idx_sub <- unlist(hc_idx[k, ]))
+    overlay.x <- as.vector(shc$in_mat)
     mean <- mean(overlay.x)
     sd <- sd(overlay.x)
     median <- median(overlay.x)
@@ -87,13 +94,13 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ...) {
     ntot <- length(overlay.x)
     maxnol <- 5000
     
-    if(arg=="background"|arg=="all"){
-        par(mfrow=c(1,1))
-        par(mar=c(5,4,4,2)+0.1)
+    if (arg == "background" | arg == "all") {
+        par(mfrow=c(1, 1))
+        par(mar=c(5, 4, 4, 2) + 0.1)
         nused <- maxnol
         denraw <- density(overlay.x)
-        if(ntot>maxnol){
-            overlay.x <- overlay.x[sample(c(1:ntot),maxnol)]
+        if (ntot > maxnol) {
+            overlay.x <- overlay.x[sample(c(1:ntot), maxnol)]
         }else{
             nused <- ntot
         }
@@ -141,7 +148,7 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ...) {
         ##QQ plot
         par(mfrow=c(1,1))  
         par(mar=c(5,4,4,2)+0.1)
-        qqnorm <- qqnorm(as.vector(raw.data),plot.it=FALSE)
+        qqnorm <- qqnorm(as.vector(shc$in_mat),plot.it=FALSE)
         if(ntot>maxnol){
             which <- sample(c(1:ntot),maxnol)
         }else{

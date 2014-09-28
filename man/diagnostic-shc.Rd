@@ -4,18 +4,23 @@
 \alias{diagnostic.shc}
 \title{plot diagnostics for shc object}
 \usage{
-\method{diagnostic}{shc}(obj, K = 1, fname = "shc_diagnostic", ...)
+\method{diagnostic}{shc}(obj, K = nrow(obj$p_norm) - 1, fname = NULL,
+  ci_idx = 1, ...)
 }
 \arguments{
 \item{obj}{a \code{shc} object}
 
-\item{K}{an integer value specifying the number of nodes (starting from the
-root) for which to create diagnostic plots (default = 1)}
+\item{K}{an integer value specifying the range of nodes for which to
+create diagnostic plots (default = nrow(obj$p_norm)-1)}
 
 \item{fname}{a character string specifying the name of the output file,
-(default = "shc_diagnostic")}
+see details for more information on default behavior depending on
+\code{length(K)} (default = NULL)}
 
-\item{...}{other parameters to be used by the function}
+\item{ci_idx}{a numeric value between 1 and \code{length(obj$in_args$ci)}
+specifying which cluster index to use for creating plots (default = 1)}
+
+\item{arg}{other parameters to be passed to function}
 }
 \value{
 prints plots to \code{fname}.
@@ -23,6 +28,13 @@ prints plots to \code{fname}.
 \description{
 Provides visualizations to check the null Gaussian assumption at a specified
 range of nodes along the dendrogram
+}
+\details{
+If \code{K} is a single value, the default behavior is to output the diagnostic
+plot to the current device. This behavior is overriden if \code{fname} is specified
+by the user. If \code{K} includes several values, than the diagnostic plots are
+returned to \code{fname}.pdf. If \code{fname} is not specified, a default value,
+"shc_diagnostic", is used.
 }
 \author{
 Patrick Kimes
