@@ -67,33 +67,33 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
 ##code taken from the original sigclust package
 .diagnostic_k <- function(shc, k, fname, ci_idx, arg) { ##formerly shc : sigclust
 
-    ##null covariance estimation
+    ##identify subtree of x
+    idx_sub <- unlist(shc$hc_idx[k, ])
+    k_mat <- shc$in_mat[idx_sub, ]
+    n <- nrow(k_mat)
+    d <- ncol(k_mat)
+
+    ##parameters from shc object
     icovest <- shc$in_args$icovest
-    veigval <- shc$eigval_dat[k, ]
-    simbackvar <- shc$backvar[k]
-    vsimeigval <- shc$eigval_sim[k, ]
+    n_sim <- shc$in_args$n_sim
+    keigval_dat <- shc$eigval_dat[k, ]
+    backvar_k <- shc$backvar[k]
+    keigval_sim <- shc$eigval_sim[k, ]
+    kci_sim <- shc$ci_sim[k, , ci_idx]
+    kci_dat <- shc$ci_dat[k, ci_idx]
+    kp_emp <- shc$p_emp[k, ci_idx]
+    kp_norm <- shc$p_norm[k, ci_idx]
 
-    ##
-    nsim <- shc$in_args$n_sim
-    simcindex <- shc$ci_sim[k, , ci_idx]
-    xcindex <- shc$ci_dat[k, ci_idx]
-    pval <- shc$p_emp[k, ci_idx]
-    pvalnorm <- shc$p_norm[k, ci_idx]
-    
-    n <- dim(shc$in_mat)[1]
-    d <- dim(shc$in_mat)[2]
-
-    
-    ##Background Standard Deviation Diagnostic Plot
-    ## -should only take subtree at x (idx_sub <- unlist(hc_idx[k, ]))
-    overlay.x <- as.vector(shc$in_mat)
+    ##vectorize data and compute statistics
+    overlay.x <- as.vector(k_mat)
     mean <- mean(overlay.x)
     sd <- sd(overlay.x)
     median <- median(overlay.x)
     mad <- mad(overlay.x)
     ntot <- length(overlay.x)
     maxnol <- 5000
-    
+
+    ##Background Standard Deviation Diagnostic Plot
     if (arg == "background" | arg == "all") {
         par(mfrow=c(1, 1))
         par(mar=c(5, 4, 4, 2) + 0.1)
@@ -111,41 +111,42 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
         ymax <- max(denraw$y)
         
         overlay.y <- ymin + (0.15+0.5*runif(nused))*(ymax - ymin)
-        plot(denraw,xlim=range(overlay.x),ylim=range(denraw$y),
-             col="blue",xlab="",main="",lwd=3,...)
-        xgrid <- seq(xmin,xmax,by=0.0025*(xmax-xmin))
-        normden <- dnorm(xgrid,mean=median,sd=sd)
-        lines(xgrid,normden,col="red",lwd=3)
-        points(overlay.x,overlay.y,col="green",pch=".")
+        plot(denraw, xlim=range(overlay.x), ylim=range(denraw$y),
+             col="blue", xlab="", main="", lwd=3, ...)
+        xgrid <- seq(xmin, xmax, by=0.0025*(xmax-xmin))
+        normden <- dnorm(xgrid, mean=median, sd=sd)
+        lines(xgrid, normden, col="red", lwd=3)
+        points(overlay.x, overlay.y, col="green", pch=".")
         
         title("Distribution of All Pixel values combines")
-        if(ntot>maxnol){
-            text(xmin+0.47*(xmax-xmin),ymin+0.9*(ymax-ymin),
-                 paste("Overlay of",as.character(maxnol),"of",
-                       as.character(ntot),"data points",sep=" "),cex=1.3)
-        }else{
-            text(xmin+0.47*(xmax-xmin),ymin+0.9*(ymax-ymin),
-                 paste("Overlay of", as.character(ntot),"data points",sep=" "),
+        if (ntot > maxnol) {
+            text(xmin+0.47*(xmax-xmin), ymin+0.9*(ymax-ymin),
+                 paste("Overlay of", as.character(maxnol), "of",
+                       as.character(ntot), "data points", sep=" "), cex=1.3)
+        } else {
+            text(xmin+0.47*(xmax-xmin), ymin+0.9*(ymax-ymin),
+                 paste("Overlay of", as.character(ntot), "data points", sep=" "),
                  cex=1.3)
         }
-        text(xmin+0.47*(xmax-xmin),ymin+0.8*(ymax-ymin),
-             paste("Mean =",as.character(round(mean,3)),
-                   "  Median =",as.character(round(median,3)),sep=" "),cex=1.3)
-        text(xmin+0.47*(xmax-xmin),ymin+0.7*(ymax-ymin),
-             paste("s.d. =",as.character(round(sd,3)),
-                   "MAD =",as.character(round(mad,3)),sep=" "),cex=1.3)
-        text(xmin+0.47*(xmax-xmin),ymin+0.6*(ymax-ymin),
-             paste("Gaussian(",as.character(round(median,3)),",",
-                   as.character(round(mad,3)),") density",sep=""),
-             col="red",cex=1.3)
-        if(mad>sd){
-            text(xmin+0.47*(xmax-xmin),ymin+0.55*(ymax-ymin),
+        text(xmin+0.47*(xmax-xmin), ymin+0.8*(ymax-ymin),
+             paste("Mean =", as.character(round(mean, 3)),
+                   "  Median =", as.character(round(median, 3)), sep=" "), cex=1.3)
+        text(xmin+0.47*(xmax-xmin), ymin+0.7*(ymax-ymin),
+             paste("s.d. =", as.character(round(sd, 3)),
+                   "MAD =", as.character(round(mad, 3)), sep=" "), cex=1.3)
+        text(xmin+0.47*(xmax-xmin), ymin+0.6*(ymax-ymin),
+             paste("Gaussian(", as.character(round(median, 3)), ",",
+                   as.character(round(mad, 3)), ") density", sep=""),
+             col="red", cex=1.3)
+        if (mad > sd) {
+            text(xmin+0.47*(xmax-xmin), ymin+0.55*(ymax-ymin),
                  paste("Warning: MAD > s.d., SigClust can be anti-conservative",
-                       sep=""),cex=1.3)
+                       sep=""), cex=1.3)
         }
     }
-    if(arg=="qq"|arg=="all"){
-        ##QQ plot
+
+    ##QQ plot
+    if (arg == "qq" | arg == "all") {
         par(mfrow=c(1,1))  
         par(mar=c(5,4,4,2)+0.1)
         qqnorm <- qqnorm(as.vector(shc$in_mat),plot.it=FALSE)
@@ -180,10 +181,10 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
         text(x75,y75,"+",cex=1.3)
         text(x75+0.7,y75,"0.75 quantile",cex=1.3)
     }
-    if(arg=="diag"|arg=="all"){
-        ##Then make Covariance Estimation Diagnostic Plot
-        
-        
+
+
+    ##Covariance Estimation Diagnostic Plot
+    if (arg == "diag" | arg == "all") {
         ncut <- 100
         if(d>ncut){
             par(mfrow=c(2,2))
@@ -191,24 +192,24 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
             par(mfrow=c(1,2))
         }
         par(mar=c(2,3.7,2,1.7))
-        veigvalpos <- veigval[which(veigval > 10^(-12))]
-        dpos <- length(veigvalpos)
+        keigval_pos <- keigval_dat[which(keigval_dat > 10^(-12))]
+        dpos <- length(keigval_pos)
         xmin <- 0
         xmax <- d+1
-        ymin <- min(veigval) - 0.05*(max(veigval)-min(veigval))
-        ymax <- max(veigval) + 0.05*(max(veigval)-min(veigval))
-        plot(c(1:d),vsimeigval,type="l",lty=2,lwd=3,col="red",
+        ymin <- min(keigval_dat) - 0.05*(max(keigval_dat)-min(keigval_dat))
+        ymax <- max(keigval_dat) + 0.05*(max(keigval_dat)-min(keigval_dat))
+        plot(c(1:d),keigval_sim,type="l",lty=2,lwd=3,col="red",
              xlim=c(xmin,xmax),ylim=c(ymin,ymax),
              xlab="Component #",ylab="Eigenvalue",...)
-        points(c(1:d),veigval,col="black")
+        points(c(1:d),keigval_dat,col="black")
         title("Eigenvalues")
         lines(c(ncut+0.5,ncut+0.5),c(ymin,ymax),col="green")
         
         if(icovest!=2){
-            lines(c(0,d+1),c(simbackvar,simbackvar),col="magenta")
+            lines(c(0,d+1),c(backvar_k,backvar_k),col="magenta")
             text(xmin+0.45*(xmax-xmin),ymin+0.9*(ymax-ymin),
                  paste("Background variance = ",
-                       as.character(round(simbackvar,3)),sep=""),
+                       as.character(round(backvar_k,3)),sep=""),
                  col="magenta")
         }
         text(xmin+0.45*(xmax-xmin),ymin+0.8*(ymax-ymin),
@@ -218,22 +219,22 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
                  "Warning: MAD > s.d.",col="magenta")
         }
         
-        ymin <- min(log10(veigvalpos))
-        - 0.05*(max(log10(veigvalpos)) - min(log10(veigvalpos)))
-        ymax <- max(log10(veigvalpos))
-        + 0.05*(max(log10(veigvalpos)) - min(log10(veigvalpos)))
-        plot(c(1:d),log10(vsimeigval),type="l",lty=2,lwd=3,col="red",
+        ymin <- min(log10(keigval_pos))
+        - 0.05*(max(log10(keigval_pos)) - min(log10(keigval_pos)))
+        ymax <- max(log10(keigval_pos))
+        + 0.05*(max(log10(keigval_pos)) - min(log10(keigval_pos)))
+        plot(c(1:d),log10(keigval_sim),type="l",lty=2,lwd=3,col="red",
              xlim=c(xmin,xmax),ylim=c(ymin,ymax),
              xlab="Component #",ylab="log10(Eigenvalue)",...)
-        points(c(1:dpos),log10(veigvalpos),col="black")
+        points(c(1:dpos),log10(keigval_pos),col="black")
         title("log10 Eigenvalues")
         lines(c(ncut+0.5,ncut+0.5),c(ymin,ymax),col="green")
         
         if(icovest!=2){
-            lines(c(0,d+1),log10(c(simbackvar,simbackvar)),col="magenta")
+            lines(c(0,d+1),log10(c(backvar_k,backvar_k)),col="magenta")
             text(xmin+0.45*(xmax-xmin),ymin+0.9*(ymax-ymin),
                  paste("log10 Background variance = ",
-                       as.character(round(log10(simbackvar),3)),sep=""),
+                       as.character(round(log10(backvar_k),3)),sep=""),
                  col="magenta")
         }
         text(xmin+0.45*(xmax-xmin),ymin+0.8*(ymax-ymin),
@@ -242,81 +243,81 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
             text(xmin+0.45*(xmax-xmin),ymin+0.65*(ymax-ymin),
                  "SigClust may be Anti-iConservative",col="magenta")
         }
-        if(length(veigval)>=ncut){
+        if(length(keigval_dat)>=ncut){
             xmin <- 0
             xmax <- ncut+1
-            ymin <- min(veigval[1:ncut])
-            - 0.05*(max(veigval[1:ncut]) - min(veigval[1:ncut])) 
-            ymax <- max(veigval[1:ncut])
-            + 0.05*(max(veigval[1:ncut]) - min(veigval[1:ncut])) 
-            plot(c(1:ncut),vsimeigval[1:ncut],type="l",lty=2,lwd=3,col="red",
+            ymin <- min(keigval_dat[1:ncut])
+            - 0.05*(max(keigval_dat[1:ncut]) - min(keigval_dat[1:ncut])) 
+            ymax <- max(keigval_dat[1:ncut])
+            + 0.05*(max(keigval_dat[1:ncut]) - min(keigval_dat[1:ncut])) 
+            plot(c(1:ncut),keigval_sim[1:ncut],type="l",lty=2,lwd=3,col="red",
                  xlim=c(xmin,xmax),ylim=c(ymin,ymax),
                  xlab="Component #",ylab="Eigenvalue",...)
-            points(c(1:ncut),veigval[1:ncut],col="black")
+            points(c(1:ncut),keigval_dat[1:ncut],col="black")
             title("Zoomed in version of above")
             
             if(icovest!=2){
-                lines(c(0,d+1),c(simbackvar,simbackvar),col="magenta")
+                lines(c(0,d+1),c(backvar_k,backvar_k),col="magenta")
                 text(xmin+0.45*(xmax-xmin),ymin+0.9*(ymax-ymin),
                      paste("Background variance = ",
-                           as.character(round(simbackvar,3)),sep=""),
+                           as.character(round(backvar_k,3)),sep=""),
                      col="magenta")
             }
             text(xmin+0.45*(xmax-xmin),ymin+0.8*(ymax-ymin),
                  "Eigenvalues for simulation",col="red")
             
             nmax <- min(dpos,ncut)
-            ymin <- min(log10(veigvalpos[1:nmax])) 
-            - 0.05*(max(log10(veigvalpos[1:nmax])) - min(log10(veigvalpos[1:nmax])))
-            ymax <- max(log10(veigvalpos[1:nmax])) 
-            + 0.05*(max(log10(veigvalpos[1:nmax])) - min(log10(veigvalpos[1:nmax])))
-            plot(c(1:nmax),log10(vsimeigval[1:nmax]),type="l",lty=2,lwd=3,
+            ymin <- min(log10(keigval_pos[1:nmax])) 
+            - 0.05*(max(log10(keigval_pos[1:nmax])) - min(log10(keigval_pos[1:nmax])))
+            ymax <- max(log10(keigval_pos[1:nmax])) 
+            + 0.05*(max(log10(keigval_pos[1:nmax])) - min(log10(keigval_pos[1:nmax])))
+            plot(c(1:nmax),log10(keigval_sim[1:nmax]),type="l",lty=2,lwd=3,
                  col="red",xlim=c(xmin,xmax),ylim=c(ymin,ymax),
                  xlab="Component #",ylab="log10(Eigenvalue)",...)
-            points(c(1:nmax),log10(veigvalpos[1:nmax]),col="black")
+            points(c(1:nmax),log10(keigval_pos[1:nmax]),col="black")
             title("log10 Eigenvalues")
             
             if(icovest!=2){
-                lines(c(0,ncut+1),log10(c(simbackvar,simbackvar)),col="magenta")
+                lines(c(0,ncut+1),log10(c(backvar_k,backvar_k)),col="magenta")
                 text(xmin+0.30*(xmax-xmin),ymin+0.9*(ymax-ymin),
                      paste("log10 Background variance = ",
-                           as.character(round(log10(simbackvar),3)),sep=""),
+                           as.character(round(log10(backvar_k),3)),sep=""),
                      col="magenta")
             }
             text(xmin+0.30*(xmax-xmin),ymin+0.8*(ymax-ymin),
                  "Eigenvalues for simulation",col="red")
         }
     }
-    if(arg=="pvalue"|arg=="all"){
-        
-        ## Make p Value plot
-        
-        par(mfrow=c(1,1))
-        par(mar=c(5,4,4,2)+0.1)
-        denpval <- density(simcindex)
+    
+    ##P-value plot
+    if (arg == "pvalue" | arg == "all") {
+        par(mfrow=c(1, 1))
+        par(mar=c(5, 4, 4, 2) + 0.1)
+        denpval <- density(kci_sim)
         denrange <- quantile(denpval$y, probs=c(0,0.5, 0.75, 1))
         dy <- 0.1*(denrange[4]-denrange[1])
         
-        mindex <- mean(simcindex)
-        sindex <- sd(simcindex)
+        mindex <- mean(kci_sim)
+        sindex <- sd(kci_sim)
         
-        xmin <- min(c(simcindex,xcindex))
-        xmax <- max(c(simcindex,xcindex))
+        xmin <- min(c(kci_sim,kci_dat))
+        xmax <- max(c(kci_sim,kci_dat))
         dx <- 0.1*(xmax-xmin)
         xind <- seq(xmin,xmax,0.001)
         
         plot(denpval, xlim=c(xmin-dx,xmax+dx),col="red",
              xlab="Cluster Index", main="",lwd=2,...)
         title(main="SigClust Results")
-        points(simcindex, runif(nsim, denrange[2], denrange[3]),
-               col="blue",pch=".",cex=2)
-        lines(c(xcindex, xcindex), c(denrange[1]-dy, denrange[4])+dy,
-              col="green",lty=2,lwd=2)
+        points(kci_sim, runif(n_sim, denrange[2], denrange[3]),
+               col="blue", pch=".", cex=2)
+        lines(c(kci_dat, kci_dat), c(denrange[1]-dy, denrange[4])+dy,
+              col="green", lty=2, lwd=2)
         lines(xind,dnorm(xind,mean=mindex,sd=sindex),col="black",lty=3,lwd=2)
-        legend(xmin+0.05*(xmax-xmin), denrange[4], paste("P-value=", pval),
+        legend(xmin+0.05*(xmax-xmin), denrange[4], paste("P-value=", kp_emp),
                text.col="red",bty="n")
         legend(xmin+0.05*(xmax-xmin), denrange[3]+0.75*(denrange[4]-denrange[3]),
-               paste("P-vNorm=", round(pvalnorm,3)), bty="n")
+               paste("P-vNorm=", round(kp_norm,3)), bty="n")
     }
+
 }
 
