@@ -23,7 +23,9 @@ diagnostic <- function(obj, ...) {
 #'        \code{length(K)} (default = NULL)
 #' @param ci_idx a numeric value between 1 and \code{length(obj$in_args$ci)}
 #'        specifying which cluster index to use for creating plots (default = 1)
-#' @param arg other parameters to be passed to function
+#' @param pty a string specifying the plot type that should be created
+#'        see details for more information on different plot types available
+#'        (default = "all")
 #' 
 #' @return
 #' prints plots to \code{fname}.
@@ -34,12 +36,23 @@ diagnostic <- function(obj, ...) {
 #' by the user. If \code{K} includes several values, than the diagnostic plots are
 #' returned to \code{fname}.pdf. If \code{fname} is not specified, a default value,
 #' "shc_diagnostic", is used.
+#'
+#' The \code{pty} parameter accepts the following options:
+#' \itemize{
+#' \item{\code{"background"}}: {empirical distribution of marginal data used for background variance estimation}
+#' \item{\code{"qq"}}: {qqplot for checking null Gaussian assumption}
+#' \item{\code{"diag"}}: {screeplot for checking covariance factor model}
+#' \item{\code{"pvalue"}}: {empirical distribution of simulated CIs}
+#' \item{\code{"all"}}: {all of the above plots (default).}
+#' }
+#' 
 #' 
 #' @export
 #' @name diagnostic-shc
 #' @author Patrick Kimes
 diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
-                           fname = NULL, ci_idx = 1, ...) {
+                           fname = NULL, ci_idx = 1,
+                           pty = "all", ...) {
     print("function not yet implemented. sorry.")
     to_file <- FALSE
 
@@ -58,14 +71,14 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
 
     ##loop over K
     for (k in K) {
-        .daignostic_k(obj, k, fname, ci_idx)
+        .daignostic_k(obj, k, fname, ci_idx, pty)
     }
 }
 
 
 
-##code taken from the original sigclust package
-.diagnostic_k <- function(shc, k, fname, ci_idx, arg) { ##formerly shc : sigclust
+##code cleaned/modified from sigclust CRNA package, plot function
+.diagnostic_k <- function(shc, k, fname, ci_idx, pty) {
 
     ##identify subtree of x
     idx_sub <- unlist(shc$hc_idx[k, ])
@@ -94,7 +107,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
     maxnol <- 5000
 
     ##Background Standard Deviation Diagnostic Plot
-    if (arg == "background" | arg == "all") {
+    if (pty == "background" | pty == "all") {
         par(mfrow=c(1, 1))
         par(mar=c(5, 4, 4, 2) + 0.1)
         nused <- maxnol
@@ -145,8 +158,9 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
         }
     }
 
+    
     ##QQ plot
-    if (arg == "qq" | arg == "all") {
+    if (pty == "qq" | pty == "all") {
         par(mfrow=c(1,1))  
         par(mar=c(5,4,4,2)+0.1)
         qqnorm <- qqnorm(as.vector(shc$in_mat),plot.it=FALSE)
@@ -183,8 +197,8 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
     }
 
 
-    ##Covariance Estimation Diagnostic Plot
-    if (arg == "diag" | arg == "all") {
+    ##covariance estimation diagnostic plot
+    if (pty == "diag" | pty == "all") {
         ncut <- 100
         if(d>ncut){
             par(mfrow=c(2,2))
@@ -289,8 +303,8 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
         }
     }
     
-    ##P-value plot
-    if (arg == "pvalue" | arg == "all") {
+    ##p-value plot
+    if (pty == "pvalue" | pty == "all") {
         par(mfrow=c(1, 1))
         par(mar=c(5, 4, 4, 2) + 0.1)
         denpval <- density(kci_sim)
