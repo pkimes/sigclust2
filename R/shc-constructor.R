@@ -23,7 +23,7 @@
 #'        testing (default = 100) 
 #' @param n_min an integer specifying the minimum number of observations needed
 #'        to calculate a p-value (default = 10)
-#' @param icovest a numeric value between 1 and 3 specifying the null covariance
+#' @param icovest an integer between 1 and 3 specifying the null covariance
 #'        estimation method to be used. See \code{\link{null_eigval}} for more
 #'        details (default = 1)
 #' @param bkgd_pca a logical value whether to use principal component scores when
@@ -45,12 +45,11 @@
 #'        p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
 #'        As with \code{ci_idx}, this only has an effect if \code{alpha} is
 #'        specified to a non-default value. (default = TRUE)
-#' @param ... other parameters to be used by the function
 #' 
 #' @return
-#' The function returns a \code{shc} object containing the 
-#' resulting p-values. The print method call will output a dendrogram
-#' with the corresponding p-values placed at each merge. \code{shc}
+#' The function returns a \code{shc} S3-object containing the 
+#' resulting p-values. The \code{plot} method call will output a dendrogram
+#' with the corresponding p-values placed at each merge. The \code{shc}
 #' object has following attributes:
 #' \itemize{
 #' \item{\code{in_mat}}: {the original data matrix passed to the constructor}
@@ -94,14 +93,14 @@
 #' \code{fwer_cutoff} or by specifying \code{alpha} when calling \code{plot}.
 #'
 #' @examples
-#' hsc_cars <- shc(as.matrix(mtcars), metric="euclidean", linkage="single")
-#' tail(hsc_cars$p_norm, 10)
+#' shc_cars <- shc(as.matrix(mtcars), metric="euclidean", linkage="single")
+#' tail(shc_cars$p_norm, 10)
 #' 
 #' @references
 #' \itemize{
 #'     \item Kimes, P. K., Hayes, D. N., Liu Y., and Marron, J. S. (2014)
 #'           Statistical significance for hierarchical clustering.
-#'           in preparation.
+#'           pre-print available.
 #' }
 #'
 #' @export
