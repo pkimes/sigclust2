@@ -14,11 +14,12 @@ shc(x, metric, linkage, l = 2, alpha = 1, icovest = 1, bkgd_pca = TRUE,
 
 \item{metric}{a string specifying the metric to be used in the hierarchical
 clustering procedure. This must be a metric accepted by \code{dist},
-e.g. "euclidean," or "cor."}
+e.g. "euclidean," or "cor"}
 
 \item{linkage}{a string specifying the linkage to be used in the hierarchical
 clustering procedure. This must be a linkage accepted by
-\code{hclust}, e.g. "ward."}
+\code{Rclusterpp.hclust} if \code{rcpp=TRUE}, e.g. "ward",
+or \code{stats::hclust}, if \code{rcpp=FALSE}, e.g. "ward.D2".}
 
 \item{l}{an integer value specifying the power of the Minkowski distance, if
 used (default = 2)}
@@ -40,7 +41,7 @@ testing (default = 100)}
 to calculate a p-value (default = 10)}
 
 \item{rcpp}{a logical value whether to use the \code{Rclusterpp} package
-(default = TRUE)}
+(default = FALSE)}
 
 \item{ci}{a string vector specifying the cluster indices to be used for
 testing along the dendrogram. Currently, options include: "2CI",
@@ -101,10 +102,15 @@ A corresponding family-wise error rate (FWER) controlling procedure is
 provided.
 }
 \details{
-When possible, the function makes use of a C++ implementation of
-hierarchical clustering available through the \code{Rclusterpp.hclust} package
-for the case of clustering by Pearson correlation (\code{dist="cor"}),
-we make use of \code{WGCNA::cor} with the usual code{stats::hclust}.
+When possible, \code{Rclusterpp::Rclusterpp.hclust} should be used for
+hierarchical clustering except in the case of clustering by Pearson
+correlation (\code{dist="cor"}), for which we make use of
+\code{WGCNA::cor} with the usual \code{stats::hclust}.
+
+For standard minimum variance Ward's linkage clustering, if \code{rcpp} is
+\code{TRUE}, specify "ward" for \code{linkage}. However, if \code{rcpp} is
+\code{FALSE}, then "Ward.D2" should be specified. See \code{stats::hclust}
+for details on changes to the function since R >= 3.0.4.
 
 The testing procedure will terminate when no nodes
 meet the corresponding FWER control threshold specified by \code{alpha}
