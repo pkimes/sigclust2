@@ -26,6 +26,7 @@ diagnostic <- function(obj, ...) {
 #' @param pty a string specifying the plot type that should be created
 #'        see details for more information on different plot types available
 #'        (default = "all")
+#' @param ... other parameters passed to plots
 #' 
 #' @return
 #' prints plots to \code{fname}.

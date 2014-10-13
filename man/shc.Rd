@@ -26,7 +26,7 @@ used (default = 2)}
 \item{alpha}{a value between 0 and 1 specifying the desired level of the
 test. If no FWER control is desired, simply set alpha to 1 (default = 1)}
 
-\item{icovest}{a numeric value between 1 and 3 specifying the null covariance
+\item{icovest}{an integer between 1 and 3 specifying the null covariance
 estimation method to be used. See \code{\link{null_eigval}} for more
 details (default = 1)}
 
@@ -57,16 +57,14 @@ This only has an effect if \code{alpha} is specified to a non-default
 value. (default = 1)}
 
 \item{ci_emp}{a logical value specifying whether to use the empirical
-p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
-As with \code{ci_idx}, this only has an effect if \code{alpha} is
-specified to a non-default value. (default = TRUE)}
-
-\item{...}{other parameters to be used by the function}
+       p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
+       As with \code{ci_idx}, this only has an effect if \code{alpha} is
+       specified to a non-default value. (default = TRUE)}
 }
 \value{
-The function returns a \code{shc} object containing the
-resulting p-values. The print method call will output a dendrogram
-with the corresponding p-values placed at each merge. \code{shc}
+The function returns a \code{shc} S3-object containing the
+resulting p-values. The \code{plot} method call will output a dendrogram
+with the corresponding p-values placed at each merge. The \code{shc}
 object has following attributes:
 \itemize{
 \item{\code{in_mat}}: {the original data matrix passed to the constructor}
@@ -118,8 +116,8 @@ and \code{alpha} to 1. The FWER cutoffs may still be computed using
 \code{fwer_cutoff} or by specifying \code{alpha} when calling \code{plot}.
 }
 \examples{
-hsc_cars <- shc(as.matrix(mtcars), metric="euclidean", linkage="single")
-tail(hsc_cars$p_norm, 10)
+shc_cars <- shc(as.matrix(mtcars), metric="euclidean", linkage="single")
+tail(shc_cars$p_norm, 10)
 }
 \author{
 Patrick Kimes
@@ -128,7 +126,7 @@ Patrick Kimes
 \itemize{
     \item Kimes, P. K., Hayes, D. N., Liu Y., and Marron, J. S. (2014)
           Statistical significance for hierarchical clustering.
-          in preparation.
+          pre-print available.
 }
 }
 \seealso{

@@ -5,7 +5,7 @@
 \title{plot diagnostics for shc object}
 \usage{
 \method{diagnostic}{shc}(obj, K = nrow(obj$p_norm) - 1, fname = NULL,
-  ci_idx = 1, ...)
+  ci_idx = 1, pty = "all", ...)
 }
 \arguments{
 \item{obj}{a \code{shc} object}
@@ -20,7 +20,11 @@ see details for more information on default behavior depending on
 \item{ci_idx}{a numeric value between 1 and \code{length(obj$in_args$ci)}
 specifying which cluster index to use for creating plots (default = 1)}
 
-\item{arg}{other parameters to be passed to function}
+\item{pty}{a string specifying the plot type that should be created
+see details for more information on different plot types available
+(default = "all")}
+
+\item{...}{other parameters passed to plots}
 }
 \value{
 prints plots to \code{fname}.
@@ -35,6 +39,15 @@ plot to the current device. This behavior is overriden if \code{fname} is specif
 by the user. If \code{K} includes several values, than the diagnostic plots are
 returned to \code{fname}.pdf. If \code{fname} is not specified, a default value,
 "shc_diagnostic", is used.
+
+The \code{pty} parameter accepts the following options:
+\itemize{
+\item{\code{"background"}}: {empirical distribution of marginal data used for background variance estimation}
+\item{\code{"qq"}}: {qqplot for checking null Gaussian assumption}
+\item{\code{"diag"}}: {screeplot for checking covariance factor model}
+\item{\code{"pvalue"}}: {empirical distribution of simulated CIs}
+\item{\code{"all"}}: {all of the above plots (default).}
+}
 }
 \author{
 Patrick Kimes
