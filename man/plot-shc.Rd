@@ -6,6 +6,9 @@
 \usage{
 \method{plot}{shc}(x, groups = NULL, use_labs = TRUE, fwer = TRUE,
   alpha = 0.05, hang = -1, ci_idx = 1, ci_emp = TRUE, ...)
+
+\method{plot}{shc}(x, groups = NULL, use_labs = TRUE, fwer = TRUE,
+  alpha = 0.05, hang = -1, ci_idx = 1, ci_emp = TRUE, ...)
 }
 \arguments{
 \item{x}{a \code{shc} object to plot produced by a call to \code{shc}}
@@ -43,12 +46,54 @@ As with \code{ci_idx} this only has an effect if \code{alpha} < 1.
 (default = TRUE)}
 
 \item{...}{other parameters to be used by the function}
+
+\item{x}{a \code{shc} object to plot produced by a call to \code{shc}}
+
+\item{groups}{a vector specifying group labels for the clustered objects.
+The vector should be in the same order as the rows of the original
+data matrix. If specified, color blocks will be placed along the
+bottom of the dendrogram. Useful when the samples have a priori known
+groupi behavior. (default = \code{NULL})}
+
+\item{use_labs}{a boolean specifyin whether rowlabels should be added as
+text along the bottom of the dendrogram (default = \code{TRUE})}
+
+\item{fwer}{a boolean specifying whether the FWER control procedure of
+Meinshausen et al. 2010 should be used, default is \code{TRUE}.
+NOTE: only has effect if \code{alpha} was not specified, or was
+set to the default value of 1 when calling \code{shc}.}
+
+\item{alpha}{a double between 0 and 1 specifying the significance cutoff. If
+\code{fwer} is TRUE, the FWER of the entire dendrogram is controlled at
+\code{alpha}, else, each branch is tested at \code{alpha}. Only has
+effect if \code{alpha(shc)} = 1. (default = 0.05)}
+
+\item{ci_idx}{a numeric value between 1 and \code{length(ci)}
+specifiying which CI to use for the FWER stopping rule.
+This only has an effect if \code{alpha} < 1. (default = 1)}
+
+\item{ci_emp}{a logical value specifying whether to use the empirical
+p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
+As with \code{ci_idx} this only has an effect if \code{alpha} < 1.
+(default = TRUE)}
+
+\item{hang}{a double value corresponding to the \code{hang} parameter for
+the typical call to \code{plot} for an object of class
+\code{hsigclust} (default = -1)}
+
+\item{...}{other parameters to be used by the function}
 }
 \value{
 \code{ggplot} object containing a dendrogram annotated by the results of the
 corresponding \code{shc} analysis
+
+\code{ggplot} object containing a dendrogram annotated by the results of the
+corresponding \code{shc} analysis
 }
 \description{
+Visualize the results of SHC analysis as an annotated
+dendrogram with significant branches highlighted
+
 Visualize the results of SHC analysis as an annotated
 dendrogram with significant branches highlighted
 }
@@ -56,8 +101,14 @@ dendrogram with significant branches highlighted
 This function makes use of dendrogram plotting functions made
 available through the \pkg{ggdendro} package which provides a
 \pkg{ggplot2}-like grammer for working with dendrograms.
+
+This function makes use of dendrogram plotting functions made
+available through the \pkg{ggdendro} package which provides a
+\pkg{ggplot2}-like grammer for working with dendrograms.
 }
 \author{
+Patrick Kimes
+
 Patrick Kimes
 }
 
