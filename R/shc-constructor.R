@@ -99,7 +99,9 @@
 #' \code{fwer_cutoff} or by specifying \code{alpha} when calling \code{plot}.
 #'
 #' @examples
-#' shc_cars <- shc(as.matrix(mtcars), metric="euclidean", linkage="single")
+#' data <- rbind(matrix(rnorm(100, mean = 2), ncol = 2),
+#'               matrix(rnorm(100, mean = -1), ncol = 2))
+#' shc_cars <- shc(data, metric = "euclidean", linkage = "average")
 #' tail(shc_cars$p_norm, 10)
 #' 
 #' @references
