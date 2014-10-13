@@ -1,0 +1,20 @@
+sigclust2 (devel branch)
+=======================
+
+### <a name="status"></a> Status
+Development branch for implementing multi-cluster significance of clustering test, i.e. `skc`.
+Kept separate from master branch of `sigclust2` which includes the newly implemented `shc` function
+for testing in hierarchical clustering.
+
+
+### <a name="refs"></a> References
+
+* Kimes PK, Liu Y, Hayes DN, and Marron JS. "Statistical significance 
+for hierarchical clustering." _submitted._
+* Huang H, Liu Y, Yuan M, and Marron JS. (2014). "Statistical significance of 
+clustering using soft thresholding." _Journal of Computational and Graphical Statistics_, pre-print.
+* Liu Y, Hayes DN, Nobel A, and Marron JS. (2008). "Statistical significance of 
+clustering for high-dimension, low–sample size data." 
+_Journal of the American Statistical Association_, 103(483).
+
+
