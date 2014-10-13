@@ -1,4 +1,4 @@
-sigclust2 [![Build Status](https://travis-ci.org/pkimes/sigclust2.svg)](https://travis-ci.org/pkimes/sigclust2)
+sigclust2 [![Build Status](https://travis-ci.org/pkimes/sigclust2.svg?branch=master)](https://travis-ci.org/pkimes/sigclust2)
 =======================
 
 ### Contents
