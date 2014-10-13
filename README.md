@@ -127,9 +127,10 @@ easily adjust the plot using any function from the `ggplot2` package.
 
 ### <a name="rclusterpp"></a> Installing `Rclusterpp` on OSX
 
-As described in the [`Rclusterpp` wiki](rcpp), to make use of the package's multi-threading
-capabilities, a separate compiler must be installed and used to compile the package. 
-This essentially ammounts to:
+As described in the [`Rclusterpp` wiki][rcpp], to make use of the package's multi-threading
+capabilities, a separate compiler (e.g. `gcc-4.9`)  must be installed and used to build the package. 
+This essentially amounts to:
+
 1. downloading a local `gcc` compiler (e.g. using `homebrew`)  
 2. modifying your `~/.R/Makevars` file to include the following lines:
 ```{sh}
@@ -140,7 +141,8 @@ VER=-4.9
 CC=gcc$(VER)
 CXX=g++$(VER)
 SHLIB_CXXLD=g++$(VER)
-```
+```  
+  
 3. rebuilding `Rclusterpp` and associated dependencies
 ```{Rconsole}
 R> install.packages("Matrix")
@@ -160,4 +162,4 @@ _Journal of the American Statistical Association_, 103(483).
 
 
 
-[rcpp]: https://github.com/nolanlab/Rclusterpp/wiki
+[rcpp]: https://github.com/nolanlab/Rclusterpp/wiki/Getting-Started
