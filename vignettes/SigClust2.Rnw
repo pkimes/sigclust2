@@ -62,11 +62,11 @@ qplot(data=data_df, x=V1, y=V2, color=group) +
 
 We apply the significance of hierarchical clustering (SHC) approach the the generated dataset.
 <<>>=
-library(sigclust2)
+##library(sigclust2)
 
 ## compute significance of clustering
-out <- shc(data, "euclidean", "ward")
-summary(out)
+##out <- shc(data, "euclidean", "ward")
+##summary(out)
 @ 
 
 The testing procedure may be applied using either \textit{linkage} or the \textit{2-means CI} to measure the strength of clustering. Additionally, while Ward's linkage is the default method for clustering, other dissimilarities and linkages may also be used in the high-dimensional setting, including:
@@ -90,7 +90,8 @@ When the number of observations is much larger than the dimension of the dataset
 \section{Visualization}
 The results of \Rpackage{sigclust2} may be summarized in a dendrogram.
 <<>>=
-plot(out)
+1
+##plot(out)
 @
 
 
