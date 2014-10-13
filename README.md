@@ -133,21 +133,21 @@ This essentially amounts to:
 
 1. downloading a local `gcc` compiler (e.g. using `homebrew`)  
 2. modifying your `~/.R/Makevars` file to include the following lines:
-```{sh}
-CFLAGS += -std=c11
-CXXFLAGS += -std=c++11
+    ```{sh}
+    CFLAGS += -std=c11
+    CXXFLAGS += -std=c++11
 
-VER=-4.9
-CC=gcc$(VER)
-CXX=g++$(VER)
-SHLIB_CXXLD=g++$(VER)
-```  
-  
+    VER=-4.9
+    CC=gcc$(VER)
+    CXX=g++$(VER)
+    SHLIB_CXXLD=g++$(VER)
+    ```
+
 3. rebuilding `Rclusterpp` and associated dependencies
-```{Rconsole}
-R> install.packages("Matrix")
-R> install.packages(c("Rcpp", "RcppEigen", "Rclusterpp"), type="source")
-```
+    ```{Rconsole}
+    R> install.packages("Matrix")
+    R> install.packages(c("Rcpp", "RcppEigen", "Rclusterpp"), type="source")
+    ```
 
 
 ### <a name="refs"></a> References
