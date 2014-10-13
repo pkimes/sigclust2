@@ -5,7 +5,8 @@ sigclust2 [![Build Status](https://travis-ci.org/pkimes/sigclust2.svg)](https://
 1. [Status](#status)
 3. [Introduction](#intro)
 4. [Example](#example)
-5. [References](#refs)
+5. [Installing `Rclusterpp` on OSX](#rclusterpp)
+6. [References](#refs)
 
 
 ### <a name="status"></a> Status
@@ -41,19 +42,12 @@ and average linkage, using the call:
 
 ```r
 library(sigclust2)
-```
-
-```
-## Error: there is no package called 'sigclust2'
-```
-
-```r
 ##run HSigClust on toy dataset using Ward linkage
 our_hsc <- shc(mtcars, metric="euclidean", linkage="ward")
 ```
 
 ```
-## Error: could not find function "shc"
+## Error: !!  x must be matrix, use as.matrix(x) if necessary.  !!
 ```
 
 In the above call to `HSCtest()` we use the default value of `alpha = 1`
@@ -72,7 +66,7 @@ short_hsc <- shc(mtcars, metric="euclidean", linkage="ward",
 ```
 
 ```
-## Error: could not find function "shc"
+## Error: !!  x must be matrix, use as.matrix(x) if necessary.  !!
 ```
 
 We can access the p-values at each node by calling the getter function, 
@@ -130,13 +124,40 @@ easily adjust the plot using any function from the `ggplot2` package.
 
 -->
 
+
+### <a name="rclusterpp"></a> Installing `Rclusterpp` on OSX
+
+As described in the [`Rclusterpp` wiki](rcpp), to make use of the package's multi-threading
+capabilities, a separate compiler must be installed and used to compile the package. 
+This essentially ammounts to:
+1. downloading a local `gcc` compiler (e.g. using `homebrew`)  
+2. modifying your `~/.R/Makevars` file to include the following lines:
+```{sh}
+CFLAGS += -std=c11
+CXXFLAGS += -std=c++11
+
+VER=-4.9
+CC=gcc$(VER)
+CXX=g++$(VER)
+SHLIB_CXXLD=g++$(VER)
+```
+3. rebuilding `Rclusterpp` and associated dependencies
+```{Rconsole}
+R> install.packages("Matrix")
+R> install.packages(c("Rcpp", "RcppEigen", "Rclusterpp"), type="source")
+```
+
+
 ### <a name="refs"></a> References
 
+* Kimes PK, Liu Y, Hayes DN, and Marron JS. "Statistical significance 
+for hierarchical clustering." _submitted._
+* Huang H, Liu Y, Yuan M, and Marron JS. (2014). "Statistical significance of 
+clustering using soft thresholding." _Journal of Computational and Graphical Statistics_, pre-print.
 * Liu Y, Hayes DN, Nobel A, and Marron JS. (2008). "Statistical significance of 
 clustering for high-dimension, low–sample size data." 
 _Journal of the American Statistical Association_, 103(483).
-* Huang H, Liu Y, Yuan M, and Marron JS. (2014). "Statistical significance of 
-clustering using soft thresholding." _Journal of Computational and Graphical Statistics_, pre-print.
-* Kimes PK, Hayes DN, Liu Y, and Marron JS. "Statistical significance 
-for hierarchical clustering." _submitting soon!_
 
+
+
+[rcpp]: https://github.com/nolanlab/Rclusterpp/wiki
