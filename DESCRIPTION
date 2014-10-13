@@ -22,6 +22,7 @@ Imports:
     methods
 Suggests:
     BiocStyle,
-    knitr
+    knitr,
+    RColorBrewer
 LinkingTo: Rcpp
 VignetteBuilder: knitr
