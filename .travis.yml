@@ -9,6 +9,7 @@ before_install:
   - ./travis-tool.sh bootstrap
 
 install:
+  - ./travis-tool.sh bioc_install WGCNA BiocStyle
   - ./travis-tool.sh install_deps
 
 script: ./travis-tool.sh run_tests
