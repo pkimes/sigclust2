@@ -3,7 +3,7 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
-<title>sigclust2 (devel branch)</title>
+<title>sigclust2 <a href="https://travis-ci.org/pkimes/sigclust2"><img src="https://travis-ci.org/pkimes/sigclust2.svg?branch=master" alt="Build Status"/></a></title>
 
 <script type="text/javascript">
 window.onload = function() {
@@ -163,19 +163,77 @@ hr {
 </head>
 
 <body>
-<h1>sigclust2 (devel branch)</h1>
+<h1>sigclust2 <a href="https://travis-ci.org/pkimes/sigclust2"><img src="https://travis-ci.org/pkimes/sigclust2.svg?branch=master" alt="Build Status"/></a></h1>
+
+<h3>Contents</h3>
+
+<ol>
+<li><a href="#status">Status</a></li>
+<li><a href="#intro">Introduction</a></li>
+<li><a href="#rclusterpp">Installing <code>Rclusterpp</code> on OSX</a></li>
+<li><a href="#refs">References</a></li>
+</ol>
 
 <h3><a name="status"></a> Status</h3>
 
-<p>Development branch for implementing multi-cluster significance of clustering test, i.e. <code>skc</code>.
-Kept separate from master branch of <code>sigclust2</code> which includes the newly implemented <code>shc</code> function
-for testing in hierarchical clustering.</p>
+<p>The package implements Monte Carlo based significance testing procedures for
+clustering. Currently, the package includes a test for hierarchical clustering,
+statisical Significance for Hierarchical Clustering  (<code>shc</code>), with the intention of
+implementing a multi-cluster testing procedure. In the future, the package may be
+merged with the <code>sigclust</code> package currently available through CRAN. The package was
+originally written using <a href="http://adv-r.had.co.nz/S4.html">S4 objects</a>, but was switched
+to the simpler <a href="http://adv-r.had.co.nz/S3.html">S3</a> style.</p>
+
+<p>A short to-do list for the near future:</p>
+
+<ul>
+<li><code>shc-class</code> methods:
+
+<ul>
+<li>implement <code>diagnostic</code></li>
+<li>add flexibility to <code>plot</code></li>
+</ul></li>
+</ul>
+
+<h3><a name="intro"></a> Introduction</h3>
+
+<p>This package may be used to assess the statistical significance in
+hierarchical clustering. Given the results of hierarchical clustering,
+the approach sequentially tests starting from the root node whether each 
+split/join corresponds to &ldquo;true&rdquo; clustering. The hypothesis test performed at 
+each node is based on the approach described in Liu et al. (2008) with 
+appropriate modifications for hierarchical clustering.</p>
+
+<h3><a name="rclusterpp"></a> Installing <code>Rclusterpp</code> on OSX</h3>
+
+<p>As described in the <a href="https://github.com/nolanlab/Rclusterpp/wiki/Getting-Started"><code>Rclusterpp</code> wiki</a>, to make use of the package&#39;s multi-threading
+capabilities, a separate compiler (e.g. <code>gcc-4.9</code>)  must be installed and used to build the package. 
+This essentially amounts to:</p>
+
+<ol>
+<li>downloading a local <code>gcc</code> compiler (e.g. using <code>homebrew</code>)<br/></li>
+<li><p>modifying your <code>~/.R/Makevars</code> file to include the following lines:</p>
+
+<pre><code class="sh">CFLAGS += -std=c11
+CXXFLAGS += -std=c++11
+
+VER=-4.9
+CC=gcc$(VER)
+CXX=g++$(VER)
+SHLIB_CXXLD=g++$(VER)
+</code></pre></li>
+<li><p>rebuilding <code>Rclusterpp</code> and associated dependencies</p>
+
+<pre><code class="Rconsole">R&gt; install.packages(&quot;Matrix&quot;)
+R&gt; install.packages(c(&quot;Rcpp&quot;, &quot;RcppEigen&quot;, &quot;Rclusterpp&quot;), type=&quot;source&quot;)
+</code></pre></li>
+</ol>
 
 <h3><a name="refs"></a> References</h3>
 
 <ul>
 <li>Kimes PK, Liu Y, Hayes DN, and Marron JS. &ldquo;Statistical significance 
-for hierarchical clustering.&rdquo; <em>submitted.</em></li>
+for hierarchical clustering.&rdquo; <em>to be submitted.</em></li>
 <li>Huang H, Liu Y, Yuan M, and Marron JS. (2014). &ldquo;Statistical significance of 
 clustering using soft thresholding.&rdquo; <em>Journal of Computational and Graphical Statistics</em>, pre-print.</li>
 <li>Liu Y, Hayes DN, Nobel A, and Marron JS. (2008). &ldquo;Statistical significance of 
