@@ -148,7 +148,7 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
     shc_labs <- ggdendro::label(shc_dendat)
 
     ##change label hight to be correct
-    shc_labs$y <- .lab_height(shc_dendat)
+    shc_labs$y <- .lab_height(shc_dend)
     
     if (!is.null(groups) & length(groups) == n) {
         shc_labs$clusters <- groups[shc$hc_dat$order]
