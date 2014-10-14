@@ -6,7 +6,7 @@
 algorithm}
 \usage{
 shc(x, metric, linkage, l = 2, alpha = 1, icovest = 1, bkgd_pca = TRUE,
-  n_sim = 100, n_min = 10, rcpp = TRUE, ci = "2CI",
+  n_sim = 100, n_min = 10, rcpp = FALSE, ci = "2CI",
   ci_null = "hclust", ci_idx = 1, ci_emp = TRUE)
 }
 \arguments{
