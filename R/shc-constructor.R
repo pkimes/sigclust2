@@ -45,7 +45,7 @@
 #' @param ci_emp a logical value specifying whether to use the empirical
 #'        p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
 #'        As with \code{ci_idx}, this only has an effect if \code{alpha} is
-#'        specified to a non-default value. (default = TRUE)
+#'        specified to a non-default value. (default = FALSE)
 #' 
 #' @return
 #' The function returns a \code{shc} S3-object containing the 
@@ -120,7 +120,7 @@
 shc <- function(x, metric, linkage, l = 2, alpha = 1,
                 icovest = 1, bkgd_pca = TRUE,
                 n_sim = 100, n_min = 10, rcpp = FALSE,
-                ci = "2CI", ci_null = "hclust", ci_idx = 1, ci_emp = TRUE) {  
+                ci = "2CI", ci_null = "hclust", ci_idx = 1, ci_emp = FALSE) {  
     
     ##take min length of ci and ci_null
     n_ci <- length(ci)

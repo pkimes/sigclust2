@@ -25,7 +25,7 @@
 #' @param ci_emp a logical value specifying whether to use the empirical
 #'        p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
 #'        As with \code{ci_idx} this only has an effect if \code{alpha} < 1.
-#'        (default = TRUE)
+#'        (default = FALSE)
 #' @param hang a double value corresponding to the \code{hang} parameter for 
 #'        the typical call to \code{plot} for an object of class
 #'        \code{hsigclust} (default = -1)
@@ -47,7 +47,7 @@
 #' @author Patrick Kimes
 plot.shc <- function(x, groups = NULL, use_labs = TRUE, 
                      fwer = TRUE, alpha = 0.05, hang = -1,
-                     ci_idx = 1, ci_emp = TRUE, ...) {
+                     ci_idx = 1, ci_emp = FALSE, ...) {
 
     shc <- x
     
