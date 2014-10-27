@@ -29,7 +29,7 @@ diagnostic <- function(obj, ...) {
 #' @param ... other parameters passed to plots
 #' 
 #' @return
-#' prints plots to \code{fname}.
+#' prints plots to \code{paste0(fname, ".pdf")} if \code{fname} is specified or \code{length(K)>1}.
 #'
 #' @details
 #' If \code{K} is a single value, the default behavior is to output the diagnostic
@@ -70,16 +70,26 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
         fname <- "shc_diagnostic"
     }
 
-    ##loop over K
-    for (k in K) {
-        .daignostic_k(obj, k, fname, ci_idx, pty)
+
+    ##create plots 
+    if (is.null(fname)) {
+        .diagnostic_k(obj, K, ci_idx, pty)
+    } else {
+        pdf(paste0(fname, ".pdf"))
+        for (k in K) {
+            plot(0, 0, col="white")
+            text(0, 0, paste("K =", k))
+            .daignostic_k(obj, k, ci_idx, pty)
+        }
+        dev.off()
     }
+    
 }
 
 
 
 ##code cleaned/modified from sigclust CRAN package, plot function
-.diagnostic_k <- function(shc, k, fname, ci_idx, pty) {
+.diagnostic_k <- function(shc, k, ci_idx, pty) {
 
     ##identify subtree of x
     idx_sub <- unlist(shc$hc_idx[k, ])
@@ -132,7 +142,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
         lines(xgrid, normden, col="red", lwd=3)
         points(overlay.x, overlay.y, col="green", pch=".")
         
-        title("Distribution of All Pixel values combines")
+        title(paste0("Distribution of All Pixel values combines, K=", k))
         if (ntot > maxnol) {
             text(xmin+0.47*(xmax-xmin), ymin+0.9*(ymax-ymin),
                  paste("Overlay of", as.character(maxnol), "of",
@@ -218,7 +228,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
              xlim=c(xmin, xmax), ylim=c(ymin, ymax),
              xlab="Component #", ylab="Eigenvalue", ...)
         points(1:d, keigval_dat, col="black")
-        title("Eigenvalues")
+        title(paste0("Eigenvalues, K=", k))
         lines(c(ncut+0.5, ncut+0.5), c(ymin, ymax), col="green")
         
         if (icovest != 2) {
@@ -241,7 +251,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
              xlim=c(xmin, xmax), ylim=c(ymin, ymax),
              xlab="Component #", ylab="log10(Eigenvalue)", ...)
         points(1:dpos, log10(keigval_pos), col="black")
-        title("log10 Eigenvalues")
+        title(paste0("log10 Eigenvalues, K=", k)
         lines(c(ncut+0.5, ncut+0.5), c(ymin, ymax), col="green")
         
         if (icovest != 2) {
@@ -266,7 +276,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
                  xlim=c(xmin, xmax), ylim=c(ymin, ymax),
                  xlab="Component #", ylab="Eigenvalue", ...)
             points(1:ncut, keigval_dat[1:ncut], col="black")
-            title("Zoomed in version of above")
+            title(paste0("Zoomed in version of above, K=", k))
             
             if (icovest != 2) {
                 lines(c(0, d+1), c(backvar_k, backvar_k), col="magenta")
@@ -285,7 +295,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
                  col="red", xlim=c(xmin, xmax), ylim=c(ymin, ymax),
                  xlab="Component #", ylab="log10(Eigenvalue)", ...)
             points(1:nmax, log10(keigval_pos[1:nmax]), col="black")
-            title("log10 Eigenvalues")
+            title(paste0("log10 Eigenvalues, K=", k))
             
             if (icovest != 2) {
                 lines(c(0, ncut+1), log10(c(backvar_k, backvar_k)), col="magenta")
@@ -318,7 +328,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
         
         plot(denpval, xlim=c(xmin-dx, xmax+dx), col="red",
              xlab="Cluster Index", main="", lwd=2, ...)
-        title(main="SHC Results")
+        title(paste0("SHC Results, K=", k))
         points(kci_sim, runif(n_sim, denrange[2], denrange[3]),
                col="blue", pch=".", cex=2)
         lines(c(kci_dat, kci_dat), c(denrange[1]-dy, denrange[4])+dy,
