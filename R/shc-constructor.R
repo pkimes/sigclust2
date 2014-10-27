@@ -333,7 +333,7 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
     
     ##need to implement clustering algorithm
     if (metric == "cor") {
-        dmat <- 1 - WGCNA::cor(t(x))
+        dmat <- 1 - abs(WGCNA::cor(t(x)))
         hc_dat <- hclust(as.dist(dmat), method=linkage)
     } else {
         if (rcpp) {
@@ -387,7 +387,7 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
                         n_ci, ci, ci_null, rcpp) { 
 
     if (metric == "cor") {
-        dmat <- 1 - WGCNA::cor(t(sim_x))
+        dmat <- 1 - abs(WGCNA::cor(t(sim_x)))
         hc_isim <- hclust(as.dist(dmat), method=linkage)
     } else {
         if (rcpp) {
