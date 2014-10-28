@@ -251,7 +251,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
              xlim=c(xmin, xmax), ylim=c(ymin, ymax),
              xlab="Component #", ylab="log10(Eigenvalue)", ...)
         points(1:dpos, log10(keigval_pos), col="black")
-        title(paste0("log10 Eigenvalues, K=", k)
+        title(paste0("log10 Eigenvalues, K=", k))
         lines(c(ncut+0.5, ncut+0.5), c(ymin, ymax), col="green")
         
         if (icovest != 2) {
