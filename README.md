@@ -2,37 +2,57 @@ sigclust2 [![Build Status](https://travis-ci.org/pkimes/sigclust2.svg?branch=mas
 =======================
 
 ### Contents
-1. [Status](#status)
-2. [Introduction](#intro)
-3. [Installing `Rclusterpp` on OSX](#rclusterpp)
-4. [References](#refs)
-
-
-### <a name="status"></a> Status
-The package implements Monte Carlo based significance testing procedures for
-clustering. Currently, the package includes a test for hierarchical clustering,
-statisical Significance for Hierarchical Clustering  (`shc`), with the intention of
-implementing a multi-cluster testing procedure. In the future, the package may be
-merged with the `sigclust` package currently available through CRAN. The package was
-originally written using [S4 objects](http://adv-r.had.co.nz/S4.html), but was switched
-to the simpler [S3](http://adv-r.had.co.nz/S3.html) style.
-
-A short to-do list for the near future:
-* `shc-class` methods:
-  * implement `diagnostic`
-  * add flexibility to `plot`
+1. [Introduction](#intro)
+2. [Tutorial](#tutorial)
+    1. [Test](#test)
+    2. [Plot](#plot)
+3. [Details](#details)
+    1. [Testing Parameters](#testparams)
+    1. [Plotting Parameters](#plotparams)
+4. [Miscellanea](#misc)
+    1. [Installing `Rclusterpp` on OSX](#rclusterpp)
+    2. [Caveats](#)
+5. [References](#refs)
 
 
 ### <a name="intro"></a> Introduction
-This package may be used to assess the statistical significance in
-hierarchical clustering. Given the results of hierarchical clustering,
-the approach sequentially tests starting from the root node whether each 
-split/join corresponds to "true" clustering. The hypothesis test performed at 
-each node is based on the approach described in Liu et al. (2008) with 
-appropriate modifications for hierarchical clustering.
+This package may be used to assess statistical significance in 
+hierarchical clustering. To assess significance in high-dimensional data,
+the approach assumes that a cluster may be well approximated by a single
+Gaussian (normal) distribution. Then, given the results of hierarchical clustering,
+the approach sequentially tests from the root node whether the data at each split/join
+correspond to one or more Gaussian distributions. The hypothesis test performed at 
+each node is based on a Monte Carlo simulation procedure, and the family-wise error
+rate (FWER) is controlled across the dendrogram using a sequential testing procedure.  
+
+A more detailed description of the approach may be found in:
+Kimes PK, Liu Y, Hayes DN, Marron JS. "Statistical significance for hierarchical clustering."
+(arXiv pre-print soon.)
 
 
-### <a name="rclusterpp"></a> Installing `Rclusterpp` on OSX
+
+### <a name="tutorial"></a> Tutorial
+We illustrate the basic functionality of the package using a toy example. More detail on 
+
+
+#### <a name="test"></a> Test
+
+
+#### <a name="plot"></a> Plot
+
+
+
+### <a name="detauls"></a> Details
+
+#### <a name="testparams"></a> Testing Parameters
+
+#### <a name="plotparams"></a> Plotting Parameters
+
+
+
+### <a name="misc"></a> Miscellanea
+
+#### <a name="rclusterpp"></a> Installing `Rclusterpp` on OSX
 
 As described in the [`Rclusterpp` wiki][rcpp], to make use of the package's multi-threading
 capabilities, a separate compiler (e.g. `gcc-4.9`)  must be installed and used to build the package. 
@@ -50,7 +70,7 @@ This essentially amounts to:
     SHLIB_CXXLD=g++$(VER)
     ```
 
-3. rebuilding `Rclusterpp` and associated dependencies
+3. rebuilding `Rclusterpp` and associated dependencies:
     ```{Rconsole}
     R> install.packages("Matrix")
     R> install.packages(c("Rcpp", "RcppEigen", "Rclusterpp"), type="source")
