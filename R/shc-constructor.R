@@ -391,7 +391,7 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
                         n_ci, ci, null_alg, rcpp) { 
 
     ##obtain clustering solution
-    hc_dat <- .cluster_shc(x, metric, linkage, l, rcpp)
+    hc_isim <- .cluster_shc(x, metric, linkage, l, rcpp)
     split <- cutree(hc_isim, k=2)
 
     ##row vector containing cluster indices
