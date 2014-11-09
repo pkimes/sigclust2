@@ -25,8 +25,8 @@ summary.shc <- function(object, ...) {
                object$in_args$icovest,
                "\n    ci = ",
                paste0(object$in_args$ci, collapse=", "),
-               "\n    ci_null = ",
-               paste0(object$in_args$ci_null, collapse=", "),
+               "\n    null_alg = ",
+               paste0(object$in_args$null_alg, collapse=", "),
                "\n"))
     
     cat(paste0("FWER control:",
@@ -42,7 +42,7 @@ summary.shc <- function(object, ...) {
                object$in_args$n_min,
                "\n"))
 
-    cat(paste0("number of p-values < 0.05: ",
+    cat(paste0("number of p_norm < 0.05: ",
                colSums(object$p_norm < 0.05),
                ".\n\n") )
 }
