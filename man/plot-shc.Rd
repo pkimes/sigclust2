@@ -5,7 +5,7 @@
 \title{plot shc object}
 \usage{
 \method{plot}{shc}(x, groups = NULL, use_labs = TRUE, fwer = TRUE,
-  alpha = 0.05, hang = -1, ci_idx = 1, ci_emp = TRUE, ...)
+  alpha = 0.05, hang = -1, ci_idx = 1, ci_emp = FALSE, ...)
 }
 \arguments{
 \item{x}{a \code{shc} object to plot produced by a call to \code{shc}}
@@ -40,7 +40,7 @@ This only has an effect if \code{alpha} < 1. (default = 1)}
 \item{ci_emp}{a logical value specifying whether to use the empirical
 p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
 As with \code{ci_idx} this only has an effect if \code{alpha} < 1.
-(default = TRUE)}
+(default = FALSE)}
 
 \item{...}{other parameters to be used by the function}
 }

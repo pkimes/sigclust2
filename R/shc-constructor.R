@@ -34,10 +34,13 @@
 #' @param ci a string vector specifying the cluster indices to be used for 
 #'        testing along the dendrogram. Currently, options include: "2CI", 
 #'        "linkage". (default = "2CI")
-#' @param ci_null a string vector specifying the clustering approach that 
-#'        should be used at each node as the comparison. Currently, options
-#'        include: "2means", "hclust". Note, \code{ci_null} and \code{ci} must be of
-#'        equal length. (default = "hclust")
+#' @param null_alg a string vector specifying the clustering algorithms that 
+#'        should be used to cluster the simulated null ditributions. Currently, options
+#'        include: "2means", "hclust". While "hclust" typically provides greater power
+#'        for rotation invariant combinations of metric and linkage function, 
+#'        if a non-rotation invariant metric, e.g. Pearson correlation, is used, it is
+#'        recommended that the "2means" option is specified. Note, \code{null_alg} and
+#'        \code{ci} must be of equal length. (default = "hclust")
 #' @param ci_idx a numeric value between 1 and \code{length(ci)} 
 #'        specifiying which CI to use for the FWER stopping rule.
 #'        This only has an effect if \code{alpha} is specified to a non-default 
@@ -120,14 +123,14 @@
 shc <- function(x, metric, linkage, l = 2, alpha = 1,
                 icovest = 1, bkgd_pca = TRUE,
                 n_sim = 100, n_min = 10, rcpp = FALSE,
-                ci = "2CI", ci_null = "hclust", ci_idx = 1, ci_emp = FALSE) {  
+                ci = "2CI", null_alg = "hclust", ci_idx = 1, ci_emp = FALSE) {  
     
-    ##take min length of ci and ci_null
+    ##take min length of ci and null_alg
     n_ci <- length(ci)
-    if (length(ci_null) != n_ci) {
-        n_ci <- min(length(ci), length(ci_null))
+    if (length(null_alg) != n_ci) {
+        n_ci <- min(length(ci), length(null_alg))
         ci <- ci[1:n_ci]
-        ci_null <- ci_null[1:n_ci]
+        null_alg <- null_alg[1:n_ci]
         cat("!! testCIs and testNulls must be of equal length.  !!")
         cat(paste("!! Only using the first", n_ci, "entries of each.         !!"))
     }
@@ -168,8 +171,8 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
     ##p-values for all <=(n-1) tests
     p_emp <- matrix(2, nrow=n-1, ncol=n_ci)
     p_norm <- matrix(2, nrow=n-1, ncol=n_ci)
-    colnames(p_emp) <- paste(ci_null, ci, sep="_")
-    colnames(p_norm) <- paste(ci_null, ci, sep="_")
+    colnames(p_emp) <- paste(null_alg, ci, sep="_")
+    colnames(p_norm) <- paste(null_alg, ci, sep="_")
     
     ##null covariance parameters for all <=(n-1) tests
     eigval_dat <- matrix(-1, nrow=n-1, ncol=p)
@@ -208,17 +211,16 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
         }
 
         ##estimate null Gaussian
-        x_knull <- null_eigval(x[idx_sub, ], n_sub, p, icovest, bkgd_pca)
+        xk_null <- null_eigval(x[idx_sub, ], n_sub, p, icovest, bkgd_pca)
 
         ##prevent messages from looped application of clustering
         ## messages will be thrown once at initial clustering
         suppressMessages(
             ##simulate null datasets
             for (i in 1:n_sim) {
-                xsim <- .simnull(x_knull$eigval_sim, n_sub, p, 
-                                 metric, linkage, l, 
-                                 n_ci, ci, ci_null, rcpp)
-                ci_sim[k, i, ] <- xsim$ci_isim
+                xsim <- .simnull(xk_null$eigval_sim, n_sub, p)
+                ci_sim[k, i, ] <- .calcCI_shc(xsim, p, metric, linkage, l, 
+                                              n_ci, ci, null_alg, rcpp)
             }
         )
         
@@ -235,9 +237,9 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
         p_emp[k, ci == "linkage"] <- 1-p_emp[k, ci == "linkage"]
 
         ##keep everything
-        eigval_dat[k, ] <- x_knull$eigval_dat
-        eigval_sim[k, ] <- x_knull$eigval_sim
-        backvar[k] <- x_knull$backvar
+        eigval_dat[k, ] <- xk_null$eigval_dat
+        eigval_sim[k, ] <- xk_null$eigval_sim
+        backvar[k] <- xk_null$backvar
         
         ##update nd_type
         if (alpha < 1) {
@@ -259,7 +261,7 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
              in_args = list(metric = metric, linkage = linkage, alpha = alpha,
                  l = l, bkgd_pca = bkgd_pca, n_sim = n_sim,
                  n_min = n_min, icovest = icovest, ci = ci,
-                 ci_null = ci_null, ci_idx = ci_idx, ci_emp = ci_emp),
+                 null_alg = null_alg, ci_idx = ci_idx, ci_emp = ci_emp),
              eigval_dat = eigval_dat,
              eigval_sim = eigval_sim,
              backvar = backvar,
@@ -326,12 +328,9 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
 }
     
 
-##perform hierarchical clustering on the original data and 
-## compute the corresponding cluster indices for each merge
-.initcluster <- function(x, n, p, metric, linkage, l, 
-                         n_ci, ci, rcpp) { 
-    
-    ##need to implement clustering algorithm
+##parse clustering parameters to produce dendrogram
+.cluster_shc <- function(x, metric, linkage, l, rcpp) {
+
     if (metric == "cor") {
         dmat <- 1 - abs(WGCNA::cor(t(x)))
         hc_dat <- hclust(as.dist(dmat), method=linkage)
@@ -340,16 +339,28 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
             hc_dat <- Rclusterpp.hclust(x, method=linkage, 
                                         distance=metric, p=l)
         } else {
-                hc_dat <- hclust(dist(x, method=metric, p=l), method=linkage)
+            hc_dat <- hclust(dist(x, method=metric, p=l), method=linkage)
         }
     }
+    hc_dat
+}
 
-    ##matrix containing cluster indices
-    ci_dat <- matrix(-1, nrow=n-1, ncol=n_ci)
+
+
+##perform hierarchical clustering on the original data and 
+## compute the corresponding cluster indices for each merge
+.initcluster <- function(x, n, p, metric, linkage, l, 
+                         n_ci, ci, rcpp) { 
+
+    ##obtain clustering solution
+    hc_dat <- .cluster_shc(x, metric, linkage, l, rcpp)
 
     ##list array of cluster indices at each of the n-1 nodes
     idx_hc <- .idx_hc(hc_dat, n)
     
+    ##matrix containing cluster indices
+    ci_dat <- matrix(-1, nrow=n-1, ncol=n_ci)
+
     ##calculate cluster index(ices) for merge k
     for (i_ci in 1:n_ci) {
         if (ci[i_ci] == "2CI") {
@@ -368,52 +379,39 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
 }
 
 
-##given null eigenvalues, simulate Gaussian datasets and compute
-## cluster index - cleaned data simulation and changed to .simcluster(), PKK
-.simnull <- function(eigval_sim, n, p, metric, linkage, l,
-                     n_ci, ci, ci_null, rcpp) {
-    simnorm <- matrix(rnorm(n*p, sd=sqrt(eigval_sim)), 
-                      n, p, byrow=TRUE)
-    simclust <- .simcluster(simnorm, p, metric, linkage, l, 
-                            n_ci, ci, ci_null, rcpp)
-    
-    list(ci_isim = simclust$ci_isim)
+##given null eigenvalues, simulate Gaussian dataset
+.simnull <- function(eigval_sim, n, p) {
+    simnorm <- matrix(rnorm(n*p, sd=sqrt(eigval_sim)), n, p, byrow=TRUE)
 }
 
 
 ##perform hierarchical clustering on a simulated dataset and
 ## compute the correspond cluster indices for only the final merge
-.simcluster <- function(sim_x, p, metric, linkage, l, 
-                        n_ci, ci, ci_null, rcpp) { 
+.calcCI_shc <- function(x, p, metric, linkage, l, 
+                        n_ci, ci, null_alg, rcpp) { 
 
-    if (metric == "cor") {
-        dmat <- 1 - abs(WGCNA::cor(t(sim_x)))
-        hc_isim <- hclust(as.dist(dmat), method=linkage)
-    } else {
-        if (rcpp) {
-            hc_isim <- Rclusterpp.hclust(sim_x, method=linkage, 
-                                          distance=metric, p=l)      
-        } else {
-            hc_isim <- hclust(dist(sim_x, method=metric, p=l), method=linkage)      
-        }
-    }
-    sim_split <- cutree(hc_isim, k=2)
+    ##obtain clustering solution
+    hc_dat <- .cluster_shc(x, metric, linkage, l, rcpp)
+    split <- cutree(hc_isim, k=2)
+
+    ##row vector containing cluster indices
     ci_isim <- matrix(-1, nrow=1, ncol=n_ci)
+
     for (i_ci in 1:n_ci) {
         if (ci[i_ci] == "2CI") {
-            if (ci_null[i_ci] == "hclust") {
-                ci_isim[i_ci] <- .calc2CI(sim_x[sim_split==1, , drop=FALSE],
-                                          sim_x[sim_split==2, , drop=FALSE])        
-            } else if (ci_null[i_ci] == "2means") {
-                kmsol <- kmeans(sim_x, centers=2)
+            if (null_alg[i_ci] == "hclust") {
+                ci_isim[i_ci] <- .calc2CI(x[split==1, , drop=FALSE],
+                                          x[split==2, , drop=FALSE])        
+            } else if (null_alg[i_ci] == "2means") {
+                kmsol <- kmeans(x, centers=2)
                 ci_isim[i_ci] <- kmsol$tot.withinss/kmsol$totss
             }
         } else if (ci[i_ci] == "linkage") {
-            ci_isim[i_ci] <- hc_isim$height[nrow(sim_x)-1]
+            ci_isim[i_ci] <- hc_isim$height[nrow(x)-1]
         }
     }
 
-    list(ci_isim = ci_isim)
+    ci_isim
 }
 
 

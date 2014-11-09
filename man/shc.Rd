@@ -7,7 +7,7 @@ algorithm}
 \usage{
 shc(x, metric, linkage, l = 2, alpha = 1, icovest = 1, bkgd_pca = TRUE,
   n_sim = 100, n_min = 10, rcpp = FALSE, ci = "2CI",
-  ci_null = "hclust", ci_idx = 1, ci_emp = TRUE)
+  null_alg = "hclust", ci_idx = 1, ci_emp = FALSE)
 }
 \arguments{
 \item{x}{a dataset with n rows and p columns, with observations in rows}
@@ -47,10 +47,13 @@ to calculate a p-value (default = 10)}
 testing along the dendrogram. Currently, options include: "2CI",
 "linkage". (default = "2CI")}
 
-\item{ci_null}{a string vector specifying the clustering approach that
-should be used at each node as the comparison. Currently, options
-include: "2means", "hclust". Note, \code{ci_null} and \code{ci} must be of
-equal length. (default = "hclust")}
+\item{null_alg}{a string vector specifying the clustering algorithms that
+should be used to cluster the simulated null ditributions. Currently, options
+include: "2means", "hclust". While "hclust" typically provides greater power
+for rotation invariant combinations of metric and linkage function,
+if a non-rotation invariant metric, e.g. Pearson correlation, is used, it is
+recommended that the "2means" option is specified. Note, \code{null_alg} and
+\code{ci} must be of equal length. (default = "hclust")}
 
 \item{ci_idx}{a numeric value between 1 and \code{length(ci)}
 specifiying which CI to use for the FWER stopping rule.
@@ -60,7 +63,7 @@ value. (default = 1)}
 \item{ci_emp}{a logical value specifying whether to use the empirical
        p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
        As with \code{ci_idx}, this only has an effect if \code{alpha} is
-       specified to a non-default value. (default = TRUE)}
+       specified to a non-default value. (default = FALSE)}
 }
 \value{
 The function returns a \code{shc} S3-object containing the

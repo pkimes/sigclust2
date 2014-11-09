@@ -27,7 +27,7 @@ see details for more information on different plot types available
 \item{...}{other parameters passed to plots}
 }
 \value{
-prints plots to \code{fname}.
+prints plots to \code{paste0(fname, ".pdf")} if \code{fname} is specified or \code{length(K)>1}.
 }
 \description{
 Provides visualizations to check the null Gaussian assumption at a specified
