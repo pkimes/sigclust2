@@ -78,20 +78,22 @@ suppressPackageStartupMessages(library("sigclust2"))
 ```
 
 We can now perform the SHC testing procedure using the `shc` funciton. For the function to work,
-three arguments must be specified:
- * `x`: the data as a `matrix` with samples in rows,
- * `metric`: the dissimilarity metric, and
- * `linkage`: the linkage function to be used for hierarchical clustering.  
+three arguments must be specified:  
+
+* `x`: the data as a `matrix` with samples in rows,  
+* `metric`: the dissimilarity metric, and  
+* `linkage`: the linkage function to be used for hierarchical clustering.  
+
 While several combinations are possible, for reasons outlined in the corresponding
-paper [(Kimes et al. 2014)](#refs) relating to how the method handles testing when n << p, we recommmend
-using `"euclidean"` as the metric, and any of `"ward.D2"`, `"single"`, `"average"`,
+paper [(Kimes et al. 2014)](#refs) relating to how the method handles testing when n << p,
+we recommmend using `"euclidean"` as the metric, and any of `"ward.D2"`, `"single"`, `"average"`,
 `"complete"` as the linkage.  
 
-| __Note:__ if other metric functions are desired, i.e. one minus absolute Pearson correlation
-| (`"cor"`) or L1 (`"manhattan"`), `null_alg = "2means"` should be specified. The `null_alg`
-| parameter and all other parameters which have default values, are described in the 
-| [Details](#details) section. An example for testing using Pearson correlation is given in
-| the [More Examples](#examples) section.  
+__Note:__ if other metric functions are desired, i.e. one minus absolute Pearson correlation 
+(`"cor"`) or L1 (`"manhattan"`), `null_alg = "2means"` should be specified. The `null_alg` 
+parameter and all other parameters which have default values, are described in the 
+[Details](#details) section. An example for testing using Pearson correlation is given in 
+ the [More Examples](#examples) section.  
 
 For now, we will just use the recommended and default parameters.
 
@@ -118,11 +120,11 @@ summary(shc_result)
 ##     n_sim = 100
 ##     icovest = 1
 ##     ci = 2CI
-##     null_alg = hclust
+##     ci_null = 
 ## FWER control:
 ##     FALSE
 ##     min obs for testing = 10
-## number of p_norm < 0.05: 2.
+## number of p-values < 0.05: 2.
 ```
 
 The analysis output can be accessed using the `$` accessor. More details on the different entries
@@ -160,11 +162,11 @@ cbind(tail(shc_result$p_norm, 5),
 
 ```
 ##          hclust_2CI hclust_2CI
-## [145,] 1.000000e+00          1
-## [146,] 9.999996e-01          1
-## [147,] 9.999969e-01          1
-## [148,] 8.866775e-04          0
-## [149,] 2.944289e-09          0
+## [145,] 9.999999e-01          1
+## [146,] 9.999997e-01          1
+## [147,] 1.000000e+00          1
+## [148,] 2.370535e-04          0
+## [149,] 4.380060e-08          0
 ```
 
 In addition to values between 0 and 1, some p-values are reported as `2`. These values correspond
@@ -236,12 +238,12 @@ tail(data_2tests$p_norm)
 
 ```
 ##          hclust_2CI hclust_linkage
-## [144,] 9.999994e-01   1.000000e+00
-## [145,] 1.000000e+00   1.000000e+00
-## [146,] 1.000000e+00   1.000000e+00
-## [147,] 9.999999e-01   1.000000e+00
-## [148,] 1.919076e-03   3.416538e-02
-## [149,] 2.268839e-07   4.410802e-06
+## [144,] 9.999997e-01    1.00000e+00
+## [145,] 9.999999e-01    1.00000e+00
+## [146,] 9.999999e-01    1.00000e+00
+## [147,] 1.000000e+00    1.00000e+00
+## [148,] 1.191765e-04    1.16917e-03
+## [149,] 3.174157e-07    3.77065e-06
 ```
 
 The results of clustering using `hclust_2CI` and `hclust_linkage` are reported in the columns
@@ -250,10 +252,11 @@ described in the [corresponding manuscript](#refs) when using Ward's linkage clu
 
 
 
-## <a name="details"></a> Details
+## <a name="details"></a> Details  
 
-### shc(..) parameters for measuring strength of clustering
-* ___`ci`, `null_alg` arguments___  
+### shc(..) parameters for measuring strength of clustering  
+
+* `ci`, `null_alg` arguments  
 
 The testing procedure supports two different measures of "cluster strength" (`ci` argument), including
 using the 2-means cluster index (`ci = "2CI"`) and the linkage value (`ci = "linkage"`). Additionally,
@@ -265,13 +268,14 @@ invariance property that not satisfied by all algorithms, e.g. hierarchical clus
 Pearson correlation.  
 
 
-### shc(..) parameters for estimating the null Gaussian 
-* ___`icovest`, `bkgd_pca`, `n_sim`___  
+### shc(..) parameters for estimating the null Gaussian  
+
+* `icovest`, `bkgd_pca`, `n_sim` arguments  
 ...
 
 
-### shc(..) parameters for controlling FWER
-* ___`alpha`, `n_min`, `ci_idx`, `ci_emp`___  
+### shc(..) parameters for controlling FWER  
+* `alpha`, `n_min`, `ci_idx`, `ci_emp` arguments___  
 ...
 
 

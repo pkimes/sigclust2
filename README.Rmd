@@ -77,20 +77,22 @@ suppressPackageStartupMessages(library("sigclust2"))
 ```
 
 We can now perform the SHC testing procedure using the `shc` funciton. For the function to work,
-three arguments must be specified:
- * `x`: the data as a `matrix` with samples in rows,
- * `metric`: the dissimilarity metric, and
- * `linkage`: the linkage function to be used for hierarchical clustering.  
+three arguments must be specified:  
+
+* `x`: the data as a `matrix` with samples in rows,  
+* `metric`: the dissimilarity metric, and  
+* `linkage`: the linkage function to be used for hierarchical clustering.  
+
 While several combinations are possible, for reasons outlined in the corresponding
-paper [(Kimes et al. 2014)](#refs) relating to how the method handles testing when n << p, we recommmend
-using `"euclidean"` as the metric, and any of `"ward.D2"`, `"single"`, `"average"`,
+paper [(Kimes et al. 2014)](#refs) relating to how the method handles testing when n << p,
+we recommmend using `"euclidean"` as the metric, and any of `"ward.D2"`, `"single"`, `"average"`,
 `"complete"` as the linkage.  
 
-| __Note:__ if other metric functions are desired, i.e. one minus absolute Pearson correlation
-| (`"cor"`) or L1 (`"manhattan"`), `null_alg = "2means"` should be specified. The `null_alg`
-| parameter and all other parameters which have default values, are described in the 
-| [Details](#details) section. An example for testing using Pearson correlation is given in
-| the [More Examples](#examples) section.  
+__Note:__ if other metric functions are desired, i.e. one minus absolute Pearson correlation 
+(`"cor"`) or L1 (`"manhattan"`), `null_alg = "2means"` should be specified. The `null_alg` 
+parameter and all other parameters which have default values, are described in the 
+[Details](#details) section. An example for testing using Pearson correlation is given in 
+ the [More Examples](#examples) section.  
 
 For now, we will just use the recommended and default parameters.
 
@@ -197,10 +199,11 @@ described in the [corresponding manuscript](#refs) when using Ward's linkage clu
 
 
 
-## <a name="details"></a> Details
+## <a name="details"></a> Details  
 
-### shc(..) parameters for measuring strength of clustering
-* ___`ci`, `null_alg` arguments___  
+### shc(..) parameters for measuring strength of clustering  
+
+* `ci`, `null_alg` arguments  
 
 The testing procedure supports two different measures of "cluster strength" (`ci` argument), including
 using the 2-means cluster index (`ci = "2CI"`) and the linkage value (`ci = "linkage"`). Additionally,
@@ -212,13 +215,14 @@ invariance property that not satisfied by all algorithms, e.g. hierarchical clus
 Pearson correlation.  
 
 
-### shc(..) parameters for estimating the null Gaussian 
-* ___`icovest`, `bkgd_pca`, `n_sim`___  
+### shc(..) parameters for estimating the null Gaussian  
+
+* `icovest`, `bkgd_pca`, `n_sim` arguments  
 ...
 
 
-### shc(..) parameters for controlling FWER
-* ___`alpha`, `n_min`, `ci_idx`, `ci_emp`___  
+### shc(..) parameters for controlling FWER  
+* `alpha`, `n_min`, `ci_idx`, `ci_emp` arguments___  
 ...
 
 
