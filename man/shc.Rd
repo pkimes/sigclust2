@@ -14,7 +14,7 @@ shc(x, metric, linkage, l = 2, alpha = 1, icovest = 1, bkgd_pca = TRUE,
 
 \item{metric}{a string specifying the metric to be used in the hierarchical
 clustering procedure. This must be a metric accepted by \code{dist},
-e.g. "euclidean," or "cor"}
+e.g. "euclidean," or "cor" (1 - Pearson correlation)}
 
 \item{linkage}{a string specifying the linkage to be used in the hierarchical
 clustering procedure. This must be a linkage accepted by

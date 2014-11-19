@@ -11,7 +11,7 @@
 #' @param x a dataset with n rows and p columns, with observations in rows
 #' @param metric a string specifying the metric to be used in the hierarchical 
 #'        clustering procedure. This must be a metric accepted by \code{dist}, 
-#'        e.g. "euclidean," or "cor"
+#'        e.g. "euclidean," or "cor" (1 - Pearson correlation)
 #' @param linkage a string specifying the linkage to be used in the hierarchical 
 #'        clustering procedure. This must be a linkage accepted by 
 #'        \code{Rclusterpp.hclust} if \code{rcpp=TRUE}, e.g. "ward",
@@ -332,7 +332,7 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
 .cluster_shc <- function(x, metric, linkage, l, rcpp) {
 
     if (metric == "cor") {
-        dmat <- 1 - abs(WGCNA::cor(t(x)))
+        dmat <- 1 - WGCNA::cor(t(x))
         hc_dat <- hclust(as.dist(dmat), method=linkage)
     } else {
         if (rcpp) {
