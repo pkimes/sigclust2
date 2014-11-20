@@ -148,7 +148,11 @@ plot(shc_result, hang=.1)
 The resulting plot shows significant nodes and splits in red, as well as the corresponding p-values.
 Nodes which were not tested, as described earlier, are marked in either green or teal (blue).  
 
+Additionally, diagnostic plots to evaluate the assumptions of the testing procedure can
+be produced using `diagnostics()`. 
+
 Other testing and plotting parameters and examples can be found in the following two sections. 
+
 
 
 
@@ -161,14 +165,17 @@ results for some common variations on the default output.
 * [Performing tests with multiple indices](#multidx)
 
 
+
 ### <a name="pearson"></a> Pearson Correlations
 If testing using `(1 - cor)` is desired, the following specification should be used.
+
 ```{r, eval=FALSE}
-shc(data, metric="cor", linkage="average", null_alg="2means")
+data_pearson <- shc(data, metric="cor", linkage="average", null_alg="2means")
 ```
 
-The result will be equivalent to apply the `sigclust` hypothesis test at each node along
-the dendrogram.
+The result will be equivalent to apply the original `sigclust` hypothesis test described
+in [Liu et al. 2008](#refs) at each node along the dendrogram.
+
 
 
 ### <a name="allpvalues"></a> Computing all p-values
@@ -218,11 +225,14 @@ Pearson correlation.
 ### shc(..) parameters for estimating the null Gaussian  
 
 * `icovest`, `bkgd_pca`, `n_sim` arguments  
+
 ...
 
 
 ### shc(..) parameters for controlling FWER  
-* `alpha`, `n_min`, `ci_idx`, `ci_emp` arguments___  
+
+* `alpha`, `n_min`, `ci_idx`, `ci_emp` arguments  
+
 ...
 
 
@@ -272,6 +282,6 @@ _Journal of the American Statistical Association_, 103(483).
 
 
 [homebrew]: http://brew.sh
-[arXiv]: http://arxiv.org/
+[arXiv]: http://arxiv.org/abs/1411.5259
 [rcpp]: https://github.com/nolanlab/Rclusterpp/wiki/Getting-Started
 [shinyshc]: http://pkimes.shinyapps.io/shc_example/

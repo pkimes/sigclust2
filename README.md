@@ -162,11 +162,11 @@ cbind(tail(shc_result$p_norm, 5),
 
 ```
 ##          hclust_2CI hclust_2CI
-## [145,] 9.999999e-01          1
-## [146,] 9.999997e-01          1
+## [145,] 9.999998e-01          1
+## [146,] 1.000000e+00          1
 ## [147,] 1.000000e+00          1
-## [148,] 2.370535e-04          0
-## [149,] 4.380060e-08          0
+## [148,] 6.869891e-04          0
+## [149,] 2.371749e-06          0
 ```
 
 In addition to values between 0 and 1, some p-values are reported as `2`. These values correspond
@@ -188,7 +188,11 @@ plot(shc_result, hang=.1)
 The resulting plot shows significant nodes and splits in red, as well as the corresponding p-values.
 Nodes which were not tested, as described earlier, are marked in either green or teal (blue).  
 
+Additionally, diagnostic plots to evaluate the assumptions of the testing procedure can
+be produced using `diagnostics()`. 
+
 Other testing and plotting parameters and examples can be found in the following two sections. 
+
 
 
 
@@ -201,15 +205,18 @@ results for some common variations on the default output.
 * [Performing tests with multiple indices](#multidx)
 
 
+
 ### <a name="pearson"></a> Pearson Correlations
 If testing using `(1 - cor)` is desired, the following specification should be used.
 
+
 ```r
-shc(data, metric="cor", linkage="average", null_alg="2means")
+data_pearson <- shc(data, metric="cor", linkage="average", null_alg="2means")
 ```
 
-The result will be equivalent to apply the `sigclust` hypothesis test at each node along
-the dendrogram.
+The result will be equivalent to apply the original `sigclust` hypothesis test described
+in [Liu et al. 2008](#refs) at each node along the dendrogram.
+
 
 
 ### <a name="allpvalues"></a> Computing all p-values
@@ -238,12 +245,12 @@ tail(data_2tests$p_norm)
 
 ```
 ##          hclust_2CI hclust_linkage
-## [144,] 9.999997e-01    1.00000e+00
-## [145,] 9.999999e-01    1.00000e+00
-## [146,] 9.999999e-01    1.00000e+00
-## [147,] 1.000000e+00    1.00000e+00
-## [148,] 1.191765e-04    1.16917e-03
-## [149,] 3.174157e-07    3.77065e-06
+## [144,] 1.000000e+00   1.000000e+00
+## [145,] 9.999977e-01   1.000000e+00
+## [146,] 1.000000e+00   1.000000e+00
+## [147,] 1.000000e+00   1.000000e+00
+## [148,] 1.725330e-04   1.048209e-03
+## [149,] 3.973525e-08   4.254210e-06
 ```
 
 The results of clustering using `hclust_2CI` and `hclust_linkage` are reported in the columns
@@ -271,11 +278,14 @@ Pearson correlation.
 ### shc(..) parameters for estimating the null Gaussian  
 
 * `icovest`, `bkgd_pca`, `n_sim` arguments  
+
 ...
 
 
 ### shc(..) parameters for controlling FWER  
-* `alpha`, `n_min`, `ci_idx`, `ci_emp` arguments___  
+
+* `alpha`, `n_min`, `ci_idx`, `ci_emp` arguments  
+
 ...
 
 
@@ -325,6 +335,6 @@ _Journal of the American Statistical Association_, 103(483).
 
 
 [homebrew]: http://brew.sh
-[arXiv]: http://arxiv.org/
+[arXiv]: http://arxiv.org/abs/1411.5259
 [rcpp]: https://github.com/nolanlab/Rclusterpp/wiki/Getting-Started
 [shinyshc]: http://pkimes.shinyapps.io/shc_example/
