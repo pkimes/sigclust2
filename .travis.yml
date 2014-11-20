@@ -21,3 +21,8 @@ notifications:
   email:
     on_success: change
     on_failure: change
+
+env:
+  global:
+    - CRAN="http://cran.fhcrc.org/"
+
