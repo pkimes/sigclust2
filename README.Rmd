@@ -54,9 +54,9 @@ data[, 1] <- data[, 1] + c(rep(5, n1), rep(-5, n2), rep(0, n3))
 data[, 2] <- data[, 2] + c(rep(0, n1+n2), rep(sqrt(3)*5, n3))
 ```
 
-The separation of the three underlying distrubtions can be observed from a PCA (principal components
+The separation of the three underlying distributions can be observed from a PCA (principal components
 analysis) scatterplot. While the separation is clear in the first 2 PCs, recall that the data
-actually exists in `r p` dimension.
+actually exists in `r p` dimensions.
 
 ```{r, fig.width=10, fig.height=4}
 data_pc <- prcomp(data)
@@ -148,8 +148,7 @@ plot(shc_result, hang=.1)
 The resulting plot shows significant nodes and splits in red, as well as the corresponding p-values.
 Nodes which were not tested, as described earlier, are marked in either green or teal (blue).  
 
-Additionally, diagnostic plots to evaluate the assumptions of the testing procedure can
-be produced using `diagnostics()`. 
+__*Diagnostic plots are currently being implemented and should be available soon.*__
 
 Other testing and plotting parameters and examples can be found in the following two sections. 
 

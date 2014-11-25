@@ -51,9 +51,9 @@ data[, 1] <- data[, 1] + c(rep(5, n1), rep(-5, n2), rep(0, n3))
 data[, 2] <- data[, 2] + c(rep(0, n1+n2), rep(sqrt(3)*5, n3))
 ```
 
-The separation of the three underlying distrubtions can be observed from a PCA (principal components
+The separation of the three underlying distributions can be observed from a PCA (principal components
 analysis) scatterplot. While the separation is clear in the first 2 PCs, recall that the data
-actually exists in 1000 dimension.
+actually exists in 1000 dimensions.
 
 
 ```r
@@ -162,11 +162,11 @@ cbind(tail(shc_result$p_norm, 5),
 
 ```
 ##          hclust_2CI hclust_2CI
-## [145,] 9.999998e-01          1
+## [145,] 1.000000e+00          1
 ## [146,] 1.000000e+00          1
-## [147,] 1.000000e+00          1
-## [148,] 6.869891e-04          0
-## [149,] 2.371749e-06          0
+## [147,] 9.999999e-01          1
+## [148,] 1.167878e-04          0
+## [149,] 2.756069e-06          0
 ```
 
 In addition to values between 0 and 1, some p-values are reported as `2`. These values correspond
@@ -188,8 +188,7 @@ plot(shc_result, hang=.1)
 The resulting plot shows significant nodes and splits in red, as well as the corresponding p-values.
 Nodes which were not tested, as described earlier, are marked in either green or teal (blue).  
 
-Additionally, diagnostic plots to evaluate the assumptions of the testing procedure can
-be produced using `diagnostics()`. 
+__*Diagnostic plots are currently being implemented and should be available soon.*__
 
 Other testing and plotting parameters and examples can be found in the following two sections. 
 
@@ -246,11 +245,11 @@ tail(data_2tests$p_norm)
 ```
 ##          hclust_2CI hclust_linkage
 ## [144,] 1.000000e+00   1.000000e+00
-## [145,] 9.999977e-01   1.000000e+00
+## [145,] 1.000000e+00   1.000000e+00
 ## [146,] 1.000000e+00   1.000000e+00
 ## [147,] 1.000000e+00   1.000000e+00
-## [148,] 1.725330e-04   1.048209e-03
-## [149,] 3.973525e-08   4.254210e-06
+## [148,] 9.363911e-04   5.294279e-03
+## [149,] 3.478218e-08   7.889477e-07
 ```
 
 The results of clustering using `hclust_2CI` and `hclust_linkage` are reported in the columns
