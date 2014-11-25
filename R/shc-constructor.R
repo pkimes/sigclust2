@@ -36,7 +36,7 @@
 #'        "linkage". (default = "2CI")
 #' @param null_alg a string vector specifying the clustering algorithms that 
 #'        should be used to cluster the simulated null ditributions. Currently, options
-#'        include: "2means", "hclust". While "hclust" typically provides greater power
+#'        include: "2means" and "hclust". While "hclust" typically provides greater power
 #'        for rotation invariant combinations of metric and linkage function, 
 #'        if a non-rotation invariant metric, e.g. Pearson correlation, is used, it is
 #'        recommended that the "2means" option is specified. Note, \code{null_alg} and
@@ -89,7 +89,7 @@
 #'
 #' For standard minimum variance Ward's linkage clustering, if \code{rcpp} is
 #' \code{TRUE}, specify "ward" for \code{linkage}. However, if \code{rcpp} is
-#' \code{FALSE}, then "Ward.D2" should be specified. See \code{stats::hclust}
+#' \code{FALSE}, then "ward.D2" should be specified. See \code{stats::hclust}
 #' for details on changes to the function since R >= 3.0.4. 
 #' 
 #' The testing procedure will terminate when no nodes
