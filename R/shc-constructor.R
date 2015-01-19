@@ -12,10 +12,12 @@
 #' @param metric a string specifying the metric to be used in the hierarchical 
 #'        clustering procedure. This must be a metric accepted by \code{dist}, 
 #'        e.g. "euclidean," or "cor" (1 - Pearson correlation)
+#'        (default = "euclidean")
 #' @param linkage a string specifying the linkage to be used in the hierarchical 
 #'        clustering procedure. This must be a linkage accepted by 
 #'        \code{Rclusterpp.hclust} if \code{rcpp=TRUE}, e.g. "ward",
-#'        or \code{stats::hclust}, if \code{rcpp=FALSE}, e.g. "ward.D2".
+#'        or \code{stats::hclust}, if \code{rcpp=FALSE}, e.g. "ward.D2"
+#'        (default = "ward.D2")
 #' @param l an integer value specifying the power of the Minkowski distance, if 
 #'        used (default = 2)
 #' @param alpha a value between 0 and 1 specifying the desired level of the 
@@ -120,42 +122,45 @@
 #' @name shc
 #' @aliases shc-constructor
 #' @author Patrick Kimes
-shc <- function(x, metric, linkage, l = 2, alpha = 1,
-                icovest = 1, bkgd_pca = TRUE,
-                n_sim = 100, n_min = 10, rcpp = FALSE,
-                ci = "2CI", null_alg = "hclust", ci_idx = 1, ci_emp = FALSE) {  
+shc <- function(x, metric = "euclidean", linkage = "ward.D2", l = 2,
+                alpha = 1, icovest = 1, bkgd_pca = TRUE, n_sim = 100,
+                n_min = 10, rcpp = FALSE, ci = "2CI", null_alg = "hclust",
+                ci_idx = 1, ci_emp = FALSE) {  
     
-    ##take min length of ci and null_alg
-    n_ci <- length(ci)
-    if (length(null_alg) != n_ci) {
-        n_ci <- min(length(ci), length(null_alg))
-        ci <- ci[1:n_ci]
-        null_alg <- null_alg[1:n_ci]
-        cat("!! testCIs and testNulls must be of equal length.  !!")
-        cat(paste("!! Only using the first", n_ci, "entries of each.         !!"))
-    }
-    
-    ##check validity of ci_idx
-    if (ci_idx > n_ci) {
-        ci_idx <- 1
-        cat("!!  invalid choice for ci_idx, using default of ci_idx = 1.  !!")
-    }
-    
-    ##check validity of alpha
-    if (alpha > 1 || alpha < 0) {
-        alpha <- 1
-        cat("!!  invalid choice for alpha, using default of alpha = 1.  !!")
-    }
-    
-    ##check validity of x
-    if (!is.matrix(x)) {
-        stop("!!  x must be matrix, use as.matrix(x) if necessary.  !!")
-    }
-
-    ##check the dimension of x to match n and p
     n <- nrow(x)
     p <- ncol(x)
 
+    n_ci <- length(ci)
+    if (length(null_alg) != n_ci) {
+        stop("ci and null_alg must be of same length")
+    }
+
+    for (ii in 1:n_ci) {
+        if (ci[ii] == "linkage" && null_alg[ii] == "2means")
+            stop("ci = 'linkage', null_alg = '2means' cannot be specified")
+    }
+        
+    if (ci_idx > n_ci) {
+        stop("invalid choice for ci_idx; ci_idx must be < length(ci)")
+    }
+    
+    if (alpha > 1 || alpha < 0) {
+        stop("invalid choice for alpha; alpha must be 0 < alpha < 1")
+    }
+    
+    if (!is.matrix(x)) {
+        stop("x must be a matrix; use as.matrix if necessary")
+    }
+
+    if (n_min < 3) {
+        stop("n_min must be >= 3")
+    }
+
+    if (n_min > n) {
+        stop("n_min must be <= n")
+    }
+
+    
     ##apply initial clustering
     x_clust <- .initcluster(x, n, p, metric, linkage, l, 
                            n_ci, ci, rcpp)
@@ -322,8 +327,8 @@ shc <- function(x, metric, linkage, l = 2, alpha = 1,
     if (is.matrix(x1) && is.matrix(x2) && ncol(x1) == ncol(x2)) {
         (.sumsq(x1) + .sumsq(x2)) / .sumsq(rbind(x1, x2))
     } else {
-        error(paste("x1, x2 must be matrices with same ncols",
-                    "for 2CI calculation"))
+        stop(paste("x1, x2 must be matrices with same ncols",
+                   "for 2CI calculation"))
     }      
 }
     

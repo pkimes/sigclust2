@@ -5,7 +5,7 @@
 \alias{fwer_cutoff.matrix}
 \title{get FWER from idx_hc attribute of shc object}
 \usage{
-\method{fwer_cutoff}{shc}(obj, alpha, ...)
+\method{fwer_cutoff}{matrix}(obj, alpha, ...)
 }
 \arguments{
 \item{obj}{\code{shc} object}

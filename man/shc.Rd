@@ -6,21 +6,23 @@
 \title{statistical Significance for Hierarchical Clustering (SHC)
 algorithm}
 \usage{
-shc(x, metric, linkage, l = 2, alpha = 1, icovest = 1, bkgd_pca = TRUE,
-  n_sim = 100, n_min = 10, rcpp = FALSE, ci = "2CI",
-  null_alg = "hclust", ci_idx = 1, ci_emp = FALSE)
+shc(x, metric = "euclidean", linkage = "ward.D2", l = 2, alpha = 1,
+  icovest = 1, bkgd_pca = TRUE, n_sim = 100, n_min = 10, rcpp = FALSE,
+  ci = "2CI", null_alg = "hclust", ci_idx = 1, ci_emp = FALSE)
 }
 \arguments{
 \item{x}{a dataset with n rows and p columns, with observations in rows}
 
 \item{metric}{a string specifying the metric to be used in the hierarchical
 clustering procedure. This must be a metric accepted by \code{dist},
-e.g. "euclidean," or "cor" (1 - Pearson correlation)}
+e.g. "euclidean," or "cor" (1 - Pearson correlation)
+(default = "euclidean")}
 
 \item{linkage}{a string specifying the linkage to be used in the hierarchical
 clustering procedure. This must be a linkage accepted by
 \code{Rclusterpp.hclust} if \code{rcpp=TRUE}, e.g. "ward",
-or \code{stats::hclust}, if \code{rcpp=FALSE}, e.g. "ward.D2".}
+or \code{stats::hclust}, if \code{rcpp=FALSE}, e.g. "ward.D2"
+(default = "ward.D2")}
 
 \item{l}{an integer value specifying the power of the Minkowski distance, if
 used (default = 2)}

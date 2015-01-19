@@ -33,7 +33,7 @@ fwer_cutoff.shc <- function(obj, alpha, ...) {
 #' @param ... other parameters to be used by the function
 #' 
 #' @name fwer_cutoff-matrix
-#' @method fwer_cutoff shc
+#' @method fwer_cutoff matrix
 #' @author Patrick Kimes
 #' @keywords internal
 fwer_cutoff.matrix <- function(obj, alpha, ...) {

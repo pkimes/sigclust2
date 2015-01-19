@@ -47,6 +47,11 @@
 #' @author Patrick Kimes
 null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = TRUE) {
 
+    if (!(icovest %in% 1:3)) {
+        warning("icovest should be 1, 2 or 3. Using default value: 1.")
+        icovest <- 1
+    }
+    
     if (nrow(x) != n | ncol(x) != p)
         stop("Wrong size of matrix x!")
     
@@ -61,10 +66,11 @@ null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = TRUE) {
     avgx <- t(t(x) - colMeans(x))
     dv <- svd(avgx)$d
     eigval_dat <- dv^2/(n-1)
+
     ##pad with 0s
     eigval_dat <- c(eigval_dat, rep(0, p-length(eigval_dat)))
     eigval_sim <- eigval_dat
-    
+
     if (icovest == 1) { #use soft 
         taub <- 0
         tauu <- .soft_covest(eigval_dat, backvar)$tau
@@ -85,10 +91,12 @@ null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = TRUE) {
         
     } else if (icovest == 3) { #use hard thresholding
         eigval_sim[eigval_dat < backvar] <- backvar
+    } else {
+        stop("covest must be 1, 2 or 3")
     }
 
     list(eigval_dat = eigval_dat,
-         backvar= backvar,
+         backvar = backvar,
          eigval_sim = eigval_sim)
 }
 
