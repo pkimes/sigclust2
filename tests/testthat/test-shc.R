@@ -12,7 +12,7 @@ test_that("shc constructor generates shc object for appropriate input", {
 
 
 test_that("shc metric/linkage/l parameters work properly", {
-    data <- matrix(rnorm(200), ncol=2, nrow=100)
+    dm <- matrix(rnorm(200), ncol=2, nrow=100)
     cluster_vec <- list(
         list(metric = "euclidean", linkage = "ward.D2", l = 2, out = "pass"),
         list(metric = "euclidean", linkage = "ward", l = 2, out = "pass"),
@@ -128,13 +128,4 @@ test_that("shc constructer ci_idx/ci_emp parameters work properly", {
 
     expect_is(shc(dm, ci = ci_vec, null_alg = null_vec, ci_idx = 1, ci_emp = TRUE), "shc")
 })
-
-
-## expect_equal(str_length("a"), 1)
-## expect_output(str(a), "List of 2")
-## expect_match(string, "Testing")
-## expect_message(library(mgcv), "This is mgcv")
-## expect_warning(log(-1))
-## expect_error(1 / "a")
-## expect_is(lm(mpg ~ wt, data = mtcars), "lm")
 
