@@ -11,7 +11,7 @@ test_that("shc constructor generates shc object for appropriate input", {
 })
 
 
-test_that("shc metric/linkage/l parameters work properly", {
+test_that("shc metric/linkage/l parameters are properly parsed", {
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     cluster_vec <- list(
         list(metric = "euclidean", linkage = "ward.D2", l = 2, out = "pass"),
@@ -44,7 +44,7 @@ test_that("shc metric/linkage/l parameters work properly", {
 })
 
 
-test_that("shc constructer alpha parameter works properly", {
+test_that("shc constructer alpha parameter is properly parsed", {
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     alpha_error <- "invalid choice for alpha; alpha must be 0 < alpha < 1"    
 
@@ -62,7 +62,7 @@ test_that("shc constructer alpha parameter works properly", {
 })
 
 
-test_that("shc constructer n_sim parameter works properly", {
+test_that("shc constructer n_sim parameter is properly parsed", {
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     n_sim_vec <- c(5, 10, 100)
 
@@ -74,7 +74,7 @@ test_that("shc constructer n_sim parameter works properly", {
 })
 
 
-test_that("shc constructer n_min parameter works properly", {
+test_that("shc constructer n_min parameter is properly parsed", {
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     expect_is(shc(dm, n_min = 100), "shc")
@@ -85,7 +85,7 @@ test_that("shc constructer n_min parameter works properly", {
 })
 
 
-test_that("shc constructer icovest parameter works properly", {
+test_that("shc constructer icovest parameter is properly parsed", {
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     icovest_vec <- 1:4
     icov_warning <- "icovest should be 1, 2 or 3. Using default value: 1."
@@ -97,7 +97,7 @@ test_that("shc constructer icovest parameter works properly", {
 })
 
 
-test_that("shc constructer ci/null_alg parameters work properly", {
+test_that("shc constructer ci/null_alg parameters are properly parsed", {
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     mismatch_error <- "ci = 'linkage', null_alg = '2means' cannot be specified"
     length_error <- "ci and null_alg must be of same length"
@@ -115,7 +115,7 @@ test_that("shc constructer ci/null_alg parameters work properly", {
 })
 
 
-test_that("shc constructer ci_idx/ci_emp parameters work properly", {
+test_that("shc constructer ci_idx/ci_emp parameters are properly parsed", {
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     ci_vec <- c("2CI", "2CI")
     null_vec <- c("hclust", "2means")
