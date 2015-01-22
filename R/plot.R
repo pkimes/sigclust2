@@ -63,14 +63,12 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
     
     ##check validity of ci_idx
     if (ci_idx > ncol(shc$p_emp)) {
-        ci_idx <- 1
-        cat("!!  invalid choice for ci_idx, using default of ci_idx = 1.  !!")
+        stop("invalid choice for ci_idx; ci_idx must be < length(ci)")
     }
     
     ##check validity of alpha
     if (alpha > 1 || alpha < 0) {
-        alpha <- 1
-        cat("!!  invalid choice for alpha, using default of alpha = 1.  !!")
+        stop("invalid choice for alpha; alpha must be 0 < alpha < 1")
     }
 
     ##if method originally implemented with fwer control
@@ -78,17 +76,15 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
     if (shc$in_args$alpha < 1) {
         if (!fwer) {
             fwer <- TRUE
-            cat("!!  shc constructed using FWER control, using fwer = TRUE.  !!")
+            warning("shc constructed using fwer = TRUE, using fwer = TRUE")
         }
         if (shc$in_args$ci_emp != ci_emp) {
             ci_emp <- shc$in_args$ci_emp
-            cat(paste0("!!  shc constructed using FWER control, ",
-                       "using ci_emp from in_args(shc).  !!"))
+            warning("shc constructed using fwer = TRUE, using ci_emp from in_args(shc)")
         }
         if (shc$in_args$ci_idx != ci_idx) {
             ci_idx <- shc$in_args$ci_idx
-            cat(paste0("!!  shc constructed using FWER control, ",
-                       "using ci_idx from in_args(shc).  !!"))
+            warning("shc constructed using fwer = TRUE, using ci_idx from in_args(shc)")
         }
     }
 
@@ -103,8 +99,7 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
     if (fwer & alpha >= shc$in_args$alpha) {
         if (alpha > shc$in_args$alpha) {
             alpha <- shc$in_args$alpha
-            cat("!!  shc constructed using smaller alpha than specified to plot.  !!")
-            cat("!!  using alpha from in_args(shc).  !!")
+            stop("shc constructed using smaller alpha than specified to plot")
         }
         cutoff <- fwer_cutoff(shc, alpha)
         nd_type <- shc$nd_type
