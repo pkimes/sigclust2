@@ -79,7 +79,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
         for (k in K) {
             plot(0, 0, col="white")
             text(0, 0, paste("K =", k))
-            .daignostic_k(obj, k, ci_idx, pty)
+            .diagnostic_k(obj, k, ci_idx, pty)
         }
         dev.off()
     }
