@@ -99,7 +99,7 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
     if (fwer & alpha >= shc$in_args$alpha) {
         if (alpha > shc$in_args$alpha) {
             alpha <- shc$in_args$alpha
-            stop("shc constructed using smaller alpha than specified to plot")
+            warning(paste0("shc constructed using smaller alpha than specified to plot; using alpha = ", alpha))
         }
         cutoff <- fwer_cutoff(shc, alpha)
         nd_type <- shc$nd_type
