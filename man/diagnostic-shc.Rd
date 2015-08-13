@@ -28,7 +28,7 @@ see details for more information on different plot types available
 \item{...}{other parameters passed to plots}
 }
 \value{
-prints plots to \code{paste0(fname, ".pdf")} if \code{fname} is specified or \code{length(K)>1}.
+Prints plots to \code{paste0(fname, ".pdf")} if \code{fname} is specified or \code{length(K)>1}.
 }
 \description{
 Provides visualizations to check the null Gaussian assumption at a specified
@@ -37,8 +37,8 @@ range of nodes along the dendrogram
 \details{
 If \code{K} is a single value, the default behavior is to output the diagnostic
 plot to the current device. This behavior is overriden if \code{fname} is specified
-by the user. If \code{K} includes several values, than the diagnostic plots are
-returned to \code{fname}.pdf. If \code{fname} is not specified, a default value,
+by the user. If \code{K} is a set of values, than the diagnostic plots are
+printed to \code{paste0(fname, ".pdf")}. If \code{fname} is not specified, a default value,
 "shc_diagnostic", is used.
 
 The \code{pty} parameter accepts the following options:

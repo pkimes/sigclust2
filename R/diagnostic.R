@@ -29,13 +29,13 @@ diagnostic <- function(obj, ...) {
 #' @param ... other parameters passed to plots
 #' 
 #' @return
-#' prints plots to \code{paste0(fname, ".pdf")} if \code{fname} is specified or \code{length(K)>1}.
+#' Prints plots to \code{paste0(fname, ".pdf")} if \code{fname} is specified or \code{length(K)>1}.
 #'
 #' @details
 #' If \code{K} is a single value, the default behavior is to output the diagnostic
 #' plot to the current device. This behavior is overriden if \code{fname} is specified
-#' by the user. If \code{K} includes several values, than the diagnostic plots are
-#' returned to \code{fname}.pdf. If \code{fname} is not specified, a default value,
+#' by the user. If \code{K} is a set of values, than the diagnostic plots are
+#' printed to \code{paste0(fname, ".pdf")}. If \code{fname} is not specified, a default value,
 #' "shc_diagnostic", is used.
 #'
 #' The \code{pty} parameter accepts the following options:
@@ -54,24 +54,32 @@ diagnostic <- function(obj, ...) {
 diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
                            fname = NULL, ci_idx = 1,
                            pty = "all", ...) {
-    print("function not yet implemented. sorry.")
-    to_file <- FALSE
 
-    ##check default values
+    ## available plot types
+    avail_pty <- c("background", "qq", "diag", "pvalue", "all")
+    
+    ## check default values
     if (length(K) == 0 || min(K) < 1 || max(K) > nrow(obj$p_norm)-1) {
         stop("K must be a set of indices between 1 and n-1")
     }
     if (!is.null(fname) || !is.character(fname)) {
         stop("fname must be NULL or a string")
     }
-
-    ##parse default fname behavior
+    if (length(pty) > 1) {
+        stop("can only specify one plot type")
+    } else if (sum(grepl(pty, avail_pty)) > 1) {
+        stop("specified plot type matches more than one plot type")
+    } else if (sum(grepl(pty, avail_pty)) == 0) {
+        stop(paste("pty is not a valid value, please specify one of (or part of):",
+                   paste(availty, collapse=", ")))
+    }
+    
+    ## parse default fname behavior
     if (is.null(fname) && length(K) > 1) {
         fname <- "shc_diagnostic"
     }
 
-
-    ##create plots 
+    ## create plots 
     if (is.null(fname)) {
         .diagnostic_k(obj, K, ci_idx, pty)
     } else {
@@ -88,16 +96,16 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
 
 
 
-##code cleaned/modified from sigclust CRAN package, plot function
+## code cleaned/modified from sigclust CRAN package, plot function
 .diagnostic_k <- function(shc, k, ci_idx, pty) {
 
-    ##identify subtree of x
+    ## identify subtree of x
     idx_sub <- unlist(shc$hc_idx[k, ])
     k_mat <- shc$in_mat[idx_sub, ]
     n <- nrow(k_mat)
     d <- ncol(k_mat)
 
-    ##parameters from shc object
+    ## parameters from shc object
     icovest <- shc$in_args$icovest
     n_sim <- shc$in_args$n_sim
     keigval_dat <- shc$eigval_dat[k, ]
@@ -108,7 +116,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
     kp_emp <- shc$p_emp[k, ci_idx]
     kp_norm <- shc$p_norm[k, ci_idx]
 
-    ##vectorize data and compute statistics
+    ## vectorize data and compute statistics
     overlay.x <- as.vector(k_mat)
     mean <- mean(overlay.x)
     sd <- sd(overlay.x)
@@ -117,8 +125,8 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
     ntot <- length(overlay.x)
     maxnol <- 5000
 
-    ##Background Standard Deviation Diagnostic Plot
-    if (pty == "background" | pty == "all") {
+    ## Background Standard Deviation Diagnostic Plot
+    if (any(grepl(pty, c("all", "background")))) {
         par(mfrow=c(1, 1))
         par(mar=c(5, 4, 4, 2) + 0.1)
         nused <- maxnol
@@ -170,8 +178,8 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
     }
 
     
-    ##QQ plot
-    if (pty == "qq" | pty == "all") {
+    ## QQ plot
+    if (any(grepl(pty, c("all", "qq")))) {
         par(mfrow=c(1, 1))  
         par(mar=c(5, 4, 4, 2) + 0.1)
         qqnorm <- qqnorm(as.vector(shc$in_mat), plot.it=FALSE)
@@ -209,8 +217,8 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
     }
 
 
-    ##covariance estimation diagnostic plot
-    if (pty == "diag" | pty == "all") {
+    ## covariance estimation diagnostic plot
+    if (any(grepl(pty, c("all", "diag")))) {
         ncut <- 100
         if (d > ncut) {
             par(mfrow=c(2, 2))
@@ -310,8 +318,8 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
     }
 
     
-    ##p-value plot
-    if (pty == "pvalue" | pty == "all") {
+    ## p-value plot
+    if (any(grepl(pty, c("all", "pvalue")))) {
         par(mfrow=c(1, 1))
         par(mar=c(5, 4, 4, 2) + 0.1)
         denpval <- density(kci_sim)
