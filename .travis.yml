@@ -10,6 +10,7 @@ before_install:
 
 install:
   - ./travis-tool.sh bioc_install WGCNA BiocStyle
+  - ./travis-tool.sh install_github hadley/testthat
   - ./travis-tool.sh install_deps
 
 script: ./travis-tool.sh run_tests
