@@ -1,37 +1,38 @@
 #' statistical Significance for Hierarchical Clustering (SHC) 
-#' algorithm
 #'
-#' implements the Monte Carlo simulation based
-#' significance testing procedure described in Kimes et al. (2014+).
-#' Statistical significance is evaluated at each node along the tree
-#' starting from the root using a Gaussian null hypothesis test. 
+#' Implements the Monte Carlo simulation based significance testing
+#' procedure for hierarchical clustering described in Kimes et al. (2015+).
+#' Statistical significance is evaluated at each node along the hierarchical
+#' tree (dendrogram) starting from the root using a Gaussian null hypothesis test. 
 #' A corresponding family-wise error rate (FWER) controlling procedure is
 #' provided.
 #' 
-#' @param x a dataset with n rows and p columns, with observations in rows
+#' @param x a dataset with n rows and p columns, with observations in rows and
+#'        features in columns.
 #' @param metric a string specifying the metric to be used in the hierarchical 
 #'        clustering procedure. This must be a metric accepted by \code{dist}, 
-#'        e.g. "euclidean," or "cor" (1 - Pearson correlation)
-#'        (default = "euclidean")
+#'        e.g. "euclidean," or "cor" (1 - Pearson correlation), and may be a function
+#'        which takes a numeric matrix as input and returns an object of class
+#'        \code{dist} from the rows of the matrix. (default = "euclidean")
 #' @param linkage a string specifying the linkage to be used in the hierarchical 
 #'        clustering procedure. This must be a linkage accepted by 
 #'        \code{Rclusterpp.hclust} if \code{rcpp=TRUE}, e.g. "ward",
-#'        or \code{stats::hclust}, if \code{rcpp=FALSE}, e.g. "ward.D2"
+#'        or \code{stats::hclust} if \code{rcpp=FALSE}, e.g. "ward.D2".
 #'        (default = "ward.D2")
 #' @param l an integer value specifying the power of the Minkowski distance, if 
-#'        used (default = 2)
+#'        used. (default = 2)
 #' @param alpha a value between 0 and 1 specifying the desired level of the 
-#'        test. If no FWER control is desired, simply set alpha to 1 (default = 1)
-#' @param n_sim a numeric value specifying the number of simulations for Monte Carlo 
-#'        testing (default = 100) 
+#'        test. If no FWER control is desired, simply set alpha to 1. (default = 1)
+#' @param n_sim a numeric value specifying the number of simulations at each node
+#'        for Monte Carlo testing. (default = 100) 
 #' @param n_min an integer specifying the minimum number of observations needed
-#'        to calculate a p-value (default = 10)
-#' @param icovest an integer between 1 and 3 specifying the null covariance
+#'        to calculate a p-value. (default = 10)
+#' @param icovest an integer (1, 2 or 3) specifying the null covariance
 #'        estimation method to be used. See \code{\link{null_eigval}} for more
-#'        details (default = 1)
+#'        details. (default = 1)
 #' @param bkgd_pca a logical value whether to use principal component scores when
-#'        estimating background noise under the null (default = TRUE)
-#' @param rcpp a logical value whether to use the \code{Rclusterpp} package
+#'        estimating background noise under the null. (default = TRUE)
+#' @param rcpp a logical value whether to use the \code{Rclusterpp} package.
 #'        (default = FALSE)
 #' @param ci a string vector specifying the cluster indices to be used for 
 #'        testing along the dendrogram. Currently, options include: "2CI", 
@@ -40,10 +41,10 @@
 #'        should be used to cluster the simulated null ditributions. Currently, options
 #'        include: "2means" and "hclust". While "hclust" typically provides greater power
 #'        for rotation invariant combinations of metric and linkage function, 
-#'        if a non-rotation invariant metric, e.g. Pearson correlation, is used, it is
+#'        if a non-rotation invariant metric, e.g. Pearson correlation, is used it is
 #'        recommended that the "2means" option is specified. Note, \code{null_alg} and
 #'        \code{ci} must be of equal length. (default = "hclust")
-#' @param ci_idx a numeric value between 1 and \code{length(ci)} 
+#' @param ci_idx an integer between 1 and \code{length(ci)} 
 #'        specifiying which CI to use for the FWER stopping rule.
 #'        This only has an effect if \code{alpha} is specified to a non-default 
 #'        value. (default = 1)
@@ -160,6 +161,9 @@ shc <- function(x, metric = "euclidean", linkage = "ward.D2", l = 2,
         stop("n_min must be <= n")
     }
 
+    if (!is.character(metric)) {
+        ## need to validate returns dist obj and properly handle
+    }
     
     ##apply initial clustering
     x_clust <- .initcluster(x, n, p, metric, linkage, l, 
@@ -336,16 +340,18 @@ shc <- function(x, metric = "euclidean", linkage = "ward.D2", l = 2,
 ##parse clustering parameters to produce dendrogram
 .cluster_shc <- function(x, metric, linkage, l, rcpp) {
 
-    if (metric == "cor") {
-        dmat <- 1 - WGCNA::cor(t(x))
-        hc_dat <- hclust(as.dist(dmat), method=linkage)
-    } else {
-        if (rcpp) {
+    if (is.character(metric)) {
+        if (metric == "cor") {
+            dmat <- 1 - WGCNA::cor(t(x))
+            hc_dat <- hclust(as.dist(dmat), method=linkage)
+        } else if (rcpp) {
             hc_dat <- Rclusterpp.hclust(x, method=linkage, 
                                         distance=metric, p=l)
         } else {
             hc_dat <- hclust(dist(x, method=metric, p=l), method=linkage)
         }
+    } else {
+        hc_dat <- hclust(metrix(x), method=linkage)
     }
     hc_dat
 }
