@@ -36,8 +36,10 @@ test. If no FWER control is desired, simply set alpha to 1. (default = 1)}
 estimation method to be used. See \code{\link{null_eigval}} for more
 details. (default = 1)}
 
-\item{bkgd_pca}{a logical value whether to use principal component scores when
-estimating background noise under the null. (default = FALSE)}
+\item{bkgd_pca}{a logical value specifying whether to use scaled PCA scores
+over raw data to estimate the background noise. When FALSE, raw estimate
+is used; when TRUE, minimum of PCA and raw estimates is used.
+(default = FALSE)}
 
 \item{n_sim}{a numeric value specifying the number of simulations at each node
 for Monte Carlo testing. (default = 100)}

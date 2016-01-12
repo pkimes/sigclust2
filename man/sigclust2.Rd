@@ -22,8 +22,10 @@ for k-means clustering passed to \code{kmeans}. (default = 1)}
 estimation method to be used. See \code{\link{null_eigval}} for more
 details. (default = 1)}
 
-\item{bkgd_pca}{a logical value whether to use principal component scores when
-estimating background noise under the null. (default = FALSE)}
+\item{bkgd_pca}{a logical value specifying whether to use scaled PCA scores
+over raw data to estimate the background noise. When FALSE, raw estimate
+is used; when TRUE, minimum of PCA and raw estimates is used.
+(default = FALSE)}
 
 \item{labels}{a n-vector of 1s and 2s specifying cluster labels for testing
 instead of using \code{kmeans}. (default = NULL)}

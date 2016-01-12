@@ -12,8 +12,10 @@
 #' @param icovest an integer (1, 2 or 3) specifying the null covariance
 #'        estimation method to be used. See \code{\link{null_eigval}} for more
 #'        details. (default = 1)
-#' @param bkgd_pca a logical value whether to use principal component scores when
-#'        estimating background noise under the null. (default = FALSE)
+#' @param bkgd_pca a logical value specifying whether to use scaled PCA scores
+#'        over raw data to estimate the background noise. When FALSE, raw estimate
+#'        is used; when TRUE, minimum of PCA and raw estimates is used.
+#'        (default = FALSE)
 #' @param labels a n-vector of 1s and 2s specifying cluster labels for testing
 #'        instead of using \code{kmeans}. (default = NULL)
 #' 

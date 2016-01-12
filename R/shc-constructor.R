@@ -30,8 +30,10 @@
 #' @param icovest an integer (1, 2 or 3) specifying the null covariance
 #'        estimation method to be used. See \code{\link{null_eigval}} for more
 #'        details. (default = 1)
-#' @param bkgd_pca a logical value whether to use principal component scores when
-#'        estimating background noise under the null. (default = FALSE)
+#' @param bkgd_pca a logical value specifying whether to use scaled PCA scores
+#'        over raw data to estimate the background noise. When FALSE, raw estimate
+#'        is used; when TRUE, minimum of PCA and raw estimates is used.
+#'        (default = FALSE)
 #' @param rcpp a logical value whether to use the \code{Rclusterpp} package.
 #'        (default = FALSE)
 #' @param ci a string vector specifying the cluster indices to be used for 

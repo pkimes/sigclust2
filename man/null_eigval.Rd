@@ -18,7 +18,9 @@ estimation procedure to use. See details for more
 information on the possible estimation procedures. (default = 1)}
 
 \item{bkgd_pca}{a logical value specifying whether to use scaled PCA scores
-or raw data to estimate the background noise. (default = FALSE)}
+over raw data to estimate the background noise. When FALSE, raw estimate
+is used; when TRUE, minimum of PCA and raw estimates is used.
+(default = FALSE)}
 }
 \value{
 The function returns a list of estimated parameters for the null Gaussian

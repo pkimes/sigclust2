@@ -13,7 +13,9 @@
 #'        estimation procedure to use. See details for more
 #'        information on the possible estimation procedures. (default = 1)
 #' @param bkgd_pca a logical value specifying whether to use scaled PCA scores
-#'        or raw data to estimate the background noise. (default = FALSE)
+#'        over raw data to estimate the background noise. When FALSE, raw estimate
+#'        is used; when TRUE, minimum of PCA and raw estimates is used.
+#'        (default = FALSE)
 #' 
 #' @return
 #' The function returns a list of estimated parameters for the null Gaussian
@@ -59,7 +61,8 @@ null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = FALSE) {
     
     ## compute background based on PCA scores or raw data
     if (bkgd_pca) {
-        mad1 <- mad(as.matrix(prcomp(x)$x)) / sqrt(p/(n-1))
+        mad1 <- min(mad(as.matrix(x)),
+                    mad(as.matrix(prcomp(x)$x)) / sqrt(p/(n-1)))
     } else {
         mad1 <- mad(as.matrix(x))
     }
