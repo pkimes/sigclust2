@@ -3,18 +3,19 @@
 #' Re-implementation of the Monte Carlo simulation based
 #' significance testing procedure described in Liu et al. (2008)
 #' 
-#' @param x a dataset with n rows and p columns, with observations in rows
+#' @param x a dataset with n rows and p columns, with observations in rows and
+#'        features in columns.
 #' @param n_sim a numeric value specifying the number of simulations for Monte Carlo 
-#'        testing (default = 100)
+#'        testing. (default = 100)
 #' @param n_start a numeric value specifying the number of random starts to be used
-#'        for k-means clustering passed to \code{kmeans} (default = 1)
-#' @param icovest an integer between 1 and 3 specifying the null covariance
+#'        for k-means clustering passed to \code{kmeans}. (default = 1)
+#' @param icovest an integer (1, 2 or 3) specifying the null covariance
 #'        estimation method to be used. See \code{\link{null_eigval}} for more
-#'        details (default = 1)
+#'        details. (default = 1)
 #' @param bkgd_pca a logical value whether to use principal component scores when
-#'        estimating background noise under the null (default = TRUE)
+#'        estimating background noise under the null. (default = FALSE)
 #' @param labels a n-vector of 1s and 2s specifying cluster labels for testing
-#'        instead of using \code{kmeans} (default = NULL)
+#'        instead of using \code{kmeans}. (default = NULL)
 #' 
 #' @return
 #' The function returns a \code{sigclust2} S3-object containing the 
@@ -34,8 +35,8 @@
 #' @name sigclust2
 #' @aliases sigclust2-constructor
 #' @author Patrick Kimes
-sigclust2 <- function(x, n_sim = 100, n_start = 1, icovest = 1, bkgd_pca = TRUE,
-                      labels = NULL) {
+sigclust2 <- function(x, n_sim = 100, n_start = 1, icovest = 1,
+                      bkgd_pca = FALSE, labels = NULL) {
     
     n <- nrow(x)
     p <- ncol(x)

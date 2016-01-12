@@ -1,17 +1,19 @@
 #' Eigenvalue estimation for null Gaussian based testing procedures
 #'
-#' function to compute the eigenvalues of the null Gaussian distribution for
+#' Function to compute the eigenvalues of the null Gaussian distribution for
 #' significance of clustering testing procedures which rely on a null Gaussian
-#' factor model assumption
+#' factor model assumption. When the number of observations is substantially
+#' greater than the number of features, the sample covariance matrix should be
+#' used.
 #' 
-#' @param x a matrix of size n by p containing the original data
-#' @param n an integer number of samples
-#' @param p an integer number of features/covariates
+#' @param x a matrix of size n by p containing the original data.
+#' @param n an integer number of samples.
+#' @param p an integer number of features/covariates.
 #' @param icovest an integer between 1 and 3 corresponding to the covariance
 #'        estimation procedure to use. See details for more
-#'        information on the possible estimation procedures (default = 1)
+#'        information on the possible estimation procedures. (default = 1)
 #' @param bkgd_pca a logical value specifying whether to use scaled PCA scores
-#'        or raw data to estimate the background noise (default = TRUE)
+#'        or raw data to estimate the background noise. (default = FALSE)
 #' 
 #' @return
 #' The function returns a list of estimated parameters for the null Gaussian
@@ -45,7 +47,7 @@
 #'
 #' @export
 #' @author Patrick Kimes
-null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = TRUE) {
+null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = FALSE) {
 
     if (!(icovest %in% 1:3)) {
         warning("icovest should be 1, 2 or 3. Using default value: 1.")

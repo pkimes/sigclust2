@@ -31,7 +31,7 @@
 #'        estimation method to be used. See \code{\link{null_eigval}} for more
 #'        details. (default = 1)
 #' @param bkgd_pca a logical value whether to use principal component scores when
-#'        estimating background noise under the null. (default = TRUE)
+#'        estimating background noise under the null. (default = FALSE)
 #' @param rcpp a logical value whether to use the \code{Rclusterpp} package.
 #'        (default = FALSE)
 #' @param ci a string vector specifying the cluster indices to be used for 
@@ -124,7 +124,7 @@
 #' @aliases shc-constructor
 #' @author Patrick Kimes
 shc <- function(x, metric = "euclidean", linkage = "ward.D2", l = 2,
-                alpha = 1, icovest = 1, bkgd_pca = TRUE, n_sim = 100,
+                alpha = 1, icovest = 1, bkgd_pca = FALSE, n_sim = 100,
                 n_min = 10, rcpp = FALSE, ci = "2CI", null_alg = "hclust",
                 ci_idx = 1, ci_emp = FALSE) {  
     
@@ -304,7 +304,7 @@ shc <- function(x, metric = "euclidean", linkage = "ward.D2", l = 2,
 }
 
 
-##determine obs indices at each node of the denrogram
+##determine obs indices at each node of the dendrogram
 .idx_hc <- function(hc, n) {
     ##list array of cluster indices at each of the n-1 merges
     idx_hc <- array(list(), c(2*n-1, 2))
