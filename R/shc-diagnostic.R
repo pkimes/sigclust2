@@ -1,15 +1,3 @@
-#' null assumption diagnostic plots
-#'
-#' @name diagnostic-generic
-#' @docType methods
-#' @export
-#' @keywords internal
-diagnostic <- function(obj, ...) {
-    UseMethod("diagnostic", obj)
-}
-
-
-
 #' plot diagnostics for shc object
 #'
 #' Provides visualizations to check the null Gaussian assumption at a specified

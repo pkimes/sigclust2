@@ -20,8 +20,8 @@
 #'        instead of using \code{kmeans}. (default = NULL)
 #' 
 #' @return
-#' The function returns a \code{sigclust2} S3-object containing the 
-#' resulting p-values. The \code{sigclust2} object has following attributes:
+#' The function returns a \code{sigclust} S3-object containing the 
+#' resulting p-values. The \code{sigclust} object has following attributes:
 #' \itemize{
 #' \item{\code{in_mat}}: {the original data matrix passed to the constructor}
 #' }
@@ -34,11 +34,11 @@
 #' }
 #'
 #' @export
-#' @name sigclust2
-#' @aliases sigclust2-constructor
+#' @name sigclust
+#' @aliases sigclust-constructor
 #' @author Patrick Kimes
-sigclust2 <- function(x, n_sim = 100, n_start = 1, icovest = 1,
-                      bkgd_pca = FALSE, labels = NULL) {
+sigclust <- function(x, n_sim = 100, n_start = 1, icovest = 1,
+                     bkgd_pca = FALSE, labels = NULL) {
     
     n <- nrow(x)
     p <- ncol(x)
@@ -69,7 +69,7 @@ sigclust2 <- function(x, n_sim = 100, n_start = 1, icovest = 1,
     p_norm <- pnorm(ci_dat, mean(ci_sim), sd(ci_sim))
     p_emp <- mean(ci_sim <= ci_dat)
 
-    ## return sigclust2 structure
+    ## return sigclust structure
     structure(
         list(in_mat = x,
              in_args = list(n_sim = n_sim, n_start = n_start,
@@ -81,7 +81,7 @@ sigclust2 <- function(x, n_sim = 100, n_start = 1, icovest = 1,
              ci_sim = ci_sim,
              p_emp = p_emp,
              p_norm = p_norm),
-        class = "sigclust2")
+        class = "sigclust")
 }
 
 
