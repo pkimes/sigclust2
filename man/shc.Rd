@@ -5,20 +5,30 @@
 \alias{shc-constructor}
 \title{statistical Significance for Hierarchical Clustering (SHC)}
 \usage{
-shc(x, metric = "euclidean", linkage = "ward.D2", l = 2, alpha = 1,
-  icovest = 1, bkgd_pca = FALSE, n_sim = 100, n_min = 10,
-  rcpp = FALSE, ci = "2CI", null_alg = "hclust", ci_idx = 1,
-  ci_emp = FALSE)
+shc(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
+  linkage = "ward.D2", l = 2, alpha = 1, icovest = 1,
+  bkgd_pca = FALSE, n_sim = 100, n_min = 10, rcpp = FALSE, ci = "2CI",
+  null_alg = "hclust", ci_idx = 1, ci_emp = FALSE)
 }
 \arguments{
 \item{x}{a dataset with n rows and p columns, with observations in rows and
 features in columns.}
 
 \item{metric}{a string specifying the metric to be used in the hierarchical 
-clustering procedure. This must be a metric accepted by \code{dist}, 
-e.g. "euclidean," or "cor" (1 - Pearson correlation), and may be a function
-which takes a numeric matrix as input and returns an object of class
-\code{dist} from the rows of the matrix. (default = "euclidean")}
+clustering procedure. This must be a metric accepted by \code{dist}
+or "cor" (to specify 1 - Pearson correlation). (default = "euclidean")}
+
+\item{vecmet}{a function taking two vectors as input and returning a real-valued
+number which specifies how dissimilarities should be computed between rows
+of the data matrix (\code{x}). If non-NULL, will take precedence over
+\code{metric}. Only one of \code{vecmet} or \code{matmet} can be specified.
+(default = NULL)}
+
+\item{matmet}{a function taking a matrix as input and returning an object of class
+\code{dist} representing dissimilarities between rows of the data matrix
+(\code{x}). If non-NULL, will take precedence over \code{metric}.
+Only one of \code{vecmet} or \code{matmet} can be specified.
+(default = NULL)}
 
 \item{linkage}{a string specifying the linkage to be used in the hierarchical 
 clustering procedure. This must be a linkage accepted by 
@@ -130,12 +140,39 @@ the procedure by reducing the number of tests considered.
 If p-values are desired for all nodes, simply set \code{fwer} to \code{FALSE}
 and \code{alpha} to 1. The FWER cutoffs may still be computed using
 \code{fwer_cutoff} or by specifying \code{alpha} when calling \code{plot}.
+
+The input \code{metric} can either be a character string specifying a metric
+recognized by \code{dist()} or \code{"cor"} for Pearson correlation.
+Alternatively, a user-defined dissimilarity function can be specified suing either
+the \code{matmet} or \code{vecmet} parameter. If specified, \code{matmet} should be a
+function which takes a matrix as input and returns an object of class \code{dist}
+from the columns of the matrix. If specified, \code{vecmet} must be a function
+which computes a real-valued dissimilarity value between two input vectors. This
+function will be used to compute the dissimilarilty between columns of the data matrix.
+If either \code{matmet} or \code{vecmet} is specified, \code{metric} will be ignored.
+If both \code{matmet} and \code{vecmet} are specified, the function exit with an error.
+Examples using \code{metric}, \code{matmet}, and \code{vecmet} are provided below.
 }
 \examples{
+## using a string input to metric
 data <- rbind(matrix(rnorm(100, mean = 2), ncol = 2),
               matrix(rnorm(100, mean = -1), ncol = 2))
-shc_cars <- shc(data, metric = "euclidean", linkage = "average")
-tail(shc_cars$p_norm, 10)
+shc_metric <- shc(data, metric = "cor", linkage = "average")
+tail(shc_metric$p_norm, 10)
+
+## using a function input to vecmet
+vfun <- function(x, y) { cor(x, y) }
+shc_vecmet <- shc(data, vecmet = vfun, linkage = "average")
+tail(shc_vecmet$p_norm, 10)
+
+## using a function input to matmet
+mfun <- Vectorize(vfun)
+matdist <- function(x) {
+    as.dist(outer(split(x, row(x)), split(x, row(x)), mfun))
+}
+## this should return the same result as just as.dist(cor(x)))
+shc_matmet <- shc(data, matmet = matdist, linkage = "average")
+tail(shc_matmet$p_norm, 10)
 
 }
 \author{
@@ -143,7 +180,7 @@ Patrick Kimes
 }
 \references{
 \itemize{
-    \item Kimes, P. K., Hayes, D. N., Liu Y., and Marron, J. S. (2014)
+    \item Kimes, P. K., Hayes, D. N., Liu Y., and Marron, J. S. (2016)
           Statistical significance for hierarchical clustering.
           pre-print available.
 }

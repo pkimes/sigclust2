@@ -10,23 +10,18 @@
 #' @param x a dataset with n rows and p columns, with observations in rows and
 #'        features in columns.
 #' @param metric a string specifying the metric to be used in the hierarchical 
-#'        clustering procedure. This must be a metric accepted by \code{dist}, 
-#'        e.g. "euclidean," or "cor" (1 - Pearson correlation), and may be a function
-#'        which takes a numeric matrix as input and returns an object of class
-#'        \code{dist} from the rows of the matrix. (default = "euclidean")
+#'        clustering procedure. This must be a metric accepted by \code{dist}
+#'        or "cor" (to specify 1 - Pearson correlation). (default = "euclidean")
 #' @param vecmet a function taking two vectors as input and returning a real-valued
-#'        number which specifies how dissimilarities should be computed between columns
-#'        of the data matrix. If non-NULL, will take precedence over \code{metric}.
-#'        Only one of \code{vecmet} or \code{matmet} can be specified.
+#'        number which specifies how dissimilarities should be computed between rows
+#'        of the data matrix (\code{x}). If non-NULL, will take precedence over
+#'        \code{metric}. Only one of \code{vecmet} or \code{matmet} can be specified.
 #'        (default = NULL)
 #' @param matmet a function taking a matrix as input and returning an object of class
-#'        \code{dist} representing dissimilarities between columns
-#'        of the data matrix. If non-NULL, will take precedence over \code{metric}.
+#'        \code{dist} representing dissimilarities between rows of the data matrix
+#'        (\code{x}). If non-NULL, will take precedence over \code{metric}.
 #'        Only one of \code{vecmet} or \code{matmet} can be specified.
 #'        (default = NULL)
-#' @param matmet a function specifying the metric to be used to compute
-#'        dissimilarities between columns of the data matrix. If non-NULL will take
-#'        precedence over \code{metric}. (default = NULL)
 #' @param linkage a string specifying the linkage to be used in the hierarchical 
 #'        clustering procedure. This must be a linkage accepted by 
 #'        \code{Rclusterpp.hclust} if \code{rcpp=TRUE}, e.g. "ward",
@@ -146,8 +141,9 @@
 #' ## using a function input to matmet
 #' mfun <- Vectorize(vfun)
 #' matdist <- function(x) {
-#'     as.dist(outer(split(x, col(x)), split(x, col(x)), mfun))
-#' } (this should return the same result as just as.dist(cor(x)))
+#'     as.dist(outer(split(x, row(x)), split(x, row(x)), mfun))
+#' }
+#' ## this should return the same result as just as.dist(cor(x)))
 #' shc_matmet <- shc(data, matmet = matdist, linkage = "average")
 #' tail(shc_matmet$p_norm, 10)
 #'
@@ -172,6 +168,10 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
     
     n <- nrow(x)
     p <- ncol(x)
+
+    if (n < 3) {
+        stop("n must be >= 3")
+    }
 
     n_ci <- length(ci)
     if (length(null_alg) != n_ci) {
@@ -215,81 +215,97 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
     }
         
     if (!is.null(matmet)) {
-        if (!is.function(matmet) {
+        if (!is.function(matmet)) {
             stop(paste("matmet must be a function taking a data matrix as input",
-                       "and returning an object of class dist")))
+                       "and returning an object of class dist"))
         }
     }
+
+    ## test vecmet and assign matmet if vecmet specified
+    if (!is.null(vecmet)) {
+        tryCatch({
+            tmp <- vecmet(x[1, ], x[2, ])
+        }, warning = function(e) {
+            warning(paste0("warning for vecmet specification: ", e))
+        }, error = function(e) {
+            stop(paste0("error with vecmet specification: ", e))
+        })
+        matmet <- function(x) {
+            as.dist(outer(split(x, row(x)), split(x, row(x)),
+                          Vectorize(vecmet)))
+        }
+    }        
+            
     
-    ##apply initial clustering
-    x_clust <- .initcluster(x, n, p, metric, linkage, l, 
+    ## apply initial clustering
+    x_clust <- .initcluster(x, n, p, metric, matmet, linkage, l, 
                            n_ci, ci, rcpp)
     ci_dat <- x_clust$ci_dat
     hc_dat <- x_clust$hc_dat
     idx_hc <- x_clust$idx_hc
 
-    ##for plotting purposes, change heights of dendrogram
+    ## for plotting purposes, change heights of dendrogram
     if (linkage == "ward" & rcpp) {
         hc_dat$height <- sqrt(2*hc_dat$height)
     }
     
-    ##p-values for all <=(n-1) tests
+    ## p-values for all <= (n-1) tests
     p_emp <- matrix(2, nrow=n-1, ncol=n_ci)
     p_norm <- matrix(2, nrow=n-1, ncol=n_ci)
     colnames(p_emp) <- paste(null_alg, ci, sep="_")
     colnames(p_norm) <- paste(null_alg, ci, sep="_")
     
-    ##null covariance parameters for all <=(n-1) tests
+    ## null covariance parameters for all <= (n-1) tests
     eigval_dat <- matrix(-1, nrow=n-1, ncol=p)
     eigval_sim <- matrix(-1, nrow=n-1, ncol=p)
     backvar <- rep(-1, n-1)
     ci_sim <- array(-1, dim=c(n-1, n_sim, n_ci))
     
-    ##determine parent nodes for all nodes
+    ## determine parent nodes for all nodes
     pd_map <- .pd_map(hc_dat, n)
     
-    ##compute Meinshausen cutoffs for significance at alpha
+    ## compute Meinshausen cutoffs for significance at alpha
     cutoff <- fwer_cutoff(idx_hc, alpha)
 
-    ##keep track of each node was tested
+    ## keep track of each node was tested
     nd_type <- rep("", n)
     nd_type[n] <- "sig"
     
-    ##move through nodes of dendrogram in reverse order
+    ## move through nodes of dendrogram in reverse order
     for (k in (n-1):1) { 
 
-        ##indices for subtree
+        ## indices for subtree
         idx_sub <- unlist(idx_hc[k, ])
         n_sub <- length(idx_sub)
         
-        ##only calc p-values for branches w/ more than n_min
+        ## only calc p-values for branches w/ more than n_min
         if (n_sub < n_min) {
             nd_type[k] <- "n_small"
             next
         }
 
-        ##if parent wasn't significant, skip
+        ## if parent wasn't significant, skip
         ## - placed after n_min check on purpose
         if (nd_type[pd_map[k]] != "sig") {
             nd_type[k] <- "no_test"
             next 
         }
 
-        ##estimate null Gaussian
+        ## estimate null Gaussian
         xk_null <- null_eigval(x[idx_sub, ], n_sub, p, icovest, bkgd_pca)
 
-        ##prevent messages from looped application of clustering
+        ## prevent messages from looped application of clustering
         ## messages will be thrown once at initial clustering
         suppressMessages(
-            ##simulate null datasets
+            ## simulate null datasets
             for (i in 1:n_sim) {
                 xsim <- .simnull(xk_null$eigval_sim, n_sub, p)
-                ci_sim[k, i, ] <- .calcCI_shc(xsim, p, metric, linkage, l, 
+                ci_sim[k, i, ] <- .calcCI_shc(xsim, p, metric, matmet, linkage, l, 
                                               n_ci, ci, null_alg, rcpp)
             }
         )
         
-        ##compute p-values
+        ## compute p-values
         m_idx <- colMeans(as.matrix(ci_sim[k, , ]))
         s_idx <- apply(as.matrix(ci_sim[k, , ]), 2, sd)
         p_norm[k, ] <- pnorm(ci_dat[k, ], m_idx, s_idx)
@@ -297,16 +313,16 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
                                    matrix(ci_dat[k, ], nrow=n_sim, 
                                           ncol=n_ci, byrow=TRUE))
 
-        ##flip p-values for linkage based testing
+        ## flip p-values for linkage based testing
         p_norm[k, ci == "linkage"] <- 1-p_norm[k, ci == "linkage"]
         p_emp[k, ci == "linkage"] <- 1-p_emp[k, ci == "linkage"]
 
-        ##keep everything
+        ## keep everything
         eigval_dat[k, ] <- xk_null$eigval_dat
         eigval_sim[k, ] <- xk_null$eigval_sim
         backvar[k] <- xk_null$backvar
         
-        ##update nd_type
+        ## update nd_type (note type)
         if (alpha < 1) {
             if (ci_emp) {
                 nd_type[k] <- ifelse(p_emp[k, ci_idx] < cutoff[k],
@@ -346,9 +362,9 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
 ## #############################################################################
 ## helper functions
 
-##identify parent node of each node in dendrogram
+## identify parent node of each node in dendrogram
 .pd_map <- function(hc, n) {
-    ##determine parent branch node for all children nodes along dendrogram
+    ## determine parent branch node for all children nodes along dendrogram
     pd_pairs <- rbind(cbind(hc$merge[, 1], 1:(n-1)), 
                       cbind(hc$merge[, 2], 1:(n-1)))
     pd_map <- data.frame(pd_pairs[pd_pairs[, 1]>0, ])
@@ -360,14 +376,14 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
 }
 
 
-##determine obs indices at each node of the dendrogram
+## determine obs indices at each node of the dendrogram
 .idx_hc <- function(hc, n) {
-    ##list array of cluster indices at each of the n-1 merges
+    ## list array of cluster indices at each of the n-1 merges
     idx_hc <- array(list(), c(2*n-1, 2))
     idx_hc[1:n, 1] <- as.list(n:1)
     idx_hc[(n+1):(2*n-1), ] <- hc$merge + n + (hc$merge<0)
     
-    ##complete idx_hc
+    ## complete idx_hc
     for (k in 1:(n-1)) {
         idx_hc[[n+k, 1]] <- unlist(idx_hc[idx_hc[[n+k, 1]], ])
         idx_hc[[n+k, 2]] <- unlist(idx_hc[idx_hc[[n+k, 2]], ])
@@ -378,11 +394,11 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
 }
 
 
-##calculate sum of squares
+## calculate sum of squares
 .sumsq <- function(x) { norm(sweep(x, 2, colMeans(x), "-"), "F")^2 }
 
 
-##calculate 2-means cluster index (n x p matrices)
+## calculate 2-means cluster index (n x p matrices)
 .calc2CI <- function(x1, x2) {
     if (is.matrix(x1) && is.matrix(x2) && ncol(x1) == ncol(x2)) {
         (.sumsq(x1) + .sumsq(x2)) / .sumsq(rbind(x1, x2))
@@ -393,42 +409,38 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
 }
     
 
-##parse clustering parameters to produce dendrogram
-.cluster_shc <- function(x, metric, linkage, l, rcpp) {
-
-    if (is.character(metric)) {
-        if (metric == "cor") {
-            dmat <- 1 - WGCNA::cor(t(x))
-            hc_dat <- hclust(as.dist(dmat), method=linkage)
-        } else if (rcpp) {
-            hc_dat <- Rclusterpp.hclust(x, method=linkage, 
-                                        distance=metric, p=l)
-        } else {
-            hc_dat <- hclust(dist(x, method=metric, p=l), method=linkage)
-        }
+## parse clustering parameters to produce dendrogram
+.cluster_shc <- function(x, metric, matmet, linkage, l, rcpp) {
+    if (!is.null(matmet)) {
+        hc_dat <- hclust(matmet(x), method=linkage)
+    } else if (metric == "cor") {
+        dmat <- 1 - WGCNA::cor(t(x))
+        hc_dat <- hclust(as.dist(dmat), method=linkage)
+    } else if (rcpp) {
+        hc_dat <- Rclusterpp.hclust(x, method=linkage, 
+                                    distance=metric, p=l)
     } else {
-        hc_dat <- hclust(metric(x), method=linkage)
+        hc_dat <- hclust(dist(x, method=metric, p=l), method=linkage)
     }
     hc_dat
 }
 
 
-
-##perform hierarchical clustering on the original data and 
+## perform hierarchical clustering on the original data and 
 ## compute the corresponding cluster indices for each merge
-.initcluster <- function(x, n, p, metric, linkage, l, 
-                         n_ci, ci, rcpp) { 
+.initcluster <- function(x, n, p, metric, matmet, linkage, l, 
+                         n_ci, ci, rcpp) {
 
-    ##obtain clustering solution
-    hc_dat <- .cluster_shc(x, metric, linkage, l, rcpp)
+    ## obtain clustering solution
+    hc_dat <- .cluster_shc(x, metric, matmet, linkage, l, rcpp)
 
-    ##list array of cluster indices at each of the n-1 nodes
+    ## list array of cluster indices at each of the n-1 nodes
     idx_hc <- .idx_hc(hc_dat, n)
     
-    ##matrix containing cluster indices
+    ## matrix containing cluster indices
     ci_dat <- matrix(-1, nrow=n-1, ncol=n_ci)
 
-    ##calculate cluster index(ices) for merge k
+    ## calculate cluster index(ices) for merge k
     for (i_ci in 1:n_ci) {
         if (ci[i_ci] == "2CI") {
             for (k in 1:(n-1)) {
@@ -446,19 +458,19 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
 }
 
 
-##given null eigenvalues, simulate Gaussian dataset
+## given null eigenvalues, simulate Gaussian dataset
 .simnull <- function(eigval_sim, n, p) {
     simnorm <- matrix(rnorm(n*p, sd=sqrt(eigval_sim)), n, p, byrow=TRUE)
 }
 
 
-##perform hierarchical clustering on a simulated dataset and
+## perform hierarchical clustering on a simulated dataset and
 ## compute the correspond cluster indices for only the final merge
-.calcCI_shc <- function(x, p, metric, linkage, l, 
-                        n_ci, ci, null_alg, rcpp) { 
+.calcCI_shc <- function(x, p, metric, matmet, linkage, l, 
+                        n_ci, ci, null_alg, rcpp) {
 
     ##obtain clustering solution
-    hc_isim <- .cluster_shc(x, metric, linkage, l, rcpp)
+    hc_isim <- .cluster_shc(x, metric, matmet, linkage, l, rcpp)
     split <- cutree(hc_isim, k=2)
 
     ##row vector containing cluster indices
