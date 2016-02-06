@@ -1,8 +1,8 @@
 Package: sigclust2
 Type: Package
 Title: sigclust2: Statistical Significance of Clustering
-Version: 0.99.10
-Date: 2016-01-12
+Version: 0.99.11
+Date: 2016-02-06
 Author: Patrick Kimes
 Maintainer: <patrick.kimes@gmail.com>
 Description: Test for statistical significance in agglomerative hierarchical
@@ -10,7 +10,7 @@ Description: Test for statistical significance in agglomerative hierarchical
     on CRAN.
 License: GPL (>= 2)
 Depends:
-    R(>= 3.0.2),
+    R(>= 3.2.2),
     Rcpp (>= 0.10.6)
 Imports:
     Rclusterpp,
