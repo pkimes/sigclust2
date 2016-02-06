@@ -158,22 +158,22 @@ Examples using \code{metric}, \code{matmet}, and \code{vecmet} are provided belo
 ## using a string input to metric
 data <- rbind(matrix(rnorm(100, mean = 2), ncol = 2),
               matrix(rnorm(100, mean = -1), ncol = 2))
-shc_metric <- shc(data, metric = "cor", linkage = "average")
+shc_metric <- shc(data, metric = "cor", linkage = "average", alpha=0.05)
 tail(shc_metric$p_norm, 10)
 
-## using a function input to vecmet
-vfun <- function(x, y) { cor(x, y) }
-shc_vecmet <- shc(data, vecmet = vfun, linkage = "average")
+## using a function input to vecmet or any function not optimized for 
+## computing dissimilarities for matrices will be incredibly slow
+## should be avoided if possible
+\dontrun{
+vfun <- function(x, y) { 1 - cor(x, y) }
+shc_vecmet <- shc(data, vecmet = vfun, linkage = "average", alpha=0.05)
 tail(shc_vecmet$p_norm, 10)
+}
 
 ## using a function input to matmet
-mfun <- Vectorize(vfun)
-matdist <- function(x) {
-    as.dist(outer(split(x, row(x)), split(x, row(x)), mfun))
-}
-## this should return the same result as just as.dist(cor(x)))
-shc_matmet <- shc(data, matmet = matdist, linkage = "average")
-tail(shc_matmet$p_norm, 10)
+mfun <- function(x) { as.dist(1-cor(x)) }
+shc_mfun <- shc(data, matmet=mfun, linkage="average", alpha=0.05)
+tail(shc_mfun$p_norm, 10)
 
 }
 \author{
