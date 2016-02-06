@@ -42,7 +42,7 @@ summary.shc <- function(object, ...) {
                object$in_args$n_min,
                "\n"))
 
-    cat(paste0("number of p_norm < 0.05: ",
+    cat(paste0("# tests w/ p_norm < 0.05: ",
                colSums(object$p_norm < 0.05),
                ".\n\n") )
 }
