@@ -132,14 +132,15 @@ For standard minimum variance Ward's linkage clustering, if \code{rcpp} is
 \code{FALSE}, then "ward.D2" should be specified. See \code{stats::hclust}
 for details on changes to the function since R >= 3.0.4. 
 
-The testing procedure will terminate when no nodes
-meet the corresponding FWER control threshold specified by \code{alpha}
-and \code{fwer}. Controlling the FWER  may also substantially speed up
+By default, p-values are computed for all nodes (\code{alpha = 1}).
+If the procedure should instead terminate when no further nodes
+meet a desired FWER control threshold, simply specify \code{alpha < 1}.
+Controlling the FWER  may substantially speed up
 the procedure by reducing the number of tests considered.
 
-If p-values are desired for all nodes, simply set \code{fwer} to \code{FALSE}
-and \code{alpha} to 1. The FWER cutoffs may still be computed using
-\code{fwer_cutoff} or by specifying \code{alpha} when calling \code{plot}.
+Even if the procedure is run using \code{alpha = 1}, the FWER cutoffs may still be
+computed using \code{fwer_cutoff}. The FWER thresholding can also be visualized by
+specifying \code{alpha} when calling \code{plot}.
 
 The input \code{metric} can either be a character string specifying a metric
 recognized by \code{dist()} or \code{"cor"} for Pearson correlation.
