@@ -3,6 +3,7 @@
 S3method(diagnostic,shc)
 S3method(fwer_cutoff,shc)
 S3method(plot,shc)
+S3method(print,shc)
 S3method(summary,shc)
 export(diagnostic)
 export(fwer_cutoff)

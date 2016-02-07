@@ -13,7 +13,7 @@
 \item{...}{other parameters to be used by the function}
 }
 \description{
-Provides information about \code{shc} object similar to call to \code{show}
+Provides information about \code{shc} object similar to call to \code{print}
 }
 \author{
 Patrick Kimes

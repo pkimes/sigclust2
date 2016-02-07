@@ -1,15 +1,15 @@
-#' provide summary of shc object
+#' print description of shc object
 #'
-#' Provides information about \code{shc} object similar to call to \code{print}
+#' Provides information about \code{shc}
 #'
 #' @param object a \code{shc} object
 #' @param ... other parameters to be used by the function
 #' 
 #' @export
-#' @method summary shc
-#' @name summary-shc
+#' @method print shc
+#' @name print-shc
 #' @author Patrick Kimes
-summary.shc <- function(object, ...) {
+print.shc <- function(object, ...) {
     cat("\n")
     cat("shc object created using shc(..)")
     cat("\n")
