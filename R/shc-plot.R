@@ -202,7 +202,7 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
         shc_labs$color_y <- shc_labs$y - ax_y_range/30
         plot_dend <- plot_dend +
             geom_tile(data=shc_labs,
-                      aes(x=x, y=color_y, fill=as.factor(clusters), vjust=0), 
+                      aes(x=x, y=color_y, fill=as.factor(clusters)), 
                       alpha=1, height=ax_y_range/30) +
             scale_fill_discrete('Labels')
     }
