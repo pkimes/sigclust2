@@ -1,23 +1,4 @@
 
-```
-## Warning: replacing previous import by 'ggplot2::unit' when loading 'Hmisc'
-```
-
-```
-## Warning: replacing previous import by 'ggplot2::arrow' when loading 'Hmisc'
-```
-
-```
-## Warning: replacing previous import by 'scales::alpha' when loading 'Hmisc'
-```
-
-```
-## Warning: replacing previous import by 'grid::arrow' when loading 'GGally'
-```
-
-```
-## Warning: replacing previous import by 'grid::unit' when loading 'GGally'
-```
 
 sigclust2 [![Build Status](https://travis-ci.org/pkimes/sigclust2.svg?branch=master)](https://travis-ci.org/pkimes/sigclust2)
 =======================
@@ -213,7 +194,7 @@ system.time(mfun1(data))
 
 ```
 ##    user  system elapsed 
-##   0.955   0.003   0.960
+##   0.956   0.004   0.960
 ```
 
 ```r
@@ -222,7 +203,7 @@ system.time(mfun2(data))
 
 ```
 ##    user  system elapsed 
-##   0.001   0.000   0.001
+##   0.002   0.000   0.001
 ```
 
 The first matrix correlation function, `mfun1`, is written it
