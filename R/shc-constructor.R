@@ -1,7 +1,7 @@
 #' statistical Significance for Hierarchical Clustering (SHC) 
 #'
 #' Implements the Monte Carlo simulation based significance testing
-#' procedure for hierarchical clustering described in Kimes et al. (2015+).
+#' procedure for hierarchical clustering described in Kimes et al. (2016+).
 #' Statistical significance is evaluated at each node along the hierarchical
 #' tree (dendrogram) starting from the root using a Gaussian null hypothesis test. 
 #' A corresponding family-wise error rate (FWER) controlling procedure is
@@ -65,7 +65,7 @@
 #' 
 #' @return
 #' The function returns a \code{shc} S3-object containing the 
-#' resulting p-values. The \code{plot} method call will output a dendrogram
+#' resulting p-values. The \code{plot} method can be used to generate a dendrogram
 #' with the corresponding p-values placed at each merge. The \code{shc}
 #' object has following attributes:
 #' \itemize{
@@ -78,8 +78,8 @@
 #' \item{\code{backvar}}: {a vector containing the estimated background variances used for
 #'     computing \code{eigval_sim}}
 #' \item{\code{nd_type}}: {a vector of length n-1 taking values in "\code{n_small}",
-#'     "\code{no_test}", "\code{tested}" specifying how each node along the
-#'     dendrogram was handled by the iterative testing procedure}
+#'     "\code{no_test}", "\code{sig}", "\code{not_sig}", or "\code{NA}" specifying how each
+#'     node along the dendrogram was handled by the iterative testing procedure}
 #' \item{\code{ci_dat}}: {a matrix containing the cluster indices for the original
 #'     data matrix passed to the constructor}
 #' \item{\code{ci_sim}}: {a 3-dimensional array containing the simulated cluster
@@ -248,6 +248,7 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
     ## for plotting purposes, change heights of dendrogram
     if (linkage == "ward" & rcpp) {
         hc_dat$height <- sqrt(2*hc_dat$height)
+        print("scaling heights of ward clustering with rcpp by sqrt(2*h) for plotting")
     }
     
     ## p-values for all <= (n-1) tests
@@ -342,7 +343,23 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
     if (alpha == 1) {
         nd_type[nd_type == "sig"] <- "NA"
     }
-    
+
+    ## remove extra nd_type
+    nd_type <- nd_type[-n]
+
+    ## reverse all output so root node is at top to match
+    ## index order described in manuscript
+    eigval_dat <- eigval_dat[(n-1):1, , drop=FALSE]
+    eigval_sim <- eigval_sim[(n-1):1, , drop=FALSE]
+    backvar <- rev(backvar)
+    nd_type <- rev(nd_type)
+    ci_dat <- ci_dat[(n-1):1, , drop=FALSE]
+    ci_sim <- ci_sim[(n-1):1, , , drop=FALSE]
+    p_emp <- p_emp[(n-1):1, , drop=FALSE]
+    p_norm <- p_norm[(n-1):1, , drop=FALSE]
+    idx_hc <- idx_hc[(n-1):1, , drop=FALSE]
+
+    ## return shc S3 object
     structure(
         list(in_mat = x,
              in_args = list(metric = metric, linkage = linkage, alpha = alpha,
@@ -352,7 +369,7 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
              eigval_dat = eigval_dat,
              eigval_sim = eigval_sim,
              backvar = backvar,
-             nd_type = nd_type[-n],
+             nd_type = nd_type,
              ci_dat = ci_dat,
              ci_sim = ci_sim,
              p_emp = p_emp,

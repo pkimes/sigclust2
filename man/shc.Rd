@@ -84,7 +84,7 @@ specified to a non-default value. (default = FALSE)}
 }
 \value{
 The function returns a \code{shc} S3-object containing the 
-resulting p-values. The \code{plot} method call will output a dendrogram
+resulting p-values. The \code{plot} method can be used to generate a dendrogram
 with the corresponding p-values placed at each merge. The \code{shc}
 object has following attributes:
 \itemize{
@@ -97,8 +97,8 @@ object has following attributes:
 \item{\code{backvar}}: {a vector containing the estimated background variances used for
     computing \code{eigval_sim}}
 \item{\code{nd_type}}: {a vector of length n-1 taking values in "\code{n_small}",
-    "\code{no_test}", "\code{tested}" specifying how each node along the
-    dendrogram was handled by the iterative testing procedure}
+    "\code{no_test}", "\code{sig}", "\code{not_sig}", or "\code{NA}" specifying how each
+    node along the dendrogram was handled by the iterative testing procedure}
 \item{\code{ci_dat}}: {a matrix containing the cluster indices for the original
     data matrix passed to the constructor}
 \item{\code{ci_sim}}: {a 3-dimensional array containing the simulated cluster
@@ -115,7 +115,7 @@ object has following attributes:
 }
 \description{
 Implements the Monte Carlo simulation based significance testing
-procedure for hierarchical clustering described in Kimes et al. (2015+).
+procedure for hierarchical clustering described in Kimes et al. (2016+).
 Statistical significance is evaluated at each node along the hierarchical
 tree (dendrogram) starting from the root using a Gaussian null hypothesis test. 
 A corresponding family-wise error rate (FWER) controlling procedure is
