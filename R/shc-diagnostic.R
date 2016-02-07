@@ -4,8 +4,8 @@
 #' range of nodes along the dendrogram
 #' 
 #' @param obj a \code{shc} object
-#' @param K an integer value specifying the range of nodes for which to 
-#'        create diagnostic plots (default = nrow(obj$p_norm)-1)
+#' @param K an integer value or vector specifying the range of nodes for which to 
+#'        create diagnostic plots, with 1 corresponding to the root (default = 1)
 #' @param fname a character string specifying the name of the output file,
 #'        see details for more information on default behavior depending on
 #'        \code{length(K)} (default = NULL)
@@ -22,9 +22,9 @@
 #' @details
 #' If \code{K} is a single value, the default behavior is to output the diagnostic
 #' plot to the current device. This behavior is overriden if \code{fname} is specified
-#' by the user. If \code{K} is a set of values, than the diagnostic plots are
-#' printed to \code{paste0(fname, ".pdf")}. If \code{fname} is not specified, a default value,
-#' "shc_diagnostic", is used.
+#' by the user. If \code{length(K) > 1}, than the diagnostic plots are
+#' printed to \code{paste0(fname, ".pdf")}. If \code{fname} is not specified,
+#' "shc_diagnostic", is used by default.
 #'
 #' The \code{pty} parameter accepts the following options:
 #' \itemize{
@@ -39,8 +39,7 @@
 #' @export
 #' @name diagnostic-shc
 #' @author Patrick Kimes
-diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
-                           fname = NULL, ci_idx = 1,
+diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
                            pty = "all", ...) {
 
     ## available plot types
@@ -50,7 +49,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
     if (length(K) == 0 || min(K) < 1 || max(K) > nrow(obj$p_norm)-1) {
         stop("K must be a set of indices between 1 and n-1")
     }
-    if (!is.null(fname) || !is.character(fname)) {
+    if (!is.null(fname) && !is.character(fname)) {
         stop("fname must be NULL or a string")
     }
     if (length(pty) > 1) {
@@ -79,30 +78,29 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
         }
         dev.off()
     }
-    
 }
 
 
 
 ## code cleaned/modified from sigclust CRAN package, plot function
-.diagnostic_k <- function(shc, k, ci_idx, pty) {
+.diagnostic_k <- function(obj, k, ci_idx, pty) {
 
     ## identify subtree of x
-    idx_sub <- unlist(shc$hc_idx[k, ])
-    k_mat <- shc$in_mat[idx_sub, ]
+    idx_sub <- unlist(obj$idx_hc[k, ])
+    k_mat <- obj$in_mat[idx_sub, ]
     n <- nrow(k_mat)
     d <- ncol(k_mat)
 
-    ## parameters from shc object
-    icovest <- shc$in_args$icovest
-    n_sim <- shc$in_args$n_sim
-    keigval_dat <- shc$eigval_dat[k, ]
-    backvar_k <- shc$backvar[k]
-    keigval_sim <- shc$eigval_sim[k, ]
-    kci_sim <- shc$ci_sim[k, , ci_idx]
-    kci_dat <- shc$ci_dat[k, ci_idx]
-    kp_emp <- shc$p_emp[k, ci_idx]
-    kp_norm <- shc$p_norm[k, ci_idx]
+    ## parameters from obj object
+    icovest <- obj$in_args$icovest
+    n_sim <- obj$in_args$n_sim
+    keigval_dat <- obj$eigval_dat[k, ]
+    backvar_k <- obj$backvar[k]
+    keigval_sim <- obj$eigval_sim[k, ]
+    kci_sim <- obj$ci_sim[k, , ci_idx]
+    kci_dat <- obj$ci_dat[k, ci_idx]
+    kp_emp <- obj$p_emp[k, ci_idx]
+    kp_norm <- obj$p_norm[k, ci_idx]
 
     ## vectorize data and compute statistics
     overlay.x <- as.vector(k_mat)
@@ -120,7 +118,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
         nused <- maxnol
         denraw <- density(overlay.x)
         if (ntot > maxnol) {
-            overlay.x <- overlay.x[sample(c(1:ntot), maxnol)]
+            overlay.x <- overlay.x[sample(1:ntot, maxnol)]
         }else{
             nused <- ntot
         }
@@ -132,7 +130,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
         
         overlay.y <- ymin + (0.15+0.5*runif(nused))*(ymax - ymin)
         plot(denraw, xlim=range(overlay.x), ylim=range(denraw$y),
-             col="blue", xlab="", main="", lwd=3, ...)
+             col="blue", xlab="", main="", lwd=3)
         xgrid <- seq(xmin, xmax, by=0.0025*(xmax-xmin))
         normden <- dnorm(xgrid, mean=median, sd=sd)
         lines(xgrid, normden, col="red", lwd=3)
@@ -170,7 +168,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
     if (any(grepl(pty, c("all", "qq")))) {
         par(mfrow=c(1, 1))  
         par(mar=c(5, 4, 4, 2) + 0.1)
-        qqnorm <- qqnorm(as.vector(shc$in_mat), plot.it=FALSE)
+        qqnorm <- qqnorm(as.vector(obj$in_mat), plot.it=FALSE)
         if(ntot > maxnol){
             which <- sample(c(1:ntot), maxnol)
         }else{
@@ -186,7 +184,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
         y75 <- y[which(x > qnorm(0.75))[1]]
         plot(x, y, col="red", xlab="Gaussian Q", ylab="Data Q",
              main="Robust Fit Gaussian Q-Q, All Pixel values",
-             cex.lab=1.3,...)
+             cex.lab=1.3)
         abline(0, 1, col="green", lwd=2)
         xmin <- min(x) - 0.05*(max(x)-min(x))
         xmax <- max(x) + 0.05*(max(x)-min(x))
@@ -222,7 +220,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
         ymax <- max(keigval_dat) + 0.05*(max(keigval_dat)-min(keigval_dat))
         plot(1:d, keigval_sim, type="l", lty=2, lwd=3, col="red",
              xlim=c(xmin, xmax), ylim=c(ymin, ymax),
-             xlab="Component #", ylab="Eigenvalue", ...)
+             xlab="Component #", ylab="Eigenvalue")
         points(1:d, keigval_dat, col="black")
         title(paste0("Eigenvalues, K=", k))
         lines(c(ncut+0.5, ncut+0.5), c(ymin, ymax), col="green")
@@ -245,7 +243,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
         ymax <- max(log10(keigval_pos)) + 0.05*(max(log10(keigval_pos)) - min(log10(keigval_pos)))
         plot(1:d, log10(keigval_sim), type="l", lty=2, lwd=3, col="red",
              xlim=c(xmin, xmax), ylim=c(ymin, ymax),
-             xlab="Component #", ylab="log10(Eigenvalue)", ...)
+             xlab="Component #", ylab="log10(Eigenvalue)")
         points(1:dpos, log10(keigval_pos), col="black")
         title(paste0("log10 Eigenvalues, K=", k))
         lines(c(ncut+0.5, ncut+0.5), c(ymin, ymax), col="green")
@@ -261,7 +259,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
              "Eigenvalues for simulation", col="red")
         if (mad > sd) {
             text(xmin+0.45*(xmax-xmin), ymin+0.65*(ymax-ymin),
-                 "SHC may be Anti-iConservative", col="magenta")
+                 "SHC may be anti-conservative", col="magenta")
         }
         if (length(keigval_dat) >= ncut) {
             xmin <- 0
@@ -270,7 +268,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
             ymax <- max(keigval_dat[1:ncut]) + 0.05*(max(keigval_dat[1:ncut]) - min(keigval_dat[1:ncut])) 
             plot(1:ncut, keigval_sim[1:ncut], type="l", lty=2, lwd=3, col="red",
                  xlim=c(xmin, xmax), ylim=c(ymin, ymax),
-                 xlab="Component #", ylab="Eigenvalue", ...)
+                 xlab="Component #", ylab="Eigenvalue")
             points(1:ncut, keigval_dat[1:ncut], col="black")
             title(paste0("Zoomed in version of above, K=", k))
             
@@ -289,7 +287,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
             ymax <- max(log10(keigval_pos[1:nmax])) + 0.05*(max(log10(keigval_pos[1:nmax])) - min(log10(keigval_pos[1:nmax])))
             plot(1:nmax,log10(keigval_sim[1:nmax]), type="l", lty=2, lwd=3,
                  col="red", xlim=c(xmin, xmax), ylim=c(ymin, ymax),
-                 xlab="Component #", ylab="log10(Eigenvalue)", ...)
+                 xlab="Component #", ylab="log10(Eigenvalue)")
             points(1:nmax, log10(keigval_pos[1:nmax]), col="black")
             title(paste0("log10 Eigenvalues, K=", k))
             
@@ -323,7 +321,7 @@ diagnostic.shc <- function(obj, K = nrow(obj$p_norm)-1,
         xind <- seq(xmin, xmax, 0.001)
         
         plot(denpval, xlim=c(xmin-dx, xmax+dx), col="red",
-             xlab="Cluster Index", main="", lwd=2, ...)
+             xlab="Cluster Index", main="", lwd=2)
         title(paste0("SHC Results, K=", k))
         points(kci_sim, runif(n_sim, denrange[2], denrange[3]),
                col="blue", pch=".", cex=2)

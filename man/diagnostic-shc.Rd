@@ -5,14 +5,14 @@
 \alias{diagnostic.shc}
 \title{plot diagnostics for shc object}
 \usage{
-\method{diagnostic}{shc}(obj, K = nrow(obj$p_norm) - 1, fname = NULL,
-  ci_idx = 1, pty = "all", ...)
+\method{diagnostic}{shc}(obj, K = 1, fname = NULL, ci_idx = 1,
+  pty = "all", ...)
 }
 \arguments{
 \item{obj}{a \code{shc} object}
 
-\item{K}{an integer value specifying the range of nodes for which to 
-create diagnostic plots (default = nrow(obj$p_norm)-1)}
+\item{K}{an integer value or vector specifying the range of nodes for which to 
+create diagnostic plots, with 1 corresponding to the root (default = 1)}
 
 \item{fname}{a character string specifying the name of the output file,
 see details for more information on default behavior depending on
@@ -37,9 +37,9 @@ range of nodes along the dendrogram
 \details{
 If \code{K} is a single value, the default behavior is to output the diagnostic
 plot to the current device. This behavior is overriden if \code{fname} is specified
-by the user. If \code{K} is a set of values, than the diagnostic plots are
-printed to \code{paste0(fname, ".pdf")}. If \code{fname} is not specified, a default value,
-"shc_diagnostic", is used.
+by the user. If \code{length(K) > 1}, than the diagnostic plots are
+printed to \code{paste0(fname, ".pdf")}. If \code{fname} is not specified,
+"shc_diagnostic", is used by default.
 
 The \code{pty} parameter accepts the following options:
 \itemize{
