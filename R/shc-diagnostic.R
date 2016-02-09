@@ -35,9 +35,10 @@
 #' \item{\code{"all"}}: {all of the above plots (default).}
 #' }
 #' 
-#' 
-#' @export
+#' @import ggplot2 ggthemes
 #' @name diagnostic-shc
+#' @export
+#' @method diagnostic shc
 #' @author Patrick Kimes
 diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
                            pty = "all", ...) {
@@ -103,64 +104,81 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
     kp_norm <- obj$p_norm[k, ci_idx]
 
     ## vectorize data and compute statistics
-    overlay.x <- as.vector(k_mat)
-    mean <- mean(overlay.x)
-    sd <- sd(overlay.x)
-    median <- median(overlay.x)
-    mad <- mad(overlay.x)
-    ntot <- length(overlay.x)
-    maxnol <- 5000
+    xvec <- as.vector(k_mat)
+    mean_x <- mean(xvec)
+    sd_x <- sd(xvec)
+    med_x <- median(xvec)
+    mad_x <- mad(xvec)
+    ntot <- length(xvec)
+    max_nol <- 5000
 
     ## Background Standard Deviation Diagnostic Plot
     if (any(grepl(pty, c("all", "background")))) {
-        par(mfrow=c(1, 1))
-        par(mar=c(5, 4, 4, 2) + 0.1)
-        nused <- maxnol
-        denraw <- density(overlay.x)
-        if (ntot > maxnol) {
-            overlay.x <- overlay.x[sample(1:ntot, maxnol)]
-        }else{
-            nused <- ntot
+
+        ## fit density to full data
+        den_x <- density(xvec)
+        den_df <- data.frame(x=den_x$x, y=den_x$y)
+
+        ## subset on dataset for plotting
+        nused <- min(max_nol, ntot)
+        if (ntot > max_nol) {
+            xvec <- xvec[sample(1:ntot, max_nol)]
         }
-        
-        xmin <- min(denraw$x)
-        xmax <- max(denraw$x)
-        ymin <- min(denraw$y)
-        ymax <- max(denraw$y)
-        
-        overlay.y <- ymin + (0.15+0.5*runif(nused))*(ymax - ymin)
-        plot(denraw, xlim=range(overlay.x), ylim=range(denraw$y),
-             col="blue", xlab="", main="", lwd=3)
-        xgrid <- seq(xmin, xmax, by=0.0025*(xmax-xmin))
-        normden <- dnorm(xgrid, mean=median, sd=sd)
-        lines(xgrid, normden, col="red", lwd=3)
-        points(overlay.x, overlay.y, col="green", pch=".")
-        
-        title(paste0("Distribution of All Pixel values combines, K=", k))
-        if (ntot > maxnol) {
-            text(xmin+0.47*(xmax-xmin), ymin+0.9*(ymax-ymin),
-                 paste("Overlay of", as.character(maxnol), "of",
-                       as.character(ntot), "data points"), cex=1.3)
+
+        ## determine range of density plot
+        xmin <- min(den_df$x)
+        xmax <- max(den_df$x)
+        ymin <- min(den_df$y)
+        ymax <- max(den_df$y)
+
+        ## create df with plotting points
+        xvec_df <- data.frame(x=xvec, y=runif(length(xvec), ymax*1/4, ymax*3/4))
+
+        ## plot data kde and best fit gaussian
+        gp <- ggplot(xvec_df) +
+            geom_point(aes(x=x, y=y), alpha=1/5, size=1, color="#33a02c") +
+            geom_path(aes(x=x, y=y), data=den_df, color="black", size=1) + 
+            stat_function(fun=dnorm, args=list(mean=med_x, sd=mad_x),
+                          color="#1f78b4", size=1, n=500) +
+            theme_hc() +
+            ylab("density") +
+            ggtitle(paste0("Distribution of Vectorized Data for K=", k))
+
+        ## note # sample points
+        if (ntot > max_nol) {
+            gp <- gp +
+                annotate(geom="text", x=xmax, y=ymax*.98, vjust=1, hjust=1,
+                         label=paste("overlay of", max_nol, "/", ntot, "data points"),
+                         color="#33a02c")
         } else {
-            text(xmin+0.47*(xmax-xmin), ymin+0.9*(ymax-ymin),
-                 paste("Overlay of", as.character(ntot), "data points"),
-                 cex=1.3)
+            gp <- gp +
+                annotate(geom="text", x=xmax, y=ymax*.98, vjust=1, hjust=1,
+                         label=paste("overlay of", ntot, "data points"),
+                         color="#33a02c")
         }
-        text(xmin+0.47*(xmax-xmin), ymin+0.8*(ymax-ymin),
-             paste("Mean =", as.character(round(mean, 3)),
-                   "  Median =", as.character(round(median, 3))), cex=1.3)
-        text(xmin+0.47*(xmax-xmin), ymin+0.7*(ymax-ymin),
-             paste("s.d. =", as.character(round(sd, 3)),
-                   "MAD =", as.character(round(mad, 3))), cex=1.3)
-        text(xmin+0.47*(xmax-xmin), ymin+0.6*(ymax-ymin),
-             paste0("Gaussian(", as.character(round(median, 3)), ",",
-                    as.character(round(mad, 3)), ") density"),
-             col="red", cex=1.3)
-        if (mad > sd) {
-            text(xmin+0.47*(xmax-xmin), ymin+0.55*(ymax-ymin),
-                 "Warning: MAD > s.d., SHC can be anti-conservative",
-                 cex=1.3)
+
+        ## label best fit gaussian density
+        gp <- gp +
+            annotate(geom="text", x=xmax, y=ymax*.90, vjust=1, hjust=1,
+                     label=paste0("N(", round(med_x, 3), ", ", round(mad_x, 3), ") density"),
+                     color="#1f78b4")
+
+        ## return parameter values
+        gp <- gp +
+            annotate(geom="text", x=xmin, y=ymax*.98, vjust=1, hjust=0,
+                     label=paste0("mean = ", round(mean_x, 3), "\n",
+                         "median = ", round(med_x, 3), "\n",
+                         "s.d. = ", round(sd_x, 3), "\n",
+                         "MAD = ", round(mad_x, 3)))
+
+        ## check for possible anti-conservative behavior
+        if ((mad_x > sd_x) && (icovest == 1)) {
+            gp <- gp +
+                annotate("text", x=(xmax+xmin)/2, y=ymax/4, vjust=1,
+                         label="Warning: MAD > s.d., SHC can be anti-conservative",
+                         size=5, color="#e41a1c")
         }
+        print(gp)
     }
 
     
@@ -169,8 +187,8 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
         par(mfrow=c(1, 1))  
         par(mar=c(5, 4, 4, 2) + 0.1)
         qqnorm <- qqnorm(as.vector(obj$in_mat), plot.it=FALSE)
-        if(ntot > maxnol){
-            which <- sample(c(1:ntot), maxnol)
+        if(ntot > max_nol){
+            which <- sample(c(1:ntot), max_nol)
         }else{
             which <- c(1:ntot)
         }
