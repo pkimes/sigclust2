@@ -18,6 +18,7 @@ Imports:
     dplyr,
     ggdendro,
     ggplot2,
+    ggthemes,
     grid,
     methods
 Suggests:
