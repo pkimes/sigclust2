@@ -112,6 +112,7 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
     ntot <- length(xvec)
     max_nol <- 5000
 
+
     ## Background Standard Deviation Diagnostic Plot
     if (any(grepl(pty, c("all", "background")))) {
 
@@ -140,7 +141,7 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
             geom_path(aes(x=x, y=y), data=den_df, color="black", size=1) + 
             stat_function(fun=dnorm, args=list(mean=med_x, sd=mad_x),
                           color="#1f78b4", size=1, n=500) +
-            theme_hc() +
+            theme_gdocs() +
             ylab("density") +
             ggtitle(paste0("Distribution of Vectorized Data for K=", k))
 
@@ -180,44 +181,42 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
         }
         print(gp)
     }
-
+    
     
     ## QQ plot
     if (any(grepl(pty, c("all", "qq")))) {
-        par(mfrow=c(1, 1))  
-        par(mar=c(5, 4, 4, 2) + 0.1)
-        qqnorm <- qqnorm(as.vector(obj$in_mat), plot.it=FALSE)
-        if(ntot > max_nol){
-            which <- sample(c(1:ntot), max_nol)
-        }else{
-            which <- c(1:ntot)
+
+        ## compute quantiles
+        qq_x <- qqnorm(as.vector(obj$in_mat), plot.it=FALSE)
+        qq_df <- data.frame(x=qq_x$x, y=qq_x$y)
+
+        ## subset for plotting
+        if(ntot > max_nol) {
+            qq_df <- qq_df[sort(sample(1:ntot, max_nol)), ]
         }
-        x <- sort(qqnorm$x[which])
-        y <- sort(qqnorm$y[which])
-        x25 <- x[which(x > qnorm(0.25))[1]]
-        x50 <- x[which(x > qnorm(0.5))[1]]
-        x75 <- x[which(x > qnorm(0.75))[1]]
-        y25 <- y[which(x > qnorm(0.25))[1]]
-        y50 <- y[which(x > qnorm(0.5))[1]]
-        y75 <- y[which(x > qnorm(0.75))[1]]
-        plot(x, y, col="red", xlab="Gaussian Q", ylab="Data Q",
-             main="Robust Fit Gaussian Q-Q, All Pixel values",
-             cex.lab=1.3)
-        abline(0, 1, col="green", lwd=2)
-        xmin <- min(x) - 0.05*(max(x)-min(x))
-        xmax <- max(x) + 0.05*(max(x)-min(x))
-        ymin <- min(y) - 0.05*(max(y)-min(y))
-        ymax <- max(y) + 0.05*(max(y)-min(y))
-        text(xmin+0.3*(xmax-xmin), ymin+0.9*(ymax-ymin),
-             paste("Mean =", as.character(round(mean, 3))), cex=1.3)
-        text(xmin+0.3*(xmax-xmin), ymin+0.8*(ymax-ymin),
-             paste("sd =", as.character(round(sd, 3))), cex=1.3)
-        text(x25, y25, "+", cex=1.3)
-        text(x25+0.7, y25, "0.25 quantile", cex=1.3)
-        text(x50, y50, "+", cex=1.3)
-        text(x50+0.7, y50, "0.5 quantile", cex=1.3)
-        text(x75, y75, "+", cex=1.3)
-        text(x75+0.7, y75, "0.75 quantile", cex=1.3)
+
+        ## build base of plot
+        gp <- ggplot(qq_df) +
+            geom_abline(aes(intercept=0, slope=1), color="#33a02c", size=1/2) +
+        geom_point(aes(x=x, y=y), size=1, color="#e31a1c", alpha=1/2) +
+        ggtitle(paste0("Robust Fit Gaussian Q-Q for K=", k)) +
+            xlab("Gaussian Q") + ylab("Data Q") +
+                theme_gdocs()
+
+        ## include annotations in plot
+        gp <- gp +
+            annotate(geom="text", vjust=1, hjust=0,
+                     x=min(qq_df$x), y=max(qq_df$y),
+                     label=paste0("mean = ", round(mean_x, 3), "\n",
+                         "s.d. =", round(sd_x, 3)))
+        gp <- gp + annotate(geom="point", x=qnorm(c(.25, .50, .75)),
+                            y=quantile(qq_df$y, c(.25, .50, .75)),
+                            color="#1f78b4", shape=43, size=8)
+        gp <- gp + annotate(geom="text", vjust=1, hjust=0, x=qnorm(c(.25, .50, .75)),
+                            y=quantile(qq_df$y, c(.25, .50, .75)),
+                            label=paste(" ", c("0.25", "0.50", "0.75"), "quantile"))
+        
+        print(gp)
     }
 
 
