@@ -59,7 +59,7 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
         stop("specified plot type matches more than one plot type")
     } else if (sum(grepl(pty, avail_pty)) == 0) {
         stop(paste("pty is not a valid value, please specify one of (or part of):",
-                   paste(availty, collapse=", ")))
+                   paste(avail_pty, collapse=", ")))
     }
     
     ## parse default fname behavior
@@ -251,7 +251,7 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
         }
         text(xmin+0.45*(xmax-xmin), ymin+0.8*(ymax-ymin),
              "Eigenvalues for simulation", col="red")
-        if (mad > sd) {
+        if (mad_x > sd_x) {
             text(xmin + 0.45*(xmax-xmin), ymin + 0.65*(ymax-ymin),
                  "Warning: MAD > s.d.", col="magenta")
         }
@@ -274,7 +274,7 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
         }
         text(xmin+0.45*(xmax-xmin), ymin+0.8*(ymax-ymin),
              "Eigenvalues for simulation", col="red")
-        if (mad > sd) {
+        if (mad_x > sd_x) {
             text(xmin+0.45*(xmax-xmin), ymin+0.65*(ymax-ymin),
                  "SHC may be anti-conservative", col="magenta")
         }
@@ -321,34 +321,43 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
     }
 
     
+
+
+
     ## p-value plot
     if (any(grepl(pty, c("all", "pvalue")))) {
-        par(mfrow=c(1, 1))
-        par(mar=c(5, 4, 4, 2) + 0.1)
-        denpval <- density(kci_sim)
-        denrange <- quantile(denpval$y, probs=c(0,0.5, 0.75, 1))
-        dy <- 0.1*(denrange[4]-denrange[1])
+
+        ## fit density to cluster indices
+        den_pv <- density(kci_sim)
+        den_df <- data.frame(x=den_pv$x, y=den_pv$y)
         
+        ## determine range of density plot
+        xmin <- min(den_df$x)
+        ymax <- max(den_df$y)
+
         mindex <- mean(kci_sim)
         sindex <- sd(kci_sim)
-        
-        xmin <- min(c(kci_sim, kci_dat))
-        xmax <- max(c(kci_sim, kci_dat))
-        dx <- 0.1*(xmax-xmin)
-        xind <- seq(xmin, xmax, 0.001)
-        
-        plot(denpval, xlim=c(xmin-dx, xmax+dx), col="red",
-             xlab="Cluster Index", main="", lwd=2)
-        title(paste0("SHC Results, K=", k))
-        points(kci_sim, runif(n_sim, denrange[2], denrange[3]),
-               col="blue", pch=".", cex=2)
-        lines(c(kci_dat, kci_dat), c(denrange[1]-dy, denrange[4])+dy,
-              col="green", lty=2, lwd=2)
-        lines(xind, dnorm(xind, mean=mindex, sd=sindex), col="black", lty=3, lwd=2)
-        legend(xmin+0.05*(xmax-xmin), denrange[4], paste("P-value=", kp_emp),
-               text.col="red", bty="n")
-        legend(xmin+0.05*(xmax-xmin), denrange[3]+0.75*(denrange[4]-denrange[3]),
-               paste("P-vNorm=", round(kp_norm, 3)), bty="n")
+
+        ## create df with plotting points
+        kci_df <- data.frame(x=kci_sim, y=runif(length(kci_sim), ymax*1/4, ymax*3/4))
+
+        ## plot data kde and best fit gaussian
+        gp <- ggplot(kci_df) +
+            geom_point(aes(x=x, y=y), alpha=1/2, size=1, color="#377eb8") +
+            geom_path(aes(x=x, y=y), data=den_df, color="#e41a1c", size=1) + 
+            stat_function(fun=dnorm, args=list(mean=mindex, sd=sindex),
+                          color="black", size=1, n=500) +
+            geom_vline(xintercept=kci_dat, color="#4daf4a") + 
+            theme_gdocs() +
+            ylab("density") + xlab("Cluster Index") + 
+                ggtitle(paste0("SHC Results for ci_idx=", ci_idx, ", K=", k))
+
+        ## return p-values
+        gp <- gp +
+            annotate(geom="text", x=min(xmin, kci_dat), y=ymax*.98, vjust=1, hjust=0,
+                     label=paste0(" p-value (Q) = ", round(kp_emp, 3), "\n",
+                         " p-value (Z) = ", round(kp_norm, 3)))
+        print(gp)
     }
 
 }
