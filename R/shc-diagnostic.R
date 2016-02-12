@@ -220,104 +220,119 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
     }
 
 
+
+
+
+
+
+    
     ## covariance estimation diagnostic plot
     if (any(grepl(pty, c("all", "diag")))) {
+        
+        ## hard cutoff for max # leading eigenvalues to plot 
         ncut <- 100
-        if (d > ncut) {
-            par(mfrow=c(2, 2))
-        } else {
-            par(mfrow=c(1, 2))
-        }
-        par(mar=c(2, 3.7, 2, 1.7))
+
+        ## determine set of non-zero eigenvalues
         keigval_pos <- keigval_dat[which(keigval_dat > 10^(-12))]
         dpos <- length(keigval_pos)
-        xmin <- 0
+
         xmax <- d+1
         ymin <- min(keigval_dat) - 0.05*(max(keigval_dat)-min(keigval_dat))
         ymax <- max(keigval_dat) + 0.05*(max(keigval_dat)-min(keigval_dat))
-        plot(1:d, keigval_sim, type="l", lty=2, lwd=3, col="red",
-             xlim=c(xmin, xmax), ylim=c(ymin, ymax),
-             xlab="Component #", ylab="Eigenvalue")
-        points(1:d, keigval_dat, col="black")
-        title(paste0("Eigenvalues, K=", k))
-        lines(c(ncut+0.5, ncut+0.5), c(ymin, ymax), col="green")
-        
+
+        df <- data.frame(idx=rep(1:d, times=2),
+                         grp=rep(c("sim", "dat"), each=d),
+                         eigval=c(keigval_sim, keigval_dat))
+
+        ## create base plot
+        gp1 <- ggplot(df) +
+            geom_point(aes(x=idx, y=eigval, color=grp)) +
+                geom_path(aes(x=idx, y=eigval, group=grp)) +
+                    xlab("Component #") + ylab("Eigenvalue") +
+        ggtitle(paste0("Eigenvalues, K=", k)) +
+            geom_vline(xintercept=ncut+.5, color="#4daf4a") +
+                theme_gdocs()
+
+        ## include horizontal line at bkgd noise level
         if (icovest != 2) {
-            lines(c(0, d+1), c(backvar_k, backvar_k), col="magenta")
-            text(xmin+0.45*(xmax-xmin), ymin+0.9*(ymax-ymin),
-                 paste0("Background variance = ",
-                        as.character(round(backvar_k, 3))),
-                 col="magenta")
+            gp1 <- gp1 +
+                geom_hline(yintercept=backvar_k, col="magenta") +
+                    annotate("text", hjust=0, vjust=1,
+                             x=0.5*(d+1), y=ymin+0.9*(ymax-ymin),
+                             label=paste0("Background variance = ",
+                                 round(backvar_k, 3)),
+                             col="magenta")
         }
-        text(xmin+0.45*(xmax-xmin), ymin+0.8*(ymax-ymin),
-             "Eigenvalues for simulation", col="red")
+        ## annotate sim eigvals
+        gp1 <- gp1 +
+            annotate("text", x=0.45*(d+1),
+                     y=ymin+0.8*(ymax-ymin),
+                     label="Eigenvalues for simulation", col="red")
         if (mad_x > sd_x) {
-            text(xmin + 0.45*(xmax-xmin), ymin + 0.65*(ymax-ymin),
-                 "Warning: MAD > s.d.", col="magenta")
+            gp1 <- gp1 + 
+                annotate("text", x=0.45*(d+1),
+                         y=ymin + 0.65*(ymax-ymin),
+                         label="Warning: MAD > s.d.", col="magenta")
         }
+        ##print(gp1)
+
+
+        ## create log10 scaled plot
+        gp2 <- gp1 +
+            scale_y_log10() +
+                ggtitle(paste0("log10 Eigenvalues, K=", k)) +
+                    xlab("Component #") + ylab("log10(Eigenvalue)")
+        ##print(gp2)
         
-        ymin <- min(log10(keigval_pos)) - 0.05*(max(log10(keigval_pos)) - min(log10(keigval_pos)))
-        ymax <- max(log10(keigval_pos)) + 0.05*(max(log10(keigval_pos)) - min(log10(keigval_pos)))
-        plot(1:d, log10(keigval_sim), type="l", lty=2, lwd=3, col="red",
-             xlim=c(xmin, xmax), ylim=c(ymin, ymax),
-             xlab="Component #", ylab="log10(Eigenvalue)")
-        points(1:dpos, log10(keigval_pos), col="black")
-        title(paste0("log10 Eigenvalues, K=", k))
-        lines(c(ncut+0.5, ncut+0.5), c(ymin, ymax), col="green")
+
+
+
+
         
-        if (icovest != 2) {
-            lines(c(0,d+1), log10(c(backvar_k, backvar_k)), col="magenta")
-            text(xmin+0.45*(xmax-xmin), ymin+0.9*(ymax-ymin),
-                 paste0("log10 Background variance = ",
-                        as.character(round(log10(backvar_k), 3))),
-                 col="magenta")
-        }
-        text(xmin+0.45*(xmax-xmin), ymin+0.8*(ymax-ymin),
-             "Eigenvalues for simulation", col="red")
-        if (mad_x > sd_x) {
-            text(xmin+0.45*(xmax-xmin), ymin+0.65*(ymax-ymin),
-                 "SHC may be anti-conservative", col="magenta")
-        }
-        if (length(keigval_dat) >= ncut) {
-            xmin <- 0
-            xmax <- ncut+1
-            ymin <- min(keigval_dat[1:ncut]) - 0.05*(max(keigval_dat[1:ncut]) - min(keigval_dat[1:ncut])) 
-            ymax <- max(keigval_dat[1:ncut]) + 0.05*(max(keigval_dat[1:ncut]) - min(keigval_dat[1:ncut])) 
-            plot(1:ncut, keigval_sim[1:ncut], type="l", lty=2, lwd=3, col="red",
-                 xlim=c(xmin, xmax), ylim=c(ymin, ymax),
-                 xlab="Component #", ylab="Eigenvalue")
-            points(1:ncut, keigval_dat[1:ncut], col="black")
-            title(paste0("Zoomed in version of above, K=", k))
+        ## if (length(keigval_dat) >= ncut) {
+        ##     xmin <- 0
+        ##     xmax <- ncut+1
+        ##     ymin <- min(keigval_dat[1:ncut]) - 0.05*(max(keigval_dat[1:ncut]) - min(keigval_dat[1:ncut])) 
+        ##     ymax <- max(keigval_dat[1:ncut]) + 0.05*(max(keigval_dat[1:ncut]) - min(keigval_dat[1:ncut])) 
+        ##     plot(1:ncut, keigval_sim[1:ncut], type="l", lty=2, lwd=3, col="red",
+        ##          xlim=c(xmin, xmax), ylim=c(ymin, ymax),
+        ##          xlab="Component #", ylab="Eigenvalue")
+        ##     points(1:ncut, keigval_dat[1:ncut], col="black")
+        ##     title(paste0("Zoomed in version of above, K=", k))
             
-            if (icovest != 2) {
-                lines(c(0, d+1), c(backvar_k, backvar_k), col="magenta")
-                text(xmin+0.45*(xmax-xmin), ymin+0.9*(ymax-ymin),
-                     paste0("Background variance = ",
-                            as.character(round(backvar_k, 3))),
-                     col="magenta")
-            }
-            text(xmin+0.45*(xmax-xmin), ymin+0.8*(ymax-ymin),
-                 "Eigenvalues for simulation", col="red")
+        ##     if (icovest != 2) {
+        ##         lines(c(0, d+1), c(backvar_k, backvar_k), col="magenta")
+        ##         text(xmin+0.45*(xmax-xmin), ymin+0.9*(ymax-ymin),
+        ##              paste0("Background variance = ",
+        ##                     as.character(round(backvar_k, 3))),
+        ##              col="magenta")
+        ##     }
+        ##     text(xmin+0.45*(xmax-xmin), ymin+0.8*(ymax-ymin),
+        ##          "Eigenvalues for simulation", col="red")
             
-            nmax <- min(dpos, ncut)
-            ymin <- min(log10(keigval_pos[1:nmax])) - 0.05*(max(log10(keigval_pos[1:nmax])) - min(log10(keigval_pos[1:nmax])))
-            ymax <- max(log10(keigval_pos[1:nmax])) + 0.05*(max(log10(keigval_pos[1:nmax])) - min(log10(keigval_pos[1:nmax])))
-            plot(1:nmax,log10(keigval_sim[1:nmax]), type="l", lty=2, lwd=3,
-                 col="red", xlim=c(xmin, xmax), ylim=c(ymin, ymax),
-                 xlab="Component #", ylab="log10(Eigenvalue)")
-            points(1:nmax, log10(keigval_pos[1:nmax]), col="black")
-            title(paste0("log10 Eigenvalues, K=", k))
+        ##     nmax <- min(dpos, ncut)
+        ##     ymin <- min(log10(keigval_pos[1:nmax])) -
+        ##         0.05*(max(log10(keigval_pos[1:nmax])) -
+        ##                   min(log10(keigval_pos[1:nmax])))
+        ##     ymax <- max(log10(keigval_pos[1:nmax])) +
+        ##         0.05*(max(log10(keigval_pos[1:nmax])) -
+        ##                   min(log10(keigval_pos[1:nmax])))
+        ##     plot(1:nmax,log10(keigval_sim[1:nmax]), type="l", lty=2, lwd=3,
+        ##          col="red", xlim=c(xmin, xmax), ylim=c(ymin, ymax),
+        ##          xlab="Component #", ylab="log10(Eigenvalue)")
+        ##     points(1:nmax, log10(keigval_pos[1:nmax]), col="black")
+        ##     title(paste0("log10 Eigenvalues, K=", k))
             
-            if (icovest != 2) {
-                lines(c(0, ncut+1), log10(c(backvar_k, backvar_k)), col="magenta")
-                text(xmin+0.30*(xmax-xmin), ymin+0.9*(ymax-ymin),
-                     paste0("log10 Background variance = ",
-                            as.character(round(log10(backvar_k), 3))),
-                     col="magenta")
-            }
-            text(xmin+0.30*(xmax-xmin), ymin+0.8*(ymax-ymin),
-                 "Eigenvalues for simulation", col="red")
-        }
+        ##     if (icovest != 2) {
+        ##         lines(c(0, ncut+1), log10(c(backvar_k, backvar_k)), col="magenta")
+        ##         text(xmin+0.30*(xmax-xmin), ymin+0.9*(ymax-ymin),
+        ##              paste0("log10 Background variance = ",
+        ##                     as.character(round(log10(backvar_k), 3))),
+        ##              col="magenta")
+        ##     }
+        ##     text(xmin+0.30*(xmax-xmin), ymin+0.8*(ymax-ymin),
+        ##          "Eigenvalues for simulation", col="red")
+        ## }
     }
 
     
