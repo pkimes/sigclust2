@@ -62,7 +62,7 @@ plot(data_pc$x[, 2], data_pc$x[, 1], xlab="PC2", ylab="PC1")
 plot(data_pc$x[, 3], data_pc$x[, 1], xlab="PC3", ylab="PC1")
 ```
 
-![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png) 
+![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png)
 
 
 ## <a name="test"></a> Testing
@@ -97,10 +97,6 @@ For now, we just use the recommended and default parameters.
 shc_result <- shc(data, metric="euclidean", linkage="ward.D2")
 ```
 
-```
-## Error in ci_sim[(n - 1):1, , drop = FALSE]: incorrect number of dimensions
-```
-
 The output is a S3 object of class `shc`, and a brief description of the analysis results can be
 obtained by the `summary` function.  
 
@@ -110,7 +106,19 @@ summary(shc_result)
 ```
 
 ```
-## Error in summary(shc_result): error in evaluating the argument 'object' in selecting a method for function 'summary': Error: object 'shc_result' not found
+## 
+## shc object created using shc(..)
+## --------------------------------
+## Clustering Parameters:
+##     dissimilarity = euclidean
+##     linkage = ward.D2
+## Testing Parameters:
+##     n_sim = 100
+##     icovest = 1
+##     ci = 2CI
+##     null_alg = hclust
+##     min_n = 10
+##     FWER control = FALSE
 ```
 
 The analysis output can be accessed using the `$` accessor. More details on the different entries
@@ -122,7 +130,9 @@ names(shc_result)
 ```
 
 ```
-## Error in eval(expr, envir, enclos): object 'shc_result' not found
+##  [1] "in_mat"     "in_args"    "eigval_dat" "eigval_sim" "backvar"   
+##  [6] "nd_type"    "ci_dat"     "ci_sim"     "p_emp"      "p_norm"    
+## [11] "idx_hc"     "hc_dat"
 ```
 
 The computed p-values are probably of greatest interest. Two p-values are computed as part of the
@@ -148,7 +158,12 @@ data.frame(result = head(shc_result$nd_type, 5),
 ```
 
 ```
-## Error in head(shc_result$nd_type, 5): object 'shc_result' not found
+##   result hclust_2CI hclust_2CI.1
+## 1     NA    0.00006         0.00
+## 2     NA    0.03234         0.04
+## 3     NA    0.81745         0.81
+## 4     NA    0.77279         0.77
+## 5     NA    0.94620         0.94
 ```
 
 In addition to values between 0 and 1, some p-values are reported as `2`. These values correspond
@@ -194,7 +209,7 @@ system.time(mfun1(data))
 
 ```
 ##    user  system elapsed 
-##   0.956   0.004   0.960
+##   0.863   0.004   0.867
 ```
 
 ```r
@@ -203,7 +218,7 @@ system.time(mfun2(data))
 
 ```
 ##    user  system elapsed 
-##   0.002   0.000   0.001
+##   0.002   0.001   0.002
 ```
 
 The first matrix correlation function, `mfun1`, is written it
@@ -221,20 +236,20 @@ Our custom function, `mfun2` can be passed to `shc` through the `matmet` paramet
 
 ```r
 shc_mfun2 <- shc(data, matmet=mfun2, linkage="average")
+
+data.frame(result = head(shc_mfun2$nd_type),
+           round(head(shc_mfun2$p_norm), 5),
+           round(head(shc_mfun2$p_emp), 5))
 ```
 
 ```
-## Error in ci_sim[(n - 1):1, , drop = FALSE]: incorrect number of dimensions
-```
-
-```r
-data.frame(result = head(shc_mfun$nd_type),
-           round(head(shc_mfun$p_norm), 5),
-           round(head(shc_mfun$p_emp), 5))
-```
-
-```
-## Error in head(shc_mfun$nd_type): object 'shc_mfun' not found
+##   result hclust_2CI hclust_2CI.1
+## 1     NA    0.97268         0.99
+## 2     NA    0.90186         0.93
+## 3     NA    1.00000         1.00
+## 4     NA    0.99552         1.00
+## 5     NA    0.00000         0.00
+## 6     NA    0.82746         0.87
 ```
 
 Since the toy dataset is simulated with all differentiating signal lying in the
@@ -269,10 +284,6 @@ performed, set `alpha` to some value less than `1`.
 shc_fwer <- shc(data, metric="euclidean", linkage="ward.D2", alpha=0.05)
 ```
 
-```
-## Error in ci_sim[(n - 1):1, , drop = FALSE]: incorrect number of dimensions
-```
-
 The FWER is noted in the summary of the resulting `shc` object, and can be seen in the `nd_type`
 attribute, where most tests are now labeled `no_test` (with `p_norm` and `p_emp` values of 2).  
 
@@ -284,7 +295,17 @@ data.frame(result = head(shc_fwer$nd_type, 10),
 ```
 
 ```
-## Error in head(shc_fwer$nd_type, 10): object 'shc_fwer' not found
+##     result hclust_2CI hclust_2CI.1
+## 1      sig    0.00034         0.00
+## 2  not_sig    0.06468         0.08
+## 3  no_test    2.00000         2.00
+## 4  no_test    2.00000         2.00
+## 5  not_sig    0.93479         0.95
+## 6  no_test    2.00000         2.00
+## 7  no_test    2.00000         2.00
+## 8  no_test    2.00000         2.00
+## 9  no_test    2.00000         2.00
+## 10 no_test    2.00000         2.00
 ```
 
 By default, `p_norm` p-values are used to test for significance against the FWER cutoffs,
@@ -303,18 +324,17 @@ cluster index and the linkage value as the measure of strength of clustering.
 data_2tests <- shc(data, metric="euclidean", linkage="ward.D2",
                    ci=c("2CI", "linkage"),
                    null_alg=c("hclust", "hclust"))
+round(head(data_2tests$p_norm), 5)
 ```
 
 ```
-## Error in ci_sim[(n - 1):1, , drop = FALSE]: incorrect number of dimensions
-```
-
-```r
-head(data_2tests$p_norm)
-```
-
-```
-## Error in head(data_2tests$p_norm): object 'data_2tests' not found
+##      hclust_2CI hclust_linkage
+## [1,]    0.00006        0.00628
+## [2,]    0.06635        0.58607
+## [3,]    0.81798        1.00000
+## [4,]    0.75385        1.00000
+## [5,]    0.92543        1.00000
+## [6,]    0.98524        1.00000
 ```
 
 The results of clustering using `hclust_2CI` and `hclust_linkage` are reported in the columns
@@ -336,9 +356,7 @@ created using the `shc(..)` constructor.
 plot(shc_result, hang=.1)
 ```
 
-```
-## Error in plot(shc_result, hang = 0.1): object 'shc_result' not found
-```
+![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png)
 
 The resulting plot shows significant nodes and splits in red, as well as the corresponding p-values.
 Nodes which were not tested, as described earlier, are marked in either green or teal (blue).  
