@@ -50,52 +50,64 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
                      ci_idx = 1, ci_emp = FALSE, ...) {
 
     shc <- x
-    
-    ##determine number of samples
+
+    ## determine number of samples
     n <- nrow(shc$p_emp) + 1
+
+    ## reverse all output so root node is at top to match
+    ## index order described in manuscript
+    shc$eigval_dat <- shc$eigval_dat[(n-1):1, , drop=FALSE]
+    shc$eigval_sim <- shc$eigval_sim[(n-1):1, , drop=FALSE]
+    shc$backvar <- rev(shc$backvar)
+    shc$nd_type <- rev(shc$nd_type)
+    shc$ci_dat <- shc$ci_dat[(n-1):1, , drop=FALSE]
+    shc$ci_sim <- shc$ci_sim[(n-1):1, , , drop=FALSE]
+    shc$p_emp <- shc$p_emp[(n-1):1, , drop=FALSE]
+    shc$p_norm <- shc$p_norm[(n-1):1, , drop=FALSE]
+    shc$idx_hc <- shc$idx_hc[(n-1):1, , drop=FALSE]
         
-    ##colors to be used in figure
+    ## colors to be used in figure
     col_tx_sig <- "#A60A3C"
     col_nd_null <- "gray"
     ##col_nd_sig <- "#FF1E66"
     ##col_nd_small <- "#53A60A"
     ##col_nd_skip <- "#096272"
     
-    ##check validity of ci_idx
+    ## check validity of ci_idx
     if (ci_idx > ncol(shc$p_emp)) {
         stop("invalid choice for ci_idx; ci_idx must be < length(ci)")
     }
     
-    ##check validity of alpha
+    ## check validity of alpha
     if (alpha > 1 || alpha < 0) {
         stop("invalid choice for alpha; alpha must be 0 < alpha < 1")
     }
 
-    ##if method originally implemented with fwer control
+    ## if method originally implemented with fwer control
     ## must use FWER and same ci_emp, ci_idx
     if (shc$in_args$alpha < 1) {
         if (!fwer) {
             fwer <- TRUE
-            warning("shc constructed using fwer = TRUE, using fwer = TRUE")
+            warning("shc constructed using alpha < 1, using fwer = TRUE")
         }
         if (shc$in_args$ci_emp != ci_emp) {
             ci_emp <- shc$in_args$ci_emp
-            warning("shc constructed using fwer = TRUE, using ci_emp from in_args(shc)")
+            warning("shc constructed using alpha < 1, using ci_emp from x$in_args")
         }
         if (shc$in_args$ci_idx != ci_idx) {
             ci_idx <- shc$in_args$ci_idx
-            warning("shc constructed using fwer = TRUE, using ci_idx from in_args(shc)")
+            warning("shc constructed using alpha < 1, using ci_idx from x$in_args")
         }
     }
 
-    ##for easier calling
+    ## for easier calling
     if (ci_emp) {
         p_use <- shc$p_emp[, ci_idx]
     } else {
         p_use <- shc$p_norm[, ci_idx]
     }
     
-    ##if specified alpha is less stringent than original analysis
+    ## if specified alpha is less stringent than original analysis
     if (fwer & alpha >= shc$in_args$alpha) {
         if (alpha > shc$in_args$alpha) {
             alpha <- shc$in_args$alpha
@@ -111,17 +123,17 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
         nd_type <- rep("", n)
         nd_type[n] <- "sig"
         for (k in seq(n-1, by=-1)) {
-            ##check if subtree is large enough
+            ## check if subtree is large enough
             if (length(unlist(shc$idx_hc[k, ])) < shc$in_args$n_min) {
                 nd_type[k] <- "n_small"
                 next
             }
-            ##check if parent was significant
+            ## check if parent was significant
             if (nd_type[pd_map[k]] != "sig") {
                 nd_type[k] <- "no_test"
                 next
             }
-            ##compare against p-value cutoff
+            ## compare against p-value cutoff
             if (alpha < 1) {
                 nd_type[k] <- ifelse(p_use[k] < cutoff[k], "sig", "not_sig")
             }
@@ -149,34 +161,40 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
         shc_labs$clusters <- groups[shc$hc_dat$order]
     }
     
-    ##significant nodes
+    ## significant nodes
     sig_linkvals <- as.factor(shc$hc_dat$height[nd_type == "sig"])
     sig_segs <- filter(shc_segs, as.factor(y) %in% sig_linkvals)
-    sig_segtops <- filter(sig_segs, (y == yend) & (x < xend))
-    sig_segtops <- sig_segtops[order(sig_segtops[, 2]), ]
+    ##sig_segtops <- filter(sig_segs, (y == yend) & (x < xend))
+    ##sig_segtops <- sig_segtops[order(sig_segtops[, 2]), ]
     
-    ##tested nodes
-    test_linkvals <- as.factor(shc$hc_dat$height[grep("sig", nd_type)])
+    ## non-signficant nodes
+    notsig_linkvals <- as.factor(shc$hc_dat$height[nd_type == "not_sig"])
+    notsig_segs <- filter(shc_segs, as.factor(y) %in% notsig_linkvals)
+    ##notsig_segtops <- filter(notsig_segs, (y == yend) & (x < xend))
+    ##notsig_segtops <- notsig_segtops[order(notsig_segtops[, 2]), ]
+
+    ## tested nodes
+    test_linkvals <- as.factor(shc$hc_dat$height[which(nd_type == "sig")])
     test_segs <- filter(shc_segs, as.factor(y) %in% test_linkvals)
     test_segtops <- filter(test_segs, (y == yend) & (x < xend))
     test_segtops <- test_segtops[order(test_segtops[, 2]), ]
     test_segtops <- cbind(test_segtops, 
-                          "pval"=format(p_use[grep("sig", nd_type)], 
+                          "pval"=format(p_use[which(nd_type == "sig")], 
                                         digits=3, scientific=TRUE),
-                          "cutoff"=format(cutoff[grep("sig", nd_type)],
+                          "cutoff"=format(cutoff[which(nd_type == "sig")],
                                           digits=3, scientific=TRUE))
     
-    ##small sample nodes
+    ## small sample nodes
     skip_linkvals <- as.factor(shc$hc_dat$height[nd_type == "n_small"])
     skip_segs <- filter(shc_segs, as.factor(y) %in% skip_linkvals)
     
-    ##un-tested nodes (non-significant parent node)
+    ## un-tested nodes (non-significant parent node)
     if (fwer) {
         fwer_linkvals <- as.factor(shc$hc_dat$height[nd_type == "no_test"])
         fwer_segs <- filter(shc_segs, as.factor(y) %in% fwer_linkvals)
     }
         
-    ##calculate various plotting dimensions prior to actual ggplot call
+    ## calculate various plotting dimensions prior to actual ggplot call
     ax_x_ref <- max(shc$hc_dat$height)
     ax_x_top <- max(ax_x_ref)*1.25
     ax_x_bot <- -max(ax_x_ref)/4
@@ -184,14 +202,14 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
     ax_y_range <- max(shc_segs$y) - min(shc_segs$y)  
     
     
-    ##make initial ggdendro with null color
+    ## make initial ggdendro with null color
     plot_dend <- ggplot() + 
         geom_segment(data=shc_segs, 
                      aes(x=x, y=y, xend=xend, yend=yend), 
                      color=col_nd_null) +
         theme_bw()
     
-    ##add appropriate title
+    ## add appropriate title
     plot_dend <- plot_dend + 
         ggtitle(paste("showing all p-values below", 
                       alpha, "cutoff", 
@@ -251,7 +269,14 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
                          size=1)
     }
     
-
+    ## add colored segments if any branches had non-significant calls
+    if (sum(nd_type == "not_sig") > 0) {
+        plot_dend <- plot_dend +
+            geom_segment(data=notsig_segs,
+                         aes(x=x, y=y, xend=xend, yend=yend, color="not_sig"), 
+                         size=1)
+    }
+    
     plot_dend <- plot_dend +
         scale_y_continuous(name="linkage", expand=c(.25, 0),
                            breaks=seq(0, ax_x_top, by=10^ax_x_scale)) +
@@ -263,14 +288,17 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
     ##attach appropriate labels for colored branches along dendrogram
     plot_dend + scale_color_manual(name='Nodes',
                                    values=c('sig'='#FF1E66',
-                                            'n_small'='#53A60A',
-                                            'no_test'='#096272'),
+                                       'not_sig'='orange',
+                                       'n_small'='#53A60A',
+                                       'no_test'='#096272'),
                                    breaks=c('sig',
-                                            'n_small',
-                                            'no_test'),
+                                       'not_sig',
+                                       'n_small',
+                                       'no_test'),
                                    labels=c('Significant',
-                                            'cluster too small',
-                                             'untested by FWER'),
+                                       'Non-significant',
+                                       'cluster too small',
+                                       'untested by FWER'),
                                    drop=TRUE)
 }
 
