@@ -30,7 +30,7 @@
 #' \itemize{
 #' \item{\code{"background"}}: {empirical distribution of marginal data used for background variance estimation}
 #' \item{\code{"qq"}}: {qqplot for checking null Gaussian assumption}
-#' \item{\code{"diag"}}: {screeplot for checking covariance factor model}
+#' \item{\code{"covest"}}: {screeplot for checking covariance factor model}
 #' \item{\code{"pvalue"}}: {empirical distribution of simulated CIs}
 #' \item{\code{"all"}}: {all of the above plots (default).}
 #' }
@@ -44,7 +44,7 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
                            pty = "all", ...) {
 
     ## available plot types
-    avail_pty <- c("background", "qq", "diag", "pvalue", "all")
+    avail_pty <- c("background", "qq", "covest", "pvalue", "all")
     
     ## check default values
     if (length(K) == 0 || min(K) < 1 || max(K) > nrow(obj$p_norm)-1) {
@@ -143,7 +143,9 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
                           color="#1f78b4", size=1, n=500) +
             theme_gdocs() +
             ylab("density") +
-            ggtitle(paste0("Distribution of Vectorized Data for K=", k))
+            ggtitle(paste0("Distribution of Vectorized Data for K=", k)) +
+                scale_x_continuous(expand=c(0.01, 0)) +
+                    scale_y_continuous(expand=c(0.01, 0))
 
         ## note # sample points
         if (ntot > max_nol) {
@@ -218,25 +220,12 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
         
         print(gp)
     }
-
-
-
-
-
-
+    
 
     
     ## covariance estimation diagnostic plot
-    if (any(grepl(pty, c("all", "diag")))) {
+    if (any(grepl(pty, c("all", "covest")))) {
         
-        ## hard cutoff for max # leading eigenvalues to plot 
-        ncut <- 100
-
-        ## determine set of non-zero eigenvalues
-        keigval_pos <- keigval_dat[which(keigval_dat > 10^(-12))]
-        dpos <- length(keigval_pos)
-
-        xmax <- d+1
         ymin <- min(keigval_dat) - 0.05*(max(keigval_dat)-min(keigval_dat))
         ymax <- max(keigval_dat) + 0.05*(max(keigval_dat)-min(keigval_dat))
 
@@ -245,100 +234,47 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
                          eigval=c(keigval_sim, keigval_dat))
 
         ## create base plot
-        gp1 <- ggplot(df) +
+        gp <- ggplot(df) +
             geom_point(aes(x=idx, y=eigval, color=grp)) +
-                geom_path(aes(x=idx, y=eigval, group=grp)) +
+                geom_path(aes(x=idx, y=eigval, group=grp), alpha=1/2) +
                     xlab("Component #") + ylab("Eigenvalue") +
         ggtitle(paste0("Eigenvalues, K=", k)) +
-            geom_vline(xintercept=ncut+.5, color="#4daf4a") +
-                theme_gdocs()
+        theme_gdocs() +
+            scale_color_manual(limits=c("sim", "dat"),
+                               values=c("#e41a1c", "black"), guide=FALSE)
 
-        ## include horizontal line at bkgd noise level
         if (icovest != 2) {
-            gp1 <- gp1 +
-                geom_hline(yintercept=backvar_k, col="magenta") +
-                    annotate("text", hjust=0, vjust=1,
-                             x=0.5*(d+1), y=ymin+0.9*(ymax-ymin),
-                             label=paste0("Background variance = ",
+            ## include horizontal line at bkgd noise level
+            gp <- gp +
+                geom_hline(yintercept=backvar_k, col="#377eb8") +
+                    annotate("text", hjust=1, vjust=0,
+                             x=d+1, y=backvar_k+(ymax-ymin)*.02,
+                             label=paste0("bkgd var = ",
                                  round(backvar_k, 3)),
-                             col="magenta")
+                             col="#377eb8")
         }
-        ## annotate sim eigvals
-        gp1 <- gp1 +
-            annotate("text", x=0.45*(d+1),
-                     y=ymin+0.8*(ymax-ymin),
-                     label="Eigenvalues for simulation", col="red")
+
+        ## annotate eigvals
+        gp <- gp +
+            annotate("text", hjust=1, vjust=1,
+                     x=d+1, y=ymin+0.9*(ymax-ymin),
+                     label="eigenvalues for simulation", col="#e41a1c") +
+        annotate("text", hjust=1, vjust=1,
+                 x=d+1, y=ymin+0.84*(ymax-ymin),
+                 label="sample eigenvalues")
+
+        ## make note if anti-conservative behavior expected 
         if (mad_x > sd_x) {
-            gp1 <- gp1 + 
-                annotate("text", x=0.45*(d+1),
-                         y=ymin + 0.65*(ymax-ymin),
-                         label="Warning: MAD > s.d.", col="magenta")
+            gp <- gp + 
+                annotate("text", hjust=1, vjust=1,
+                         x=d+1, y=ymin + 0.65*(ymax-ymin),
+                         label="Warning: MAD > s.d.", col="#377eb8")
         }
-        ##print(gp1)
-
-
-        ## create log10 scaled plot
-        gp2 <- gp1 +
-            scale_y_log10() +
-                ggtitle(paste0("log10 Eigenvalues, K=", k)) +
-                    xlab("Component #") + ylab("log10(Eigenvalue)")
-        ##print(gp2)
-        
-
-
-
-
-        
-        ## if (length(keigval_dat) >= ncut) {
-        ##     xmin <- 0
-        ##     xmax <- ncut+1
-        ##     ymin <- min(keigval_dat[1:ncut]) - 0.05*(max(keigval_dat[1:ncut]) - min(keigval_dat[1:ncut])) 
-        ##     ymax <- max(keigval_dat[1:ncut]) + 0.05*(max(keigval_dat[1:ncut]) - min(keigval_dat[1:ncut])) 
-        ##     plot(1:ncut, keigval_sim[1:ncut], type="l", lty=2, lwd=3, col="red",
-        ##          xlim=c(xmin, xmax), ylim=c(ymin, ymax),
-        ##          xlab="Component #", ylab="Eigenvalue")
-        ##     points(1:ncut, keigval_dat[1:ncut], col="black")
-        ##     title(paste0("Zoomed in version of above, K=", k))
-            
-        ##     if (icovest != 2) {
-        ##         lines(c(0, d+1), c(backvar_k, backvar_k), col="magenta")
-        ##         text(xmin+0.45*(xmax-xmin), ymin+0.9*(ymax-ymin),
-        ##              paste0("Background variance = ",
-        ##                     as.character(round(backvar_k, 3))),
-        ##              col="magenta")
-        ##     }
-        ##     text(xmin+0.45*(xmax-xmin), ymin+0.8*(ymax-ymin),
-        ##          "Eigenvalues for simulation", col="red")
-            
-        ##     nmax <- min(dpos, ncut)
-        ##     ymin <- min(log10(keigval_pos[1:nmax])) -
-        ##         0.05*(max(log10(keigval_pos[1:nmax])) -
-        ##                   min(log10(keigval_pos[1:nmax])))
-        ##     ymax <- max(log10(keigval_pos[1:nmax])) +
-        ##         0.05*(max(log10(keigval_pos[1:nmax])) -
-        ##                   min(log10(keigval_pos[1:nmax])))
-        ##     plot(1:nmax,log10(keigval_sim[1:nmax]), type="l", lty=2, lwd=3,
-        ##          col="red", xlim=c(xmin, xmax), ylim=c(ymin, ymax),
-        ##          xlab="Component #", ylab="log10(Eigenvalue)")
-        ##     points(1:nmax, log10(keigval_pos[1:nmax]), col="black")
-        ##     title(paste0("log10 Eigenvalues, K=", k))
-            
-        ##     if (icovest != 2) {
-        ##         lines(c(0, ncut+1), log10(c(backvar_k, backvar_k)), col="magenta")
-        ##         text(xmin+0.30*(xmax-xmin), ymin+0.9*(ymax-ymin),
-        ##              paste0("log10 Background variance = ",
-        ##                     as.character(round(log10(backvar_k), 3))),
-        ##              col="magenta")
-        ##     }
-        ##     text(xmin+0.30*(xmax-xmin), ymin+0.8*(ymax-ymin),
-        ##          "Eigenvalues for simulation", col="red")
-        ## }
+        print(gp)
     }
-
     
 
-
-
+    
     ## p-value plot
     if (any(grepl(pty, c("all", "pvalue")))) {
 
@@ -362,10 +298,12 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
             geom_path(aes(x=x, y=y), data=den_df, color="#e41a1c", size=1) + 
             stat_function(fun=dnorm, args=list(mean=mindex, sd=sindex),
                           color="black", size=1, n=500) +
-            geom_vline(xintercept=kci_dat, color="#4daf4a") + 
+            geom_vline(xintercept=kci_dat, color="#4daf4a", size=1) + 
             theme_gdocs() +
             ylab("density") + xlab("Cluster Index") + 
-                ggtitle(paste0("SHC Results for ci_idx=", ci_idx, ", K=", k))
+                ggtitle(paste0("SHC Results for ci_idx=", ci_idx, ", K=", k)) +
+                    scale_x_continuous(expand=c(0.01, 0)) +
+                        scale_y_continuous(expand=c(0.01, 0))
 
         ## return p-values
         gp <- gp +

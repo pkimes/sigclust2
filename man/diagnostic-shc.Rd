@@ -45,7 +45,7 @@ The \code{pty} parameter accepts the following options:
 \itemize{
 \item{\code{"background"}}: {empirical distribution of marginal data used for background variance estimation}
 \item{\code{"qq"}}: {qqplot for checking null Gaussian assumption}
-\item{\code{"diag"}}: {screeplot for checking covariance factor model}
+\item{\code{"covest"}}: {screeplot for checking covariance factor model}
 \item{\code{"pvalue"}}: {empirical distribution of simulated CIs}
 \item{\code{"all"}}: {all of the above plots (default).}
 }
