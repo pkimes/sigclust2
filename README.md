@@ -159,11 +159,11 @@ data.frame(result = head(shc_result$nd_type, 5),
 
 ```
 ##   result hclust_2CI hclust_2CI.1
-## 1     NA    0.00006         0.00
-## 2     NA    0.03234         0.04
-## 3     NA    0.81745         0.81
-## 4     NA    0.77279         0.77
-## 5     NA    0.94620         0.94
+## 1     NA    0.00000         0.00
+## 2     NA    0.00284         0.01
+## 3     NA    0.55944         0.51
+## 4     NA    0.89707         0.92
+## 5     NA    0.99091         1.00
 ```
 
 In addition to values between 0 and 1, some p-values are reported as `2`. These values correspond
@@ -209,7 +209,7 @@ system.time(mfun1(data))
 
 ```
 ##    user  system elapsed 
-##   0.863   0.004   0.867
+##   0.861   0.003   0.865
 ```
 
 ```r
@@ -218,7 +218,7 @@ system.time(mfun2(data))
 
 ```
 ##    user  system elapsed 
-##   0.002   0.001   0.002
+##   0.002   0.000   0.002
 ```
 
 The first matrix correlation function, `mfun1`, is written it
@@ -244,12 +244,12 @@ data.frame(result = head(shc_mfun2$nd_type),
 
 ```
 ##   result hclust_2CI hclust_2CI.1
-## 1     NA    0.97268         0.99
-## 2     NA    0.90186         0.93
-## 3     NA    1.00000         1.00
-## 4     NA    0.99552         1.00
-## 5     NA    0.00000         0.00
-## 6     NA    0.82746         0.87
+## 1     NA    0.86228         0.87
+## 2     NA    0.01003         0.01
+## 3     NA    0.88387         0.90
+## 4     NA    0.89094         0.89
+## 5     NA    0.84273         0.85
+## 6     NA    0.10524         0.08
 ```
 
 Since the toy dataset is simulated with all differentiating signal lying in the
@@ -296,11 +296,11 @@ data.frame(result = head(shc_fwer$nd_type, 10),
 
 ```
 ##     result hclust_2CI hclust_2CI.1
-## 1      sig    0.00034         0.00
-## 2  not_sig    0.06468         0.08
-## 3  no_test    2.00000         2.00
-## 4  no_test    2.00000         2.00
-## 5  not_sig    0.93479         0.95
+## 1      sig    0.00000         0.00
+## 2      sig    0.00280         0.01
+## 3  not_sig    0.54243         0.49
+## 4  not_sig    0.83585         0.85
+## 5  not_sig    0.99490         1.00
 ## 6  no_test    2.00000         2.00
 ## 7  no_test    2.00000         2.00
 ## 8  no_test    2.00000         2.00
@@ -329,12 +329,12 @@ round(head(data_2tests$p_norm), 5)
 
 ```
 ##      hclust_2CI hclust_linkage
-## [1,]    0.00006        0.00628
-## [2,]    0.06635        0.58607
-## [3,]    0.81798        1.00000
-## [4,]    0.75385        1.00000
-## [5,]    0.92543        1.00000
-## [6,]    0.98524        1.00000
+## [1,]    0.00007        0.00719
+## [2,]    0.00443        0.19216
+## [3,]    0.59790        1.00000
+## [4,]    0.82995        0.99985
+## [5,]    0.99215        1.00000
+## [6,]    0.79182        0.99999
 ```
 
 The results of clustering using `hclust_2CI` and `hclust_linkage` are reported in the columns
@@ -363,7 +363,61 @@ Nodes which were not tested, as described earlier, are marked in either green or
 
 ### <a name="diagnostics"></a> Diagnostic plots
 
-__*Diagnostic plots are currently being implemented and should be available soon.*__
+Several types of diagnostic plots are implemented for the SHC method. These are available through the
+`diagnostic` method. Since testing is performed separately at each node along the dendrogram, diagnostic
+plots are also generated per-node. The set of nodes for which diagnostic plots should be generated
+is specified with the `K` parameter. The default is to only generate plots for the root node, `K = 1`.  
+
+The method currently supports four types of diagnostic plots: `background`, `qq`, `covest`, `pvalue`.
+The desired plot type is specified to the `pty` parameter as a vector of strings. To create all four
+plots, simply specify `all`, which is also the default value.  
+
+If the length of `K` is greater than 1 or more than one plot type is specified, the method will
+write files to a pdf file, `fname.pdf`, where `fname` is an input parameter that can be specifeid
+by the user.  
+
+The `background` plot will return a jitter plot of the matrix entries, as well as a smooth kernel
+density estimate and best-fit Gaussian approximation used in estimating the background
+noise level. 
+
+
+```r
+diagnostic(shc_result, K=1, pty='background')
+```
+
+![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17-1.png)
+
+The `qq` plot provides the corresponding Quantile-Quantile plot from the background noise estimating
+procedure.
+
+
+```r
+diagnostic(shc_result, K=1, pty='qq')
+```
+
+![plot of chunk unnamed-chunk-18](figure/unnamed-chunk-18-1.png)
+
+The `covest` plot shows the estimated eigenvalues of the null Gaussian distribution along with the sample
+eigenvalues of the original data matrix.
+
+
+```r
+diagnostic(shc_result, K=1, pty='covest')
+```
+
+![plot of chunk unnamed-chunk-19](figure/unnamed-chunk-19-1.png)
+
+The `pvalue` plot shows the cluster index for the original data along with the distribution of
+simulated cluster indices used to determine the reported empirical (Q) p-value. Additionally, the
+best-fit Gaussian approximation to the cluster index distirbution used to compute the Gaussian-approximate
+(Z) p-value is overlaid in black.
+
+
+```r
+diagnostic(shc_result, K=1, pty='pvalue')
+```
+
+![plot of chunk unnamed-chunk-20](figure/unnamed-chunk-20-1.png)
 
 
 
