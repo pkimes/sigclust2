@@ -5,10 +5,10 @@
 \alias{print.shc}
 \title{print description of shc object}
 \usage{
-\method{print}{shc}(object, ...)
+\method{print}{shc}(x, ...)
 }
 \arguments{
-\item{object}{a \code{shc} object}
+\item{x}{a \code{shc} object}
 
 \item{...}{other parameters to be used by the function}
 }
