@@ -35,7 +35,7 @@ test_that("plot use_labs input is properly parsed", {
 test_that("plot alpha, fwer inputs are properly parsed", {
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     
-    fwer_false_warning <- "shc constructed using fwer = TRUE, using fwer = TRUE"
+    fwer_false_warning <- "shc constructed using alpha < 1, using fwer = TRUE"
     alpha_small_warning <- "shc constructed using smaller alpha than specified to plot"
     alpha_range_error <- "invalid choice for alpha; alpha must be 0 < alpha < 1"    
 
@@ -71,8 +71,8 @@ test_that("plot ci_idx, ci_emp inputs are properly parsed", {
     out1 <- shc(dm, alpha = 1, ci = c("2CI", "2CI"), null_alg = c("hclust", "2means"))
     out2 <- shc(dm, alpha = 0.10, ci = c("2CI", "2CI"), null_alg = c("hclust", "2means"))
 
-    ci_emp_warning <- "shc constructed using fwer = TRUE"#, using ci_emp from in_args(shc)"
-    ci_idx_warning <- "shc constructed using fwer = TRUE"#, using ci_idx from in_args(shc)"
+    ci_emp_warning <- "shc constructed using alpha < 1"#, using ci_emp from in_args(shc)"
+    ci_idx_warning <- "shc constructed using alpha < 1"#, using ci_idx from in_args(shc)"
     ci_idx_error <- "invalid choice for ci_idx"#; ci_idx must be < length(ci)"
     
     expect_is(plot(out1, ci_idx = 1, ci_emp = TRUE), "ggplot")
