@@ -245,7 +245,7 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
 
     
     ##add p-values for segments if they were tested
-    if (length(grep("sig", nd_type)) > 0) {
+    if (sum(nd_type == "sig") > 0) {
         plot_dend <- plot_dend +
             geom_text(data=test_segtops, 
                       aes(x=x, y=y, label=pval, hjust=-0.2, vjust=-0.5),
@@ -295,8 +295,8 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
                                        'not_sig',
                                        'n_small',
                                        'no_test'),
-                                   labels=c('Significant',
-                                       'Non-significant',
+                                   labels=c('significant',
+                                       'not significant',
                                        'cluster too small',
                                        'untested by FWER'),
                                    drop=TRUE)
