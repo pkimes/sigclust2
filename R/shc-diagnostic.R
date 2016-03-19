@@ -189,7 +189,7 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
     if (any(grepl(pty, c("all", "qq")))) {
 
         ## compute quantiles
-        qq_x <- qqnorm(as.vector(obj$in_mat), plot.it=FALSE)
+        qq_x <- qqnorm(as.vector(k_mat), plot.it=FALSE)
         qq_df <- data.frame(x=qq_x$x, y=qq_x$y)
 
         ## subset for plotting
@@ -210,7 +210,7 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
             annotate(geom="text", vjust=1, hjust=0,
                      x=min(qq_df$x), y=max(qq_df$y),
                      label=paste0("mean = ", round(mean_x, 3), "\n",
-                         "s.d. =", round(sd_x, 3)))
+                         "s.d. = ", round(sd_x, 3)))
         gp <- gp + annotate(geom="point", x=qnorm(c(.25, .50, .75)),
                             y=quantile(qq_df$y, c(.25, .50, .75)),
                             color="#1f78b4", shape=43, size=8)
