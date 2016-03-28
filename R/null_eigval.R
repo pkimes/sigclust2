@@ -82,7 +82,7 @@ null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = FALSE) {
         etau <- (tauu-taub) / 100
         ids <- rep(0, 100)
         for (i in 1:100) {
-            taus = taub + (i-1)*etau
+            taus <- taub + (i-1)*etau
             eigval_temp <- eigval_dat - taus
             eigval_temp[eigval_temp < backvar] <- backvar
             ids[i] <- eigval_temp[1] / sum(eigval_temp)
