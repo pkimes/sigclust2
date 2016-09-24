@@ -1,6 +1,8 @@
 
 
-sigclust2 [![Build Status](https://travis-ci.org/pkimes/sigclust2.svg?branch=master)](https://travis-ci.org/pkimes/sigclust2)
+sigclust2
+[![Build Status](https://travis-ci.org/pkimes/sigclust2.svg?branch=master)](https://travis-ci.org/pkimes/sigclust2)
+[![codecov](https://codecov.io/gh/pkimes/sigclust2/branch/master/graph/badge.svg)](https://codecov.io/gh/pkimes/sigclust2)
 =======================
 
 ## Contents
@@ -159,11 +161,11 @@ data.frame(result = head(shc_result$nd_type, 5),
 
 ```
 ##   result hclust_2CI hclust_2CI.1
-## 1     NA    0.00000         0.00
-## 2     NA    0.00284         0.01
-## 3     NA    0.55944         0.51
-## 4     NA    0.89707         0.92
-## 5     NA    0.99091         1.00
+## 1     NA    0.00013         0.00
+## 2     NA    0.00368         0.03
+## 3     NA    0.99800         1.00
+## 4     NA    0.97834         1.00
+## 5     NA    0.99667         1.00
 ```
 
 In addition to values between 0 and 1, some p-values are reported as `2`. These values correspond
@@ -209,7 +211,7 @@ system.time(mfun1(data))
 
 ```
 ##    user  system elapsed 
-##   0.861   0.003   0.865
+##   0.570   0.006   0.576
 ```
 
 ```r
@@ -243,13 +245,13 @@ data.frame(result = head(shc_mfun2$nd_type),
 ```
 
 ```
-##   result hclust_2CI hclust_2CI.1
-## 1     NA    0.86228         0.87
-## 2     NA    0.01003         0.01
-## 3     NA    0.88387         0.90
-## 4     NA    0.89094         0.89
-## 5     NA    0.84273         0.85
-## 6     NA    0.10524         0.08
+##    result hclust_2CI hclust_2CI.1
+## 1      NA    0.02126         0.02
+## 2      NA    0.99468         0.98
+## 3      NA    0.99222         0.97
+## 4      NA    0.96118         0.97
+## 5 n_small    2.00000         2.00
+## 6      NA    0.83281         0.87
 ```
 
 Since the toy dataset is simulated with all differentiating signal lying in the
@@ -296,11 +298,11 @@ data.frame(result = head(shc_fwer$nd_type, 10),
 
 ```
 ##     result hclust_2CI hclust_2CI.1
-## 1      sig    0.00000         0.00
-## 2      sig    0.00280         0.01
-## 3  not_sig    0.54243         0.49
-## 4  not_sig    0.83585         0.85
-## 5  not_sig    0.99490         1.00
+## 1      sig    0.00008         0.00
+## 2      sig    0.00972         0.03
+## 3  not_sig    0.99844         1.00
+## 4  not_sig    0.99641         1.00
+## 5  no_test    2.00000         2.00
 ## 6  no_test    2.00000         2.00
 ## 7  no_test    2.00000         2.00
 ## 8  no_test    2.00000         2.00
@@ -329,12 +331,12 @@ round(head(data_2tests$p_norm), 5)
 
 ```
 ##      hclust_2CI hclust_linkage
-## [1,]    0.00007        0.00719
-## [2,]    0.00443        0.19216
-## [3,]    0.59790        1.00000
-## [4,]    0.82995        0.99985
-## [5,]    0.99215        1.00000
-## [6,]    0.79182        0.99999
+## [1,]    0.00024        0.00855
+## [2,]    0.00227        0.15968
+## [3,]    0.99793        1.00000
+## [4,]    0.98677        1.00000
+## [5,]    0.99575        1.00000
+## [6,]    0.83591        1.00000
 ```
 
 The results of clustering using `hclust_2CI` and `hclust_linkage` are reported in the columns
