@@ -59,12 +59,11 @@ null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = FALSE) {
     if (nrow(x) != n | ncol(x) != p)
         stop("Wrong size of matrix x!")
     
-    ## compute background based on PCA scores or raw data
+    ## compute background based on raw data
+    ## or min of raw data and pca scores
+    mad1 <- mad(as.matrix(x))
     if (bkgd_pca) {
-        mad1 <- min(mad(as.matrix(x)),
-                    mad(as.matrix(prcomp(x)$x)) / sqrt(p/(n-1)))
-    } else {
-        mad1 <- mad(as.matrix(x))
+        mad1 <- min(mad1, mad(as.matrix(prcomp(x)$x)) / sqrt(p/(n-1)))
     }
     backvar <- mad1^2
     
@@ -81,6 +80,7 @@ null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = FALSE) {
         tauu <- .soft_covest(eigval_dat, backvar)$tau
         etau <- (tauu-taub) / 100
         ids <- rep(0, 100)
+        ## tune to determine whether hard/soft more appropriate
         for (i in 1:100) {
             taus <- taub + (i-1)*etau
             eigval_temp <- eigval_dat - taus
@@ -130,16 +130,19 @@ null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = FALSE) {
     icut <- which[1] - 1
     powertail <- sum(vsampeigv[(icut+1):p])
     power2shift <- sig2b*(p-icut) - powertail
+    
     vi <- c(1:icut)
     vcumtaucand <- sort(cumsum(sort(vtaucand[vi])), decreasing=TRUE)
+    
     vpowershifted <- (vi-1)*vtaucand[vi] + vcumtaucand
 
     flag <- (vpowershifted < power2shift)
     if (sum(flag) == 0) {
+        ## means decreasing everything still not enough
         itau <- 0
     } else {
-        which <- which(flag > 0)
-        itau <- which[1]
+        ## means for some index, decrease is sufficient
+        itau <- which(flag)[1]
     }
 
     if (itau == 1) {
@@ -150,10 +153,11 @@ null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = FALSE) {
         tau <- powerprop*vtaucand[icut] 
     } else {
         powerprop <- (power2shift-vpowershifted[itau]) /
-            (vpowershifted[itau-1]-vpowershifted[itau]) 
-        tau <- vtaucand[itau] + powerprop*(vtaucand[itau-1] - vtaucand[itau]) 
+            (vpowershifted[itau-1]-vpowershifted[itau])
+        tau <- vtaucand[itau] + powerprop*(vtaucand[itau-1] - vtaucand[itau])
     }
 
+    
     veigvest <- vsampeigv - tau 
     flag <- (veigvest > sig2b) 
     veigvest <- flag*veigvest + (1-flag)*(sig2b*rep(1, p))
