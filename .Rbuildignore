@@ -1,0 +1,8 @@
+.gitignore
+.Rbuildignore
+.travis.yml
+.git
+.gitignore
+.Rhistory
+.DS_Store
+TODO.md

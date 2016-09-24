@@ -1,0 +1,5 @@
+.Rhistory
+.DS_Store
+R/_*
+inst/doc/*.Rnw
+README.html
