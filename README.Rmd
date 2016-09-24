@@ -1,4 +1,8 @@
-
+```{r, hide=TRUE, warning=FALSE, message=FALSE, echo=FALSE}
+suppressPackageStartupMessages(library("ggplot2"))
+suppressPackageStartupMessages(library("sigclust2"))
+suppressPackageStartupMessages(library("GGally"))
+```
 
 sigclust2
 [![Build Status](https://travis-ci.org/pkimes/sigclust2.svg?branch=master)](https://travis-ci.org/pkimes/sigclust2)
@@ -36,16 +40,14 @@ R> devtools::install_github("pkimes/sigclust2")
 
 The package can then be loaded using the standard call to `library`.  
 
-
-```r
+```{r}
 suppressPackageStartupMessages(library("sigclust2"))
 ```
 
 For the following examples, we will use a simple toy example with 150 samples (_n_) with
 100 measurements (_p_). The data are simulated from three Gaussian (normal) distributions.  
 
-
-```r
+```{r}
 n1 <- 60; n2 <- 40; n3 <- 50; n <- n1 + n2 + n3
 p <- 100
 data <- matrix(rnorm(n*p), nrow=n, ncol=p)
@@ -54,17 +56,14 @@ data[, 2] <- data[, 2] + c(rep(0, n1+n2), rep(sqrt(3)*3, n3))
 ```
 The separation of the three underlying distributions can be observed from a PCA (principal components
 analysis) scatterplot. While the separation is clear in the first 2 PCs, recall that the data
-actually exists in 100 dimensions.  
+actually exists in `r p` dimensions.  
 
-
-```r
+```{r, fig.width=10, fig.height=4}
 data_pc <- prcomp(data)
 par(mfrow=c(1, 2))
 plot(data_pc$x[, 2], data_pc$x[, 1], xlab="PC2", ylab="PC1")
 plot(data_pc$x[, 3], data_pc$x[, 1], xlab="PC3", ylab="PC1")
 ```
-
-![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png)
 
 
 ## <a name="test"></a> Testing
@@ -94,47 +93,22 @@ this section.
 
 For now, we just use the recommended and default parameters.  
 
-
-```r
+```{r}
 shc_result <- shc(data, metric="euclidean", linkage="ward.D2")
 ```
 
 The output is a S3 object of class `shc`, and a brief description of the analysis results can be
 obtained by the `summary` function.  
 
-
-```r
+```{r}
 summary(shc_result)
-```
-
-```
-## 
-## shc object created using shc(..)
-## --------------------------------
-## Clustering Parameters:
-##     dissimilarity = euclidean
-##     linkage = ward.D2
-## Testing Parameters:
-##     n_sim = 100
-##     icovest = 1
-##     ci = 2CI
-##     null_alg = hclust
-##     min_n = 10
-##     FWER control = FALSE
 ```
 
 The analysis output can be accessed using the `$` accessor. More details on the different entries
 can be found in the documentation for the `shc` function.  
 
-
-```r
+```{r}
 names(shc_result)
-```
-
-```
-##  [1] "in_mat"     "in_args"    "eigval_dat" "eigval_sim" "backvar"   
-##  [6] "nd_type"    "ci_dat"     "ci_sim"     "p_emp"      "p_norm"    
-## [11] "idx_hc"     "hc_dat"
 ```
 
 The computed p-values are probably of greatest interest. Two p-values are computed as part of the
@@ -148,24 +122,14 @@ the empirical p-value which provides more continuous p-values. `nd_type` stores 
 test and takes values in: `n_small`, `no_test`, `sig`, `not_sig`, `NA`. With the default implementation of
 `shc` using no FWER control, all nodes are either `NA` or `n_small`.  
 
-The p-values are reported for each of 149 (`n-1`) nodes along the hierarchical dendrogram.
+The p-values are reported for each of `r n-1` (`n-1`) nodes along the hierarchical dendrogram.
 The very top (root) node of the dendrogram corresponds to the final entry of the `p_emp` and
 `p_norm` results.  
 
-
-```r
+```{r}
 data.frame(result = head(shc_result$nd_type, 5),
            round(head(shc_result$p_norm, 5), 5),
            round(head(shc_result$p_emp, 5), 5))
-```
-
-```
-##   result hclust_2CI hclust_2CI.1
-## 1     NA    0.00013         0.00
-## 2     NA    0.00368         0.03
-## 3     NA    0.99800         1.00
-## 4     NA    0.97834         1.00
-## 5     NA    0.99667         1.00
 ```
 
 In addition to values between 0 and 1, some p-values are reported as `2`. These values correspond
@@ -188,8 +152,7 @@ The `vecmet` example is not actually run in this tutorial since it is __incredib
 computationally expensive. Internally, the function passed to `vecmet` is wrapped in the
 following call to `outer` to compute dissimilarities between all rows of a matrix.  
 
-
-```r
+```{r, eval=FALSE}
 as.dist(outer(split(x, row(x)), split(x, row(x)), Vectorize(vecmet)))
 ```
 
@@ -197,8 +160,7 @@ The following simple benchmarking example with `cor` illustrates the overhead fo
 using `outer` to call on a vector function rather than using an optimized matrix
 dissimilarity function.
 
-
-```r
+```{r}
 vfun <- function(x, y) {1 - cor(x, y)}
 mfun1 <- function(x) {
     as.dist(outer(split(x, row(x)), split(x, row(x)),
@@ -207,20 +169,7 @@ mfun1 <- function(x) {
 mfun2 <- function(x) { as.dist(1 - cor(t(x))) }
 
 system.time(mfun1(data))
-```
-
-```
-##    user  system elapsed 
-##   0.570   0.006   0.576
-```
-
-```r
 system.time(mfun2(data))
-```
-
-```
-##    user  system elapsed 
-##   0.002   0.000   0.002
 ```
 
 The first matrix correlation function, `mfun1`, is written it
@@ -235,23 +184,12 @@ calling on the dissimilarity function >10,000 times.
 
 Our custom function, `mfun2` can be passed to `shc` through the `matmet` parameter.  
 
-
-```r
+```{r}
 shc_mfun2 <- shc(data, matmet=mfun2, linkage="average")
 
 data.frame(result = head(shc_mfun2$nd_type),
            round(head(shc_mfun2$p_norm), 5),
            round(head(shc_mfun2$p_emp), 5))
-```
-
-```
-##    result hclust_2CI hclust_2CI.1
-## 1      NA    0.02126         0.02
-## 2      NA    0.99468         0.98
-## 3      NA    0.99222         0.97
-## 4      NA    0.96118         0.97
-## 5 n_small    2.00000         2.00
-## 6      NA    0.83281         0.87
 ```
 
 Since the toy dataset is simulated with all differentiating signal lying in the
@@ -264,8 +202,7 @@ distinguishing the clusters, and the resulting p-values show weak significance.
 As a shortcut, without having to specify `matmet`, if testing using `(1 - cor(x))` is desired,
 the following specification can be used.  
 
-
-```r
+```{r, eval=FALSE}
 data_pearson <- shc(data, metric="cor", linkage="average", null_alg="2means")
 ```
 
@@ -281,33 +218,17 @@ proceeds sequentially from the top node such that daughter nodes are only tested
 FWER-corrected significance was achieved at the parent node. To reduce the total number of tests
 performed, set `alpha` to some value less than `1`.   
 
-
-```r
+```{r}
 shc_fwer <- shc(data, metric="euclidean", linkage="ward.D2", alpha=0.05)
 ```
 
 The FWER is noted in the summary of the resulting `shc` object, and can be seen in the `nd_type`
 attribute, where most tests are now labeled `no_test` (with `p_norm` and `p_emp` values of 2).  
 
-
-```r
+```{r}
 data.frame(result = head(shc_fwer$nd_type, 10),
            round(head(shc_fwer$p_norm, 10), 5),
            round(head(shc_fwer$p_emp, 10), 5))
-```
-
-```
-##     result hclust_2CI hclust_2CI.1
-## 1      sig    0.00008         0.00
-## 2      sig    0.00972         0.03
-## 3  not_sig    0.99844         1.00
-## 4  not_sig    0.99641         1.00
-## 5  no_test    2.00000         2.00
-## 6  no_test    2.00000         2.00
-## 7  no_test    2.00000         2.00
-## 8  no_test    2.00000         2.00
-## 9  no_test    2.00000         2.00
-## 10 no_test    2.00000         2.00
 ```
 
 By default, `p_norm` p-values are used to test for significance against the FWER cutoffs,
@@ -321,22 +242,11 @@ different measures of strength of clustering.
 For example, it is possible to simultaneously test the above example using both the 2-means
 cluster index and the linkage value as the measure of strength of clustering.  
 
-
-```r
+```{r}
 data_2tests <- shc(data, metric="euclidean", linkage="ward.D2",
                    ci=c("2CI", "linkage"),
                    null_alg=c("hclust", "hclust"))
 round(head(data_2tests$p_norm), 5)
-```
-
-```
-##      hclust_2CI hclust_linkage
-## [1,]    0.00024        0.00855
-## [2,]    0.00227        0.15968
-## [3,]    0.99793        1.00000
-## [4,]    0.98677        1.00000
-## [5,]    0.99575        1.00000
-## [6,]    0.83591        1.00000
 ```
 
 The results of clustering using `hclust_2CI` and `hclust_linkage` are reported in the columns
@@ -353,12 +263,9 @@ While looking at the p-values is nice, plots are always nicer than numbers. A ni
 see the results of the SHC procedure is simply to call `plot` on the `shc` class object
 created using the `shc(..)` constructor. 
 
-
-```r
+```{r, fig.width=12, fig.height=4}
 plot(shc_result, hang=.1)
 ```
-
-![plot of chunk unnamed-chunk-16](figure/unnamed-chunk-16-1.png)
 
 The resulting plot shows significant nodes and splits in red, as well as the corresponding p-values.
 Nodes which were not tested, as described earlier, are marked in either green or teal (blue).  
@@ -382,44 +289,32 @@ The `background` plot will return a jitter plot of the matrix entries, as well a
 density estimate and best-fit Gaussian approximation used in estimating the background
 noise level. 
 
-
-```r
+```{r}
 diagnostic(shc_result, K=1, pty='background')
 ```
-
-![plot of chunk unnamed-chunk-17](figure/unnamed-chunk-17-1.png)
 
 The `qq` plot provides the corresponding Quantile-Quantile plot from the background noise estimating
 procedure.
 
-
-```r
+```{r}
 diagnostic(shc_result, K=1, pty='qq')
 ```
-
-![plot of chunk unnamed-chunk-18](figure/unnamed-chunk-18-1.png)
 
 The `covest` plot shows the estimated eigenvalues of the null Gaussian distribution along with the sample
 eigenvalues of the original data matrix.
 
-
-```r
+```{r}
 diagnostic(shc_result, K=1, pty='covest')
 ```
-
-![plot of chunk unnamed-chunk-19](figure/unnamed-chunk-19-1.png)
 
 The `pvalue` plot shows the cluster index for the original data along with the distribution of
 simulated cluster indices used to determine the reported empirical (Q) p-value. Additionally, the
 best-fit Gaussian approximation to the cluster index distirbution used to compute the Gaussian-approximate
 (Z) p-value is overlaid in black.
 
-
-```r
+```{r}
 diagnostic(shc_result, K=1, pty='pvalue')
 ```
-
-![plot of chunk unnamed-chunk-20](figure/unnamed-chunk-20-1.png)
 
 
 
