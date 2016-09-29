@@ -324,7 +324,7 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
         eigval_sim[k, ] <- xk_null$eigval_sim
         backvar[k] <- xk_null$backvar
         
-        ## update nd_type (note type)
+        ## update nd_type (node type)
         if (alpha < 1) {
             if (ci_emp) {
                 nd_type[k] <- ifelse(p_emp[k, ci_idx] < cutoff[k],
@@ -390,12 +390,12 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
     ## determine parent branch node for all children nodes along dendrogram
     pd_pairs <- rbind(cbind(hc$merge[, 1], 1:(n-1)), 
                       cbind(hc$merge[, 2], 1:(n-1)))
-    pd_map <- data.frame(pd_pairs[pd_pairs[, 1]>0, ])
+    pd_map <- data.frame(pd_pairs[pd_pairs[, 1] > 0, ])
     names(pd_map) <- c("dtr", "prt")
-    pd_map <- pd_map[order(pd_map$dtr), 2] #the parent of each daughter
+    pd_map <- pd_map$prt[order(pd_map$dtr)] #the parent of each daughter
     pd_map <- c(pd_map, n) #add final node without a parent
 
-    pd_map
+    rev(pd_map) #fix
 }
 
 
@@ -411,7 +411,8 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
         idx_hc[[n+k, 1]] <- unlist(idx_hc[idx_hc[[n+k, 1]], ])
         idx_hc[[n+k, 2]] <- unlist(idx_hc[idx_hc[[n+k, 2]], ])
     }
-    idx_hc <- idx_hc[-(1:n), ]
+    ##idx_hc <- idx_hc[-(1:n), ] #fix
+    idx_hc <- idx_hc[(2*n-1):(n-1), ]
 
     idx_hc
 }
