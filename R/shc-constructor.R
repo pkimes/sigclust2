@@ -246,7 +246,7 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
     idx_hc <- x_clust$idx_hc
 
     ## for plotting purposes, change heights of dendrogram
-    if (linkage == "ward" & rcpp) {
+    if ((linkage == "ward") & rcpp) {
         hc_dat$height <- sqrt(2*hc_dat$height)
         print("scaling heights of ward clustering with rcpp by sqrt(2*h) for plotting")
     }
@@ -270,11 +270,10 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
     cutoff <- fwer_cutoff(idx_hc, alpha)
 
     ## keep track of each node was tested
-    nd_type <- rep("", n)
-    nd_type[n] <- "sig"
+    nd_type <- rep("", n-1)
     
-    ## move through nodes of dendrogram in reverse order
-    for (k in (n-1):1) { 
+    ## move through nodes of dendrogram
+    for (k in 1:(n-1)) {
 
         ## indices for subtree
         idx_sub <- unlist(idx_hc[k, ])
@@ -288,9 +287,9 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
 
         ## if parent wasn't significant, skip
         ## - placed after n_min check on purpose
-        if (nd_type[pd_map[k]] != "sig") {
+        if ((alpha < 1) && (k > 1) && (nd_type[pd_map[k]] != "sig")) {
             nd_type[k] <- "no_test"
-            next 
+            next
         }
 
         ## estimate null Gaussian
@@ -334,30 +333,9 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
                                      "sig", "not_sig")
             }
         } else {
-            nd_type[k] <- "sig"
+            nd_type[k] <- "cutoff_skipped"
         }
-        
     }
-
-    ## change nd_type reported if no FWER control was used
-    if (alpha == 1) {
-        nd_type[nd_type == "sig"] <- "NA"
-    }
-
-    ## remove extra nd_type
-    nd_type <- nd_type[-n]
-
-    ## reverse all output so root node is at top to match
-    ## index order described in manuscript
-    eigval_dat <- eigval_dat[(n-1):1, , drop=FALSE]
-    eigval_sim <- eigval_sim[(n-1):1, , drop=FALSE]
-    backvar <- rev(backvar)
-    nd_type <- rev(nd_type)
-    ci_dat <- ci_dat[(n-1):1, , drop=FALSE]
-    ci_sim <- ci_sim[(n-1):1, , , drop=FALSE]
-    p_emp <- p_emp[(n-1):1, , drop=FALSE]
-    p_norm <- p_norm[(n-1):1, , drop=FALSE]
-    idx_hc <- idx_hc[(n-1):1, , drop=FALSE]
 
     ## return shc S3 object
     structure(
@@ -395,7 +373,8 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
     pd_map <- pd_map$prt[order(pd_map$dtr)] #the parent of each daughter
     pd_map <- c(pd_map, n) #add final node without a parent
 
-    rev(pd_map) #fix
+    ## flip index, hclust and shc use reversed ordering
+    n - rev(pd_map)
 }
 
 
@@ -411,10 +390,9 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
         idx_hc[[n+k, 1]] <- unlist(idx_hc[idx_hc[[n+k, 1]], ])
         idx_hc[[n+k, 2]] <- unlist(idx_hc[idx_hc[[n+k, 2]], ])
     }
-    ##idx_hc <- idx_hc[-(1:n), ] #fix
-    idx_hc <- idx_hc[(2*n-1):(n-1), ]
 
-    idx_hc
+    ## flip index, hclust and shc use revered ordering
+    idx_hc[(2*n-1):(n-1), ]
 }
 
 
@@ -431,9 +409,9 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
                    "for 2CI calculation"))
     }      
 }
-    
 
-## parse clustering parameters to produce dendrogram
+
+## parse clustering parameters to produce hclust object
 .cluster_shc <- function(x, metric, matmet, linkage, l, rcpp) {
     if (!is.null(matmet)) {
         hc_dat <- hclust(matmet(x), method=linkage)
@@ -472,7 +450,8 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
                                             x[idx_hc[[k, 2]], , drop=FALSE])
             }
         } else if (ci[i_ci] == "linkage") {
-            ci_dat[, i_ci] <- hc_dat$height
+            ## flip index, hclust and shc use revered ordering
+            ci_dat[, i_ci] <- rev(hc_dat$height)
         }
     }
     
