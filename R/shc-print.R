@@ -11,7 +11,7 @@
 #' @author Patrick Kimes
 print.shc <- function(x, ...) {
     cat("\n")
-    cat("shc x created using shc(..)")
+    cat("shc object created using shc(..)")
     cat("\n")
     cat("--------------------------------")
     cat("\n")
