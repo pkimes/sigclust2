@@ -47,7 +47,7 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
     avail_pty <- c("background", "qq", "covest", "pvalue", "all")
     
     ## check default values
-    if (length(K) == 0 || min(K) < 1 || max(K) > nrow(obj$p_norm)-1) {
+    if (length(K) == 0 || min(K) < 1 || max(K) > nrow(obj$p_norm)) {
         stop("K must be a set of indices between 1 and n-1")
     }
     if (!is.null(fname) && !is.character(fname)) {
