@@ -32,7 +32,7 @@ print.shc <- function(x, ...) {
                paste0(x$in_args$ci, collapse=", "),
                "\n    null_alg = ",
                paste0(x$in_args$null_alg, collapse=", "),
-               "\n    min_n = ",
+               "\n    n_min = ",
                x$in_args$n_min,
                "\n"))
     
