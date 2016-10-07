@@ -15,7 +15,8 @@
 #'        (default = FALSE)
 #'
 #' @return
-#' a vector of length n specifying cluster labels based on 
+#' a vector of length n specifying cluster labels based on specified FWER
+#' alpha threshold.
 #' 
 #' @name shcutree
 #' @export
@@ -27,8 +28,12 @@ shcutree <- function(obj, alpha = 0.05, ci_idx = 1, ci_emp = FALSE) {
         stop("invalid choice for alpha; alpha must be 0 < alpha < 1")
     }
 
-    ## if method originally implemented with fwer control
-    ## must use FWER and same ci_emp, ci_idx
+    ## check validity of CI index
+    if (!(ci_idx %in% 1:ncol(obj$p_emp))) {
+        stop("invalid choice for ci_idx; ci_idx must be a valid column index from p_emp or p_norm")
+    }
+
+    ## if shc originally used with alpha must use FWER and same ci_emp, ci_idx
     if (obj$in_args$alpha < 1) {
         if (alpha > obj$in_args$alpha) {
             warning(paste0("shc constructed using smaller alpha ",
@@ -47,28 +52,26 @@ shcutree <- function(obj, alpha = 0.05, ci_idx = 1, ci_emp = FALSE) {
 
     ## for easier calling, subset and reverse order
     if (ci_emp) {
-        p_use <- rev(obj$p_emp[, ci_idx])
+        p_use <- obj$p_emp[, ci_idx]
     } else {
-        p_use <- rev(obj$p_norm[, ci_idx])
+        p_use <- obj$p_norm[, ci_idx]
     }
     
     n <- length(p_use)  + 1
 
     ## determine significant clusters
-    cutoff <- rev(fwer_cutoff(obj, alpha))
+    cutoff <- fwer_cutoff(obj, alpha)
     pd_map <- .pd_map(obj$hc_dat, n)
-    idx_hc <- obj$idx_hc[(n-1):1, ]
     
-    nd_type <- rep("", n)
-    nd_type[n] <- "sig"
-    for (k in seq(n-1, by=-1)) {
+    nd_type <- rep("", n-1)
+    for (k in 1:(n-1)) {
         ## check if subtree is large enough
-        if (length(unlist(idx_hc[k, ])) < obj$in_args$n_min) {
+        if (length(unlist(obj$idx_hc[k, ])) < obj$in_args$n_min) {
             nd_type[k] <- "n_small"
             next
         }
         ## check if parent was significant
-        if (nd_type[pd_map[k]] != "sig") {
+        if ((k > 1) && (nd_type[pd_map[k]] != "sig")) {
             nd_type[k] <- "no_test"
             next
         }
@@ -78,10 +81,10 @@ shcutree <- function(obj, alpha = 0.05, ci_idx = 1, ci_emp = FALSE) {
         }
     }
 
-    ## determine which nodes have significant parent nodes
-    ## but also aren't significant
-    cl_idx <- which((pd_map %in% which(nd_type == "sig")) & (nd_type[-n] != "sig"))
-    clusters <- apply(idx_hc[cl_idx, , drop=FALSE], 1, unlist)
+    ## determine non-sig nodes with sig parent nodes
+    cl_idx <- which((pd_map %in% which(nd_type == "sig")) & (nd_type != "sig"))
+    if (length(cl_idx) == 0) { cl_idx <- 1 }
+    clusters <- lapply(apply(obj$idx_hc[cl_idx, , drop=FALSE], 1, c), unlist)
 
     ## verify that the clusters contain all observations
     if (length(unique(unlist(clusters))) != n) {
@@ -94,6 +97,5 @@ shcutree <- function(obj, alpha = 0.05, ci_idx = 1, ci_emp = FALSE) {
         labs[clusters[[i]]] <- i
     }
 
-    ## return labels
     labs
 }
