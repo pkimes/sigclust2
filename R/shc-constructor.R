@@ -392,7 +392,7 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
     }
 
     ## flip index, hclust and shc use revered ordering
-    idx_hc[(2*n-1):(n-1), ]
+    idx_hc[(2*n-1):(n+1), ]
 }
 
 
