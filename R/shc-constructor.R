@@ -227,7 +227,7 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
         tryCatch({
             tmp <- vecmet(x[1, ], x[2, ])
         }, warning = function(e) {
-            warning(paste0("warning for vecmet specification: ", e))
+            stop(paste0("warning for vecmet specification: ", e))
         }, error = function(e) {
             stop(paste0("error with vecmet specification: ", e))
         })
