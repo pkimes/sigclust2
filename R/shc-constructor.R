@@ -227,7 +227,7 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
         tryCatch({
             tmp <- vecmet(x[1, ], x[2, ])
         }, warning = function(e) {
-            warning(paste0("warning for vecmet specification: ", e))
+            stop(paste0("warning for vecmet specification: ", e))
         }, error = function(e) {
             stop(paste0("error with vecmet specification: ", e))
         })
@@ -236,7 +236,11 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
                           Vectorize(vecmet)))
         }
     }
-            
+
+    ## rclusterpp doesn't recognize 'ward.D2', stop and let user know
+    if ((linkage == "ward.D2") & rcpp) {
+        stop("Use 'ward' (in place of 'ward.D2') for linkage when rcpp = TRUE.")
+    }
     
     ## apply initial clustering
     x_clust <- .initcluster(x, n, p, metric, matmet, linkage, l, 
@@ -248,7 +252,6 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
     ## for plotting purposes, change heights of dendrogram
     if ((linkage == "ward") & rcpp) {
         hc_dat$height <- sqrt(2*hc_dat$height)
-        print("scaling heights of ward clustering with rcpp by sqrt(2*h) for plotting")
     }
     
     ## p-values for all <= (n-1) tests
