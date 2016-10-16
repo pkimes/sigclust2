@@ -41,7 +41,7 @@ test_that("plot accepts group labels", {
     expect_false("GeomTile" %in% layers_base)
 
     ## check that tile data labels match specified labels
-    tile_idx <- which(layers_none == "GeomTile")[1]
+    tile_idx <- which(layers_str == "GeomTile")[1]
     tile_dat <- plt_str$layers[[tile_idx]]$data
     tile_labs <- tile_dat$clusters[order(as.numeric(as.character(tile_dat$label)))]
     expect_equal(tile_labs, grps_str)
