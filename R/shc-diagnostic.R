@@ -61,30 +61,45 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
         stop(paste("pty is not a valid value, please specify one of (or part of):",
                    paste(avail_pty, collapse=", ")))
     }
-    
-    ## parse default fname behavior
-    if (is.null(fname) && length(K) > 1) {
-        fname <- "shc_diagnostic"
+
+    if (ci_idx > ncol(obj$p_emp)) {
+        stop(paste0("invalid choice for ci_idx; ci_idx must be <= ", ncol(obj$p_emp)))
     }
 
+    ## determine if generating multiple plots
+    mlt_plot <- (length(K) > 1 || grepl("all", pty)) 
+    ## parse default fname behavior
+    if (mlt_plot) {
+        if (is.null(fname)) {
+            fname <- "shc_diagnostic.pdf"
+        } else if (!grepl("\\.pdf$", fname)) {
+            fname <- paste0(fname, ".pdf")
+        }
+    }    
+
     ## create plots 
-    if (is.null(fname)) {
-        .diagnostic_k(obj, K, ci_idx, pty)
-    } else {
-        pdf(paste0(fname, ".pdf"))
+    if (mlt_plot) {
+        pdf(fname)
         for (k in K) {
             plot(0, 0, col="white")
             text(0, 0, paste("K =", k))
-            .diagnostic_k(obj, k, ci_idx, pty)
+            .diagnostic_k(obj, k, ci_idx, pty, mlt_plot)
         }
-        dev.off()
+        invisible(dev.off())
+    } else {
+        plt <- .diagnostic_k(obj, K, ci_idx, pty, mlt_plot)
+        if (is.null(fname)) {
+            return(plt)
+        } else {
+            ggsave(filename=fname, plt, width=7, height=7)
+        }
     }
 }
 
 
 
 ## code cleaned/modified from sigclust CRAN package, plot function
-.diagnostic_k <- function(obj, k, ci_idx, pty) {
+.diagnostic_k <- function(obj, k, ci_idx, pty, mlt_plot) {
 
     ## identify subtree of x
     idx_sub <- unlist(obj$idx_hc[k, ])
@@ -181,7 +196,12 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
                          label="Warning: MAD > s.d., SHC can be anti-conservative",
                          size=5, color="#e41a1c")
         }
-        print(gp)
+        
+        if (mlt_plot) {
+            print(gp)
+        } else {
+            return(gp)
+        }
     }
     
     
@@ -218,7 +238,11 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
                             y=quantile(qq_df$y, c(.25, .50, .75)),
                             label=paste(" ", c("0.25", "0.50", "0.75"), "quantile"))
         
-        print(gp)
+        if (mlt_plot) {
+            print(gp)
+        } else {
+            return(gp)
+        }
     }
     
 
@@ -270,7 +294,12 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
                          x=d+1, y=ymin + 0.65*(ymax-ymin),
                          label="Warning: MAD > s.d.", col="#377eb8")
         }
-        print(gp)
+
+        if (mlt_plot) {
+            print(gp)
+        } else {
+            return(gp)
+        }
     }
     
 
@@ -310,7 +339,12 @@ diagnostic.shc <- function(obj, K = 1, fname = NULL, ci_idx = 1,
             annotate(geom="text", x=min(xmin, kci_dat), y=ymax*.98, vjust=1, hjust=0,
                      label=paste0(" p-value (Q) = ", round(kp_emp, 3), "\n",
                          " p-value (Z) = ", round(kp_norm, 3)))
-        print(gp)
+
+        if (mlt_plot) {
+            print(gp)
+        } else {
+            return(gp)
+        }
     }
 
 }
