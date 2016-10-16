@@ -10,8 +10,8 @@ test_that("shc accepts only matrix data input", {
     expect_is(shc(dm), "shc")
 
     ## check constructor fails with data.frame 
-    df_error <- "x must be a matrix; use as.matrix if necessary"
-    expect_error(shc(data.frame(dm)), df_error)
+    err_df <- "x must be a matrix; use as.matrix if necessary"
+    expect_error(shc(data.frame(dm)), err_df)
 })
 
 
@@ -33,8 +33,12 @@ test_that("shc accepts common clustering algorithm parameters", {
     ## check common hclust methods are accepted
     for (p in valid_params) {
         out <- shc(dm, n_sim=5, n_min=30, metric=p$metric, linkage=p$linkage)
-        hc <- hclust(dist(dm, method=p$metric), method=p$linkage)
-
+        if (p$metric == "cor") {
+            hc <- hclust(as.dist(1 - cor(t(dm))), method=p$linkage)
+        } else {
+            hc <- hclust(dist(dm, method=p$metric), method=p$linkage)
+        }
+        
         ## check class and clustering results
         expect_is(out, "shc")
         expect_equal(out$hc_dat$height, hc$height)
@@ -70,9 +74,9 @@ test_that("shc accepts alpha values between 0 and 1", {
     expect_equal(sum(out$nd_type == "not_sig"), 0)
 
     ## check returns errors
-    alpha_error <- "invalid choice for alpha; alpha must be 0 < alpha < 1"    
-    expect_error(shc(dm, alpha = 1.2), alpha_error)
-    expect_error(shc(dm, alpha = -.2), alpha_error)
+    err_alpha <- "invalid choice for alpha; alpha must be 0 < alpha < 1"    
+    expect_error(shc(dm, alpha = 1.2), err_alpha)
+    expect_error(shc(dm, alpha = -.2), err_alpha)
 })
 
 
@@ -131,10 +135,10 @@ test_that("shc accepts expected ci/null_alg parameter values", {
     expect_is(shc(dm, ci = "2CI", null_alg = "hclust"), "shc")
     expect_is(shc(dm, ci = "2CI", null_alg = "2means"), "shc")
     expect_is(shc(dm, ci = "linkage", null_alg = "hclust"), "shc")
-
+    
     ## check that linkage + 2means isn't accepted
-    error_mismatch <- "ci = 'linkage', null_alg = '2means' cannot be specified"
-    expect_error(shc(dm, ci = "linkage", null_alg = "2means"), error_mismatch)
+    err_mismatch <- "ci = 'linkage', null_alg = '2means' cannot be specified"
+    expect_error(shc(dm, ci = "linkage", null_alg = "2means"), err_mismatch)
 
     ## check that multiple ci/null_alg values can be passed
     mout <- shc(dm, ci = c("linkage", "2CI"), null_alg = c("hclust", "hclust"), n_sim = 10)
@@ -142,8 +146,8 @@ test_that("shc accepts expected ci/null_alg parameter values", {
     expect_equal(dim(mout$ci_dat), c(99, 2))
 
     ## check that error occurs when ci/null_alg aren't same length
-    error_length <- "ci and null_alg must be of same length"
-    expect_error(shc(dm, ci = c("linkage", "2CI"), null_alg = "2means"), error_length)
+    err_length <- "ci and null_alg must be of same length"
+    expect_error(shc(dm, ci = c("linkage", "2CI"), null_alg = "2means"), err_length)
 })
 
 
@@ -163,33 +167,33 @@ test_that("shc accepts only valid ci_idx/ci_emp parameters", {
     expect_is(obj, "shc")
 
     ## check invalid choice causes errors
-    error_long <- "invalid choice for ci_idx; ci_idx must be < length(ci)"
-    expect_is(shc(dm, ci = ci_vec, null_alg = null_vec, ci_idx = 4, ci_emp = TRUE), "shc")
+    err_long <- "invalid choice for ci_idx"
+    expect_error(shc(dm, ci = ci_vec, null_alg = null_vec, ci_idx = 4, ci_emp = TRUE), err_long)
 })
 
 
 test_that("shc accepts user specified metric functions w/ vecmet and matmet", {
     ## simple dataset
-    dm <- matrix(rnorm(200), ncol=2, nrow=100)
+    dm <- matrix(rnorm(100), ncol=2, nrow=50)
 
     ## valid vecmet function and matrix extension
     vfun <- function(x, y) {1 - cor(x, y)}
-    vfun_m <- function(x) { as.dist(outer(split(x, row(x)), split(x, row(x)), Vectorize(vecmet))) }
+    vfun_m <- function(x) { as.dist(outer(split(x, row(x)), split(x, row(x)), Vectorize(vfun))) }
 
     ## valid matmet function
     mfun <- function(x) { as.dist(1 - cor(t(x))) }
 
     ## check class and clustering results with vecmet
-    shc_vfun <- shc(dm, n_sim=10, n_min=30, vecmet=vfun, linkage="average")
+    shc_vfun <- shc(dm, n_sim=10, n_min=20, vecmet=vfun, linkage="average")
     hc_vfun <- hclust(vfun_m(dm), method="average")
     expect_is(shc_vfun, "shc")
     expect_equal(shc_vfun$hc_dat$height, hc_vfun$height)
 
     ## check class and clustering results with matmet
-    shc_mfun <- shc(dm, n_sim=10, n_min=30, matmet=mfun, linkage="average")
+    shc_mfun <- shc(dm, n_sim=10, n_min=20, matmet=mfun, linkage="average")
     hc_mfun <- hclust(mfun(dm), method="average")
-    expect_is(hc_mfun, "shc")
-    expect_equal(hc_mfun$hc_dat$height, hc_mfun$height)
+    expect_is(shc_mfun, "shc")
+    expect_equal(shc_mfun$hc_dat$height, hc_mfun$height)
     
     ## check error if both vecmet and matmet are specified
     expect_error(shc(dm, vecmet=vfun, matmet=mfun, linkage="average"),
@@ -231,8 +235,8 @@ test_that("shc accepts different bkgd noise calculations w/ bkgd_pca", {
     expect_lt(ne_t$backvar, ne_f$backvar)
 
     ## check that shc returns same result as subroutine
-    expect_equal(out_t$backvar[1], ne_t$backvar)
-    expect_equal(out_f$backvar[1], ne_f$backvar)
+    expect_equal(out_t$backvar[1], ne_t$backvar, tolerance=0.001)
+    expect_equal(out_f$backvar[1], ne_f$backvar, tolerance=0.001)
 })
 
 
