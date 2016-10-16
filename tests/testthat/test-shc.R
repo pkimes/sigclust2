@@ -1,4 +1,3 @@
-library("sigclust2")
 context("shc constructor method")
 
 

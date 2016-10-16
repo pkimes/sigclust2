@@ -1,4 +1,3 @@
-library("sigclust2")
 context("miscellaneous exported functions")
 
 
