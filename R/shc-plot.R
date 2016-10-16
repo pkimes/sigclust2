@@ -12,20 +12,23 @@
 #' @param use_labs a boolean specifyin whether rowlabels should be added as 
 #'        text along the bottom of the dendrogram (default = \code{TRUE})
 #' @param fwer a boolean specifying whether the FWER control procedure of 
-#'        Meinshausen et al. 2010 should be used, default is \code{TRUE}. 
-#'        NOTE: only has effect if \code{alpha} was not specified, or was
-#'        set to the default value of 1 when calling \code{shc}.
+#'        Meinshausen et al. 2010 should be used. (default = \code{TRUE})
 #' @param alpha a double between 0 and 1 specifying the significance cutoff. If 
 #'        \code{fwer} is TRUE, the FWER of the entire dendrogram is controlled at 
 #'        \code{alpha}, else, each branch is tested at \code{alpha}. Only has
-#'        effect if \code{alpha(shc)} = 1. (default = 0.05)
+#'        effect if \code{alpha(shc)} = 1. (default = 0.05 or
+#'        \code{alpha} used for \code{x} if original \code{shc} called
+#'        with \code{alpha} < 1)
 #' @param ci_idx a numeric value between 1 and \code{length(ci)} 
 #'        specifiying which CI to use for the FWER stopping rule.
-#'        This only has an effect if \code{alpha} < 1. (default = 1)
+#'        This only has an effect if \code{alpha} < 1. (default = 1 or
+#'        \code{ci_idx} used for \code{x} if original \code{shc} called with
+#'        \code{alpha} < 1 or \code{fwer} = TRUE)
 #' @param ci_emp a logical value specifying whether to use the empirical
 #'        p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
 #'        As with \code{ci_idx} this only has an effect if \code{alpha} < 1.
-#'        (default = FALSE)
+#'        (default = FALSE or \code{ci_emp} used for \code{x} if original \code{shc}
+#'        called with \code{alpha} < 1 or \code{fwer} = TRUE)
 #' @param hang a double value corresponding to the \code{hang} parameter for 
 #'        the typical call to \code{plot} for an object of class
 #'        \code{hsigclust} (default = -1)
@@ -45,9 +48,9 @@
 #' @export
 #' @method plot shc
 #' @author Patrick Kimes
-plot.shc <- function(x, groups = NULL, use_labs = TRUE, 
-                     fwer = TRUE, alpha = 0.05, hang = -1,
-                     ci_idx = 1, ci_emp = FALSE, ...) {
+plot.shc <- function(x, groups = NULL, use_labs = TRUE, hang = -1,
+                     fwer = TRUE, alpha = NULL, ci_idx = NULL, ci_emp = NULL,
+                     ...) {
     shc <- x
 
     ## determine number of samples
@@ -58,32 +61,60 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
     col_nd_null <- "gray"
     
     ## check validity of ci_idx
-    if (ci_idx > ncol(shc$p_emp)) {
-        stop("invalid choice for ci_idx; ci_idx must be < length(ci)")
+    if (!is.null(ci_idx)) {
+        if (ci_idx > ncol(shc$p_emp)) {
+            stop("invalid choice for ci_idx; ci_idx must be < length(ci)")
+        }
     }
     
     ## check validity of alpha
-    if (alpha > 1 || alpha < 0) {
-        stop("invalid choice for alpha; alpha must be 0 < alpha < 1")
+    if (!is.null(alpha)) {
+        if (alpha > 1 || alpha < 0) {
+            stop("invalid choice for alpha; alpha must be 0 < alpha < 1")
+        }
     }
 
-    ## if method originally implemented with fwer control
-    ## must use FWER and same ci_emp, ci_idx
+    ## check fwer, alpha, ci_idx, ci_emp feasibility w/ original alpha value
     if (shc$in_args$alpha < 1) {
+        if (is.null(alpha)) {
+            alpha <- shc$in_args$alpha
+        } else if (alpha > shc$in_args$alpha) {
+            alpha <- shc$in_args$alpha
+            warning(paste0("shc constructed using smaller alpha, using alpha = ", alpha))
+        }
+        
+        if (is.null(ci_emp)) {
+            ci_emp <- shc$in_args$ci_emp
+        } else if (shc$in_args$ci_emp != ci_emp) {
+            ci_emp <- shc$in_args$ci_emp
+            warning("shc constructed using alpha < 1, using ci_emp from x$in_args")
+        }
+        
+        if (is.null(ci_idx)) {
+            ci_idx <- shc$in_args$ci_idx
+        } else if (shc$in_args$ci_idx != ci_idx) {
+            ci_idx <- shc$in_args$ci_idx
+            warning("shc constructed using alpha < 1, using ci_idx from x$in_args")
+        }
+
         if (!fwer) {
             fwer <- TRUE
             warning("shc constructed using alpha < 1, using fwer = TRUE")
         }
-        if (shc$in_args$ci_emp != ci_emp) {
-            ci_emp <- shc$in_args$ci_emp
-            warning("shc constructed using alpha < 1, using ci_emp from x$in_args")
+        
+    } else {
+        ## set default values if shc called with alpha = 1
+        if (is.null(alpha)) {
+            alpha <- 0.05
         }
-        if (shc$in_args$ci_idx != ci_idx) {
-            ci_idx <- shc$in_args$ci_idx
-            warning("shc constructed using alpha < 1, using ci_idx from x$in_args")
+        if (is.null(ci_idx)) {
+            ci_idx <- 1
+        }
+        if (is.null(ci_emp)) {
+            ci_emp <- FALSE
         }
     }
-
+    
     ## for easier calling
     if (ci_emp) {
         p_use <- shc$p_emp[, ci_idx]
@@ -91,19 +122,11 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
         p_use <- shc$p_norm[, ci_idx]
     }
     
-    ## if specified alpha is less stringent than original analysis
-    if (fwer & alpha >= shc$in_args$alpha) {
-        if (alpha > shc$in_args$alpha) {
-            alpha <- shc$in_args$alpha
-            warning(paste0("shc constructed using smaller alpha than specified to plot; using alpha = ", alpha))
-        }
-        cutoff <- fwer_cutoff(shc, alpha)
-        nd_type <- shc$nd_type
-        
-    } else if (fwer) {
+    ## determine sig/non-sig nodes based on cutoffs
+    if (fwer) {
+        ## use FWER controlling hierarchical testing procedure
         cutoff <- fwer_cutoff(shc, alpha)
         pd_map <- .pd_map(shc$hc_dat, n)
-
         nd_type <- rep("", n-1)
         for (k in 1:(n-1)) {
             ## check if subtree is large enough
@@ -121,7 +144,7 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
                 nd_type[k] <- ifelse(p_use[k] < cutoff[k], "sig", "not_sig")
             }
         }
-        
+
     } else {
         ##if not using FWER control, use alpha as flat cutoff
         cutoff <- rep(alpha, n-1)
