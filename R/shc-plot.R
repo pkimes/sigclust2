@@ -12,20 +12,23 @@
 #' @param use_labs a boolean specifyin whether rowlabels should be added as 
 #'        text along the bottom of the dendrogram (default = \code{TRUE})
 #' @param fwer a boolean specifying whether the FWER control procedure of 
-#'        Meinshausen et al. 2010 should be used, default is \code{TRUE}. 
-#'        NOTE: only has effect if \code{alpha} was not specified, or was
-#'        set to the default value of 1 when calling \code{shc}.
+#'        Meinshausen et al. 2010 should be used. (default = \code{TRUE})
 #' @param alpha a double between 0 and 1 specifying the significance cutoff. If 
 #'        \code{fwer} is TRUE, the FWER of the entire dendrogram is controlled at 
 #'        \code{alpha}, else, each branch is tested at \code{alpha}. Only has
-#'        effect if \code{alpha(shc)} = 1. (default = 0.05)
+#'        effect if \code{alpha(shc)} = 1. (default = 0.05 or
+#'        \code{alpha} used for \code{x} if original \code{shc} called
+#'        with \code{alpha} < 1)
 #' @param ci_idx a numeric value between 1 and \code{length(ci)} 
 #'        specifiying which CI to use for the FWER stopping rule.
-#'        This only has an effect if \code{alpha} < 1. (default = 1)
+#'        This only has an effect if \code{alpha} < 1. (default = 1 or
+#'        \code{ci_idx} used for \code{x} if original \code{shc} called with
+#'        \code{alpha} < 1 or \code{fwer} = TRUE)
 #' @param ci_emp a logical value specifying whether to use the empirical
 #'        p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
 #'        As with \code{ci_idx} this only has an effect if \code{alpha} < 1.
-#'        (default = FALSE)
+#'        (default = FALSE or \code{ci_emp} used for \code{x} if original \code{shc}
+#'        called with \code{alpha} < 1 or \code{fwer} = TRUE)
 #' @param hang a double value corresponding to the \code{hang} parameter for 
 #'        the typical call to \code{plot} for an object of class
 #'        \code{hsigclust} (default = -1)
@@ -45,61 +48,73 @@
 #' @export
 #' @method plot shc
 #' @author Patrick Kimes
-plot.shc <- function(x, groups = NULL, use_labs = TRUE, 
-                     fwer = TRUE, alpha = 0.05, hang = -1,
-                     ci_idx = 1, ci_emp = FALSE, ...) {
-
+plot.shc <- function(x, groups = NULL, use_labs = TRUE, hang = -1,
+                     fwer = TRUE, alpha = NULL, ci_idx = NULL, ci_emp = NULL,
+                     ...) {
     shc <- x
 
     ## determine number of samples
     n <- nrow(shc$p_emp) + 1
-
-    ## reverse all output so root node is at top to match
-    ## index order described in manuscript
-    shc$eigval_dat <- shc$eigval_dat[(n-1):1, , drop=FALSE]
-    shc$eigval_sim <- shc$eigval_sim[(n-1):1, , drop=FALSE]
-    shc$backvar <- rev(shc$backvar)
-    shc$nd_type <- rev(shc$nd_type)
-    shc$ci_dat <- shc$ci_dat[(n-1):1, , drop=FALSE]
-    shc$ci_sim <- shc$ci_sim[(n-1):1, , , drop=FALSE]
-    shc$p_emp <- shc$p_emp[(n-1):1, , drop=FALSE]
-    shc$p_norm <- shc$p_norm[(n-1):1, , drop=FALSE]
-    shc$idx_hc <- shc$idx_hc[(n-1):1, , drop=FALSE]
-        
+    
     ## colors to be used in figure
     col_tx_sig <- "#A60A3C"
     col_nd_null <- "gray"
-    ##col_nd_sig <- "#FF1E66"
-    ##col_nd_small <- "#53A60A"
-    ##col_nd_skip <- "#096272"
     
     ## check validity of ci_idx
-    if (ci_idx > ncol(shc$p_emp)) {
-        stop("invalid choice for ci_idx; ci_idx must be < length(ci)")
+    if (!is.null(ci_idx)) {
+        if (ci_idx > ncol(shc$p_emp)) {
+            stop("invalid choice for ci_idx; ci_idx must be < length(ci)")
+        }
     }
     
     ## check validity of alpha
-    if (alpha > 1 || alpha < 0) {
-        stop("invalid choice for alpha; alpha must be 0 < alpha < 1")
+    if (!is.null(alpha)) {
+        if (alpha > 1 || alpha < 0) {
+            stop("invalid choice for alpha; alpha must be 0 < alpha < 1")
+        }
     }
 
-    ## if method originally implemented with fwer control
-    ## must use FWER and same ci_emp, ci_idx
+    ## check fwer, alpha, ci_idx, ci_emp feasibility w/ original alpha value
     if (shc$in_args$alpha < 1) {
+        if (is.null(alpha)) {
+            alpha <- shc$in_args$alpha
+        } else if (alpha > shc$in_args$alpha) {
+            alpha <- shc$in_args$alpha
+            warning(paste0("shc constructed using smaller alpha, using alpha = ", alpha))
+        }
+        
+        if (is.null(ci_emp)) {
+            ci_emp <- shc$in_args$ci_emp
+        } else if (shc$in_args$ci_emp != ci_emp) {
+            ci_emp <- shc$in_args$ci_emp
+            warning("shc constructed using alpha < 1, using ci_emp from x$in_args")
+        }
+        
+        if (is.null(ci_idx)) {
+            ci_idx <- shc$in_args$ci_idx
+        } else if (shc$in_args$ci_idx != ci_idx) {
+            ci_idx <- shc$in_args$ci_idx
+            warning("shc constructed using alpha < 1, using ci_idx from x$in_args")
+        }
+
         if (!fwer) {
             fwer <- TRUE
             warning("shc constructed using alpha < 1, using fwer = TRUE")
         }
-        if (shc$in_args$ci_emp != ci_emp) {
-            ci_emp <- shc$in_args$ci_emp
-            warning("shc constructed using alpha < 1, using ci_emp from x$in_args")
+        
+    } else {
+        ## set default values if shc called with alpha = 1
+        if (is.null(alpha)) {
+            alpha <- 0.05
         }
-        if (shc$in_args$ci_idx != ci_idx) {
-            ci_idx <- shc$in_args$ci_idx
-            warning("shc constructed using alpha < 1, using ci_idx from x$in_args")
+        if (is.null(ci_idx)) {
+            ci_idx <- 1
+        }
+        if (is.null(ci_emp)) {
+            ci_emp <- FALSE
         }
     }
-
+    
     ## for easier calling
     if (ci_emp) {
         p_use <- shc$p_emp[, ci_idx]
@@ -107,29 +122,20 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
         p_use <- shc$p_norm[, ci_idx]
     }
     
-    ## if specified alpha is less stringent than original analysis
-    if (fwer & alpha >= shc$in_args$alpha) {
-        if (alpha > shc$in_args$alpha) {
-            alpha <- shc$in_args$alpha
-            warning(paste0("shc constructed using smaller alpha than specified to plot; using alpha = ", alpha))
-        }
-        cutoff <- fwer_cutoff(shc, alpha)
-        nd_type <- shc$nd_type
-        
-    } else if (fwer) {
+    ## determine sig/non-sig nodes based on cutoffs
+    if (fwer) {
+        ## use FWER controlling hierarchical testing procedure
         cutoff <- fwer_cutoff(shc, alpha)
         pd_map <- .pd_map(shc$hc_dat, n)
-
-        nd_type <- rep("", n)
-        nd_type[n] <- "sig"
-        for (k in seq(n-1, by=-1)) {
+        nd_type <- rep("", n-1)
+        for (k in 1:(n-1)) {
             ## check if subtree is large enough
             if (length(unlist(shc$idx_hc[k, ])) < shc$in_args$n_min) {
                 nd_type[k] <- "n_small"
                 next
             }
             ## check if parent was significant
-            if (nd_type[pd_map[k]] != "sig") {
+            if ((k > 1) && (nd_type[pd_map[k]] != "sig")) {
                 nd_type[k] <- "no_test"
                 next
             }
@@ -138,8 +144,7 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
                 nd_type[k] <- ifelse(p_use[k] < cutoff[k], "sig", "not_sig")
             }
         }
-        nd_type <- nd_type[-n]
-        
+
     } else {
         ##if not using FWER control, use alpha as flat cutoff
         cutoff <- rep(alpha, n-1)
@@ -160,37 +165,35 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
     if (!is.null(groups) & length(groups) == n) {
         shc_labs$clusters <- groups[shc$hc_dat$order]
     }
+
+    ## flip index, hclust/dend and shc use revered ordering
+    rev_nd_type <- rev(nd_type)
+    rev_p_use <- rev(p_use)
     
     ## significant nodes
-    sig_linkvals <- as.factor(shc$hc_dat$height[nd_type == "sig"])
+    sig_linkvals <- as.factor(shc$hc_dat$height[rev_nd_type == "sig"])
     sig_segs <- filter(shc_segs, as.factor(y) %in% sig_linkvals)
-    ##sig_segtops <- filter(sig_segs, (y == yend) & (x < xend))
-    ##sig_segtops <- sig_segtops[order(sig_segtops[, 2]), ]
     
     ## non-signficant nodes
-    notsig_linkvals <- as.factor(shc$hc_dat$height[nd_type == "not_sig"])
+    notsig_linkvals <- as.factor(shc$hc_dat$height[rev_nd_type == "not_sig"])
     notsig_segs <- filter(shc_segs, as.factor(y) %in% notsig_linkvals)
-    ##notsig_segtops <- filter(notsig_segs, (y == yend) & (x < xend))
-    ##notsig_segtops <- notsig_segtops[order(notsig_segtops[, 2]), ]
 
     ## tested nodes
-    test_linkvals <- as.factor(shc$hc_dat$height[which(nd_type == "sig")])
+    test_linkvals <- as.factor(shc$hc_dat$height[which(rev_nd_type == "sig")])
     test_segs <- filter(shc_segs, as.factor(y) %in% test_linkvals)
     test_segtops <- filter(test_segs, (y == yend) & (x < xend))
     test_segtops <- test_segtops[order(test_segtops[, 2]), ]
     test_segtops <- cbind(test_segtops, 
-                          "pval"=format(p_use[which(nd_type == "sig")], 
-                                        digits=3, scientific=TRUE),
-                          "cutoff"=format(cutoff[which(nd_type == "sig")],
-                                          digits=3, scientific=TRUE))
+                          "pval"=format(rev_p_use[which(rev_nd_type == "sig")], 
+                                        digits=3, scientific=TRUE))
     
     ## small sample nodes
-    skip_linkvals <- as.factor(shc$hc_dat$height[nd_type == "n_small"])
+    skip_linkvals <- as.factor(shc$hc_dat$height[rev_nd_type == "n_small"])
     skip_segs <- filter(shc_segs, as.factor(y) %in% skip_linkvals)
     
     ## un-tested nodes (non-significant parent node)
     if (fwer) {
-        fwer_linkvals <- as.factor(shc$hc_dat$height[nd_type == "no_test"])
+        fwer_linkvals <- as.factor(shc$hc_dat$height[rev_nd_type == "no_test"])
         fwer_segs <- filter(shc_segs, as.factor(y) %in% fwer_linkvals)
     }
         
@@ -236,7 +239,7 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
     }
     
     ##add colored segments to plot if any branches were significant
-    if (sum(nd_type == "sig") > 0) {
+    if (sum(rev_nd_type == "sig") > 0) {
         plot_dend <- plot_dend +
             geom_segment(data=sig_segs,
                          aes(x=x, y=y, xend=xend, yend=yend, color="sig"), 
@@ -245,7 +248,7 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
 
     
     ##add p-values for segments if they were tested
-    if (sum(nd_type == "sig") > 0) {
+    if (sum(rev_nd_type == "sig") > 0) {
         plot_dend <- plot_dend +
             geom_text(data=test_segtops, 
                       aes(x=x, y=y, label=pval, hjust=-0.2, vjust=-0.5),
@@ -254,7 +257,7 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
     
     
     ##add FWER controlled segments if any branches were controlled
-    if (fwer & sum(nd_type == "no_test") > 0) {
+    if (fwer & sum(rev_nd_type == "no_test") > 0) {
         plot_dend <- plot_dend +
             geom_segment(data=fwer_segs,
                          aes(x=x, y=y, xend=xend, yend=yend, color="no_test"), 
@@ -262,7 +265,7 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
     }
 
     ##add colored segments if any branches had size < n_min
-    if (sum(nd_type == "n_small") > 0) {
+    if (sum(rev_nd_type == "n_small") > 0) {
         plot_dend <- plot_dend +
             geom_segment(data=skip_segs,
                          aes(x=x, y=y, xend=xend, yend=yend, color="n_small"), 
@@ -270,7 +273,7 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE,
     }
     
     ## add colored segments if any branches had non-significant calls
-    if (sum(nd_type == "not_sig") > 0) {
+    if (sum(rev_nd_type == "not_sig") > 0) {
         plot_dend <- plot_dend +
             geom_segment(data=notsig_segs,
                          aes(x=x, y=y, xend=xend, yend=yend, color="not_sig"), 

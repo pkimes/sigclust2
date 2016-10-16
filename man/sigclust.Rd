@@ -39,16 +39,16 @@ resulting p-values. The \code{sigclust} object has following attributes:
 }
 \description{
 Re-implementation of the Monte Carlo simulation based
-significance testing procedure described in Liu et al. (2008)
+significance testing procedure described in Liu et al. (2008).
 }
 \author{
 Patrick Kimes
 }
 \references{
 \itemize{
-    \item Kimes, P. K., Hayes, D. N., Liu Y., and Marron, J. S. (2014)
-          Statistical significance for hierarchical clustering.
-          pre-print available.
+    \item Liu Y., Hayes, D. N., Nobel, A., and Marron, J. S. (2008)
+          Statistical significance of clustering for high-dimension, low-sample size data.
+          Journal of the American Statistical Association.
 }
 }
 

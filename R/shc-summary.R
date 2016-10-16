@@ -32,7 +32,7 @@ summary.shc <- function(object, ...) {
                paste0(object$in_args$ci, collapse=", "),
                "\n    null_alg = ",
                paste0(object$in_args$null_alg, collapse=", "),
-               "\n    min_n = ",
+               "\n    n_min = ",
                object$in_args$n_min,
                "\n"))
     

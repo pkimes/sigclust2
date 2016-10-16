@@ -22,7 +22,8 @@ As with \code{ci_idx} this only has an effect if \code{alpha} < 1.
 (default = FALSE)}
 }
 \value{
-a vector of length n specifying cluster labels based on
+a vector of length n specifying cluster labels based on specified FWER
+alpha threshold.
 }
 \description{
 Returns the cluster labels based on cutting the tree at the specified

@@ -1,7 +1,7 @@
 #' Statistical Significance of Clustering (sigclust)
 #' 
 #' Re-implementation of the Monte Carlo simulation based
-#' significance testing procedure described in Liu et al. (2008)
+#' significance testing procedure described in Liu et al. (2008).
 #' 
 #' @param x a dataset with n rows and p columns, with observations in rows and
 #'        features in columns.
@@ -28,9 +28,9 @@
 #' 
 #' @references
 #' \itemize{
-#'     \item Kimes, P. K., Hayes, D. N., Liu Y., and Marron, J. S. (2014)
-#'           Statistical significance for hierarchical clustering.
-#'           pre-print available.
+#'     \item Liu Y., Hayes, D. N., Nobel, A., and Marron, J. S. (2008)
+#'           Statistical significance of clustering for high-dimension, low-sample size data.
+#'           Journal of the American Statistical Association.
 #' }
 #'
 #' @export
@@ -88,15 +88,15 @@ sigclust <- function(x, n_sim = 100, n_start = 1, icovest = 1,
 
 
 
-##given null eigenvalues, simulate Gaussian dataset
+## given null eigenvalues, simulate Gaussian dataset
 .simnull <- function(eigval_sim, n, p) {
     simnorm <- matrix(rnorm(n*p, sd=sqrt(eigval_sim)), n, p, byrow=TRUE)
 }
 
-##calculate sum of squares
+## calculate sum of squares
 .sumsq <- function(x) { norm(sweep(x, 2, colMeans(x), "-"), "F")^2 }
 
-##calculate 2-means cluster index (n x p matrices)
+## calculate 2-means cluster index (n x p matrices)
 .calc2CI <- function(x1, x2) {
     if (is.matrix(x1) && is.matrix(x2) && ncol(x1) == ncol(x2)) {
         (.sumsq(x1) + .sumsq(x2)) / .sumsq(rbind(x1, x2))
@@ -106,14 +106,14 @@ sigclust <- function(x, n_sim = 100, n_start = 1, icovest = 1,
     }      
 }
 
-##perform k-means clustering on the original data and 
+## perform k-means clustering on the original data and 
 ## compute the corresponding cluster indices for each merge
 .initcluster_sc2 <- function(x, n, p, n_start, labels) {
     if (is.null(labels)) {
         labels <- kmeans(x, 2, nstart=n_start)$cluster
     } else {
         ## check validity of labels passed to function
-        if (length(labels) != n || sort(unique(labels)) != 1:2) {
+        if (length(labels) != n || any(sort(unique(labels)) != 1:2)) {
             stop("labels must be a n-vector of 1s and 2s")
         }
     }
@@ -122,15 +122,15 @@ sigclust <- function(x, n_sim = 100, n_start = 1, icovest = 1,
     list(ci_dat = ci_dat)
 }
 
-##given null eigenvalues, simulate Gaussian dataset
+## given null eigenvalues, simulate Gaussian dataset
 .simnull <- function(eigval_sim, n, p) {
     simnorm <- matrix(rnorm(n*p, sd=sqrt(eigval_sim)), n, p, byrow=TRUE)
 }
 
-##perform k-means clustering on a simulated dataset and
+## perform k-means clustering on a simulated dataset and
 ## compute the correspond cluster indices for only the final merge
 .calc_simCI <- function(x, p, n_start) { 
-    ##obtain clustering solution
+    ## obtain clustering solution
     clust_isim <- kmeans(x, 2, nstart=n_start)
     ci_isim <- .calc2CI(x[clust_isim$cluster == 1, , drop=FALSE],
                         x[clust_isim$cluster == 2, , drop=FALSE])
