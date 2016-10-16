@@ -5,8 +5,8 @@
 \alias{plot.shc}
 \title{plot shc object}
 \usage{
-\method{plot}{shc}(x, groups = NULL, use_labs = TRUE, fwer = TRUE,
-  alpha = 0.05, hang = -1, ci_idx = 1, ci_emp = FALSE, ...)
+\method{plot}{shc}(x, groups = NULL, use_labs = TRUE, hang = -1,
+  fwer = TRUE, alpha = NULL, ci_idx = NULL, ci_emp = NULL, ...)
 }
 \arguments{
 \item{x}{a \code{shc} object to plot produced by a call to \code{shc}}
@@ -20,28 +20,31 @@ groupi behavior. (default = \code{NULL})}
 \item{use_labs}{a boolean specifyin whether rowlabels should be added as 
 text along the bottom of the dendrogram (default = \code{TRUE})}
 
-\item{fwer}{a boolean specifying whether the FWER control procedure of 
-Meinshausen et al. 2010 should be used, default is \code{TRUE}. 
-NOTE: only has effect if \code{alpha} was not specified, or was
-set to the default value of 1 when calling \code{shc}.}
-
-\item{alpha}{a double between 0 and 1 specifying the significance cutoff. If 
-\code{fwer} is TRUE, the FWER of the entire dendrogram is controlled at 
-\code{alpha}, else, each branch is tested at \code{alpha}. Only has
-effect if \code{alpha(shc)} = 1. (default = 0.05)}
-
 \item{hang}{a double value corresponding to the \code{hang} parameter for 
 the typical call to \code{plot} for an object of class
 \code{hsigclust} (default = -1)}
 
+\item{fwer}{a boolean specifying whether the FWER control procedure of 
+Meinshausen et al. 2010 should be used. (default = \code{TRUE})}
+
+\item{alpha}{a double between 0 and 1 specifying the significance cutoff. If 
+\code{fwer} is TRUE, the FWER of the entire dendrogram is controlled at 
+\code{alpha}, else, each branch is tested at \code{alpha}. Only has
+effect if \code{alpha(shc)} = 1. (default = 0.05 or
+\code{alpha} used for \code{x} if original \code{shc} called
+with \code{alpha} < 1)}
+
 \item{ci_idx}{a numeric value between 1 and \code{length(ci)} 
 specifiying which CI to use for the FWER stopping rule.
-This only has an effect if \code{alpha} < 1. (default = 1)}
+This only has an effect if \code{alpha} < 1. (default = 1 or
+\code{ci_idx} used for \code{x} if original \code{shc} called with
+\code{alpha} < 1 or \code{fwer} = TRUE)}
 
 \item{ci_emp}{a logical value specifying whether to use the empirical
 p-value from the CI based on \code{ci_idx} for the FWER stopping rule.
 As with \code{ci_idx} this only has an effect if \code{alpha} < 1.
-(default = FALSE)}
+(default = FALSE or \code{ci_emp} used for \code{x} if original \code{shc}
+called with \code{alpha} < 1 or \code{fwer} = TRUE)}
 
 \item{...}{other parameters to be used by the function}
 }
