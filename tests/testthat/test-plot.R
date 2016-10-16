@@ -134,7 +134,7 @@ test_that("plot accepts ci_idx, ci_emp parameter values", {
     plt_100_ci2_t <- plot(out_100, ci_idx=2, ci_emp=TRUE)
     plt_100_ci2_f <- plot(out_100, ci_idx=2, ci_emp=FALSE)
 
-    plt_100_010_ci2_t <- plot(out_100, alpha=0.10, ci_idx=1, ci_emp=TRUE)
+    plt_100_010_ci2_t <- plot(out_100, alpha=0.10, ci_idx=2, ci_emp=TRUE)
     plt_010_ci2_t <- plot(out_010, alpha=0.10)
 
     ## check that ggplots are generated
