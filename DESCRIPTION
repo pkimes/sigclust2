@@ -1,7 +1,7 @@
 Package: sigclust2
 Type: Package
 Title: sigclust2: Statistical Significance of Clustering
-Version: 1.1.0
+Version: 1.1.1
 Date: 2016-10-16
 Author: Patrick Kimes
 Maintainer: <patrick.kimes@gmail.com>
