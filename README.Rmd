@@ -1,7 +1,7 @@
 ```{r, hide=TRUE, warning=FALSE, message=FALSE, echo=FALSE}
 suppressPackageStartupMessages(library("ggplot2"))
-suppressPackageStartupMessages(library("sigclust2"))
 suppressPackageStartupMessages(library("GGally"))
+devtools::load_all()
 ```
 
 sigclust2 [![Build Status](https://travis-ci.org/pkimes/sigclust2.svg?branch=master)](https://travis-ci.org/pkimes/sigclust2) [![codecov](https://codecov.io/gh/pkimes/sigclust2/branch/master/graph/badge.svg)](https://codecov.io/gh/pkimes/sigclust2)
@@ -12,6 +12,7 @@ sigclust2 [![Build Status](https://travis-ci.org/pkimes/sigclust2.svg?branch=mas
 2. [Testing](#test)
 3. [Plotting](#plot)
 4. [References](#refs)
+5. [Session Information](#sessioninfo)
 
 
 ## <a name="intro"></a> Introduction
@@ -116,12 +117,12 @@ that the data from a single cluster. The null distribution is approximated using
 specified number of simulated datasets (`n_sim = 100` default argument). `p_emp` is the empirical
 p-value computed from the collection of simulated null datasets. `p_norm` is an approximation to
 the empirical p-value which provides more continuous p-values. `nd_type` stores the results of the
-test and takes values in: `n_small`, `no_test`, `sig`, `not_sig`, `NA`. With the default implementation of
-`shc` using no FWER control, all nodes are either `NA` or `n_small`.  
+test and takes values in: `n_small`, `no_test`, `sig`, `not_sig`, `cutoff_skipped`. With the default
+implementation of `shc` using no FWER control, all nodes are either `cutoff_skipped` or `n_small`.  
 
 The p-values are reported for each of `r n-1` (`n-1`) nodes along the hierarchical dendrogram.
-The very top (root) node of the dendrogram corresponds to the final entry of the `p_emp` and
-`p_norm` results.  
+The entries of `p_emp` and `p_norm` are ordered descending from the top of the dendrogram, with
+the first entry corresponding to the very top (root) node of the tree.  
 
 ```{r}
 data.frame(result = head(shc_result$nd_type, 5),
@@ -324,6 +325,13 @@ _Journal of Computational and Graphical Statistics_.
 * Liu Y, Hayes DN, Nobel A, and Marron JS. (2008). "Statistical significance of 
 clustering for high-dimension, low–sample size data." 
 _Journal of the American Statistical Association_.
+
+
+## <a name="sessioninfo"></a> Session Information
+
+```{r}
+sessionInfo()
+```
 
 
 [devtools]:https://cran.r-project.org/web/packages/devtools/index.html
