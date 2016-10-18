@@ -8,6 +8,7 @@ Contents
 2.  [Testing](#test)
 3.  [Plotting](#plot)
 4.  [References](#refs)
+5.  [Session Information](#sessioninfo)
 
 <a name="intro"></a> Introduction
 ---------------------------------
@@ -110,7 +111,7 @@ analysis results can be obtained by the `summary` function.
     ##     icovest = 1
     ##     ci = 2CI
     ##     null_alg = hclust
-    ##     min_n = 10
+    ##     n_min = 10
     ##     FWER control = FALSE
 
 The analysis output can be accessed using the `$` accessor. More details
@@ -134,24 +135,25 @@ datasets (`n_sim = 100` default argument). `p_emp` is the empirical
 p-value computed from the collection of simulated null datasets.
 `p_norm` is an approximation to the empirical p-value which provides
 more continuous p-values. `nd_type` stores the results of the test and
-takes values in: `n_small`, `no_test`, `sig`, `not_sig`, `NA`. With the
-default implementation of `shc` using no FWER control, all nodes are
-either `NA` or `n_small`.
+takes values in: `n_small`, `no_test`, `sig`, `not_sig`,
+`cutoff_skipped`. With the default implementation of `shc` using no FWER
+control, all nodes are either `cutoff_skipped` or `n_small`.
 
 The p-values are reported for each of 149 (`n-1`) nodes along the
-hierarchical dendrogram. The very top (root) node of the dendrogram
-corresponds to the final entry of the `p_emp` and `p_norm` results.
+hierarchical dendrogram. The entries of `p_emp` and `p_norm` are ordered
+descending from the top of the dendrogram, with the first entry
+corresponding to the very top (root) node of the tree.
 
     data.frame(result = head(shc_result$nd_type, 5),
                round(head(shc_result$p_norm, 5), 5),
                round(head(shc_result$p_emp, 5), 5))
 
-    ##   result hclust_2CI hclust_2CI.1
-    ## 1     NA    0.00022         0.00
-    ## 2     NA    0.16786         0.15
-    ## 3     NA    0.56367         0.56
-    ## 4     NA    0.69710         0.65
-    ## 5     NA    0.84123         0.83
+    ##           result hclust_2CI hclust_2CI.1
+    ## 1 cutoff_skipped    0.00000         0.00
+    ## 2 cutoff_skipped    0.02219         0.02
+    ## 3 cutoff_skipped    0.89060         0.92
+    ## 4 cutoff_skipped    0.98110         1.00
+    ## 5 cutoff_skipped    0.93713         0.97
 
 In addition to values between 0 and 1, some p-values are reported as
 `2`. These values correspond to nodes which were not tested, either
@@ -193,12 +195,12 @@ using an optimized matrix dissimilarity function.
     system.time(mfun1(data))
 
     ##    user  system elapsed 
-    ##   0.584   0.002   0.587
+    ##   0.602   0.006   0.614
 
     system.time(mfun2(data))
 
     ##    user  system elapsed 
-    ##   0.002   0.001   0.001
+    ##   0.002   0.000   0.002
 
 The first matrix correlation function, `mfun1`, is written it would be
 processed if `vfun` were passed to `shc` as `vecmet`. The second
@@ -220,13 +222,13 @@ parameter.
                round(head(shc_mfun2$p_norm), 5),
                round(head(shc_mfun2$p_emp), 5))
 
-    ##   result hclust_2CI hclust_2CI.1
-    ## 1     NA    0.27951         0.27
-    ## 2     NA    0.97806         0.99
-    ## 3     NA    0.85678         0.84
-    ## 4     NA    0.89467         0.89
-    ## 5     NA    0.87271         0.87
-    ## 6     NA    0.80021         0.81
+    ##           result hclust_2CI hclust_2CI.1
+    ## 1 cutoff_skipped    0.70122         0.73
+    ## 2 cutoff_skipped    0.74023         0.80
+    ## 3 cutoff_skipped    0.99949         0.99
+    ## 4 cutoff_skipped    0.99947         1.00
+    ## 5 cutoff_skipped    0.85518         0.88
+    ## 6 cutoff_skipped    0.99051         0.99
 
 Since the toy dataset is simulated with all differentiating signal lying
 in the first two dimensions, Pearson correlation-based clustering does a
@@ -264,11 +266,11 @@ be seen in the `nd_type` attribute, where most tests are now labeled
                round(head(shc_fwer$p_emp, 10), 5))
 
     ##     result hclust_2CI hclust_2CI.1
-    ## 1      sig    0.00028         0.01
-    ## 2  not_sig    0.16730         0.19
-    ## 3  no_test    2.00000         2.00
-    ## 4  not_sig    0.76831         0.79
-    ## 5  no_test    2.00000         2.00
+    ## 1      sig    0.00000         0.00
+    ## 2      sig    0.01147         0.02
+    ## 3  not_sig    0.91937         0.95
+    ## 4  not_sig    0.97128         0.99
+    ## 5  not_sig    0.93725         0.98
     ## 6  no_test    2.00000         2.00
     ## 7  no_test    2.00000         2.00
     ## 8  no_test    2.00000         2.00
@@ -293,12 +295,12 @@ measure of strength of clustering.
     round(head(data_2tests$p_norm), 5)
 
     ##      hclust_2CI hclust_linkage
-    ## [1,]    0.00057        0.01013
-    ## [2,]    0.12877        0.89225
-    ## [3,]    0.51742        0.99812
-    ## [4,]    0.73704        0.99970
-    ## [5,]    0.78602        1.00000
-    ## [6,]    0.94839        1.00000
+    ## [1,]    0.00000        0.00007
+    ## [2,]    0.01078        0.38840
+    ## [3,]    0.89655        1.00000
+    ## [4,]    0.97993        1.00000
+    ## [5,]    0.92635        1.00000
+    ## [6,]    0.85725        1.00000
 
 The results of clustering using `hclust_2CI` and `hclust_linkage` are
 reported in the columns of the analysis results. The relative
@@ -387,3 +389,46 @@ Gaussian-approximate (Z) p-value is overlaid in black.
 -   Liu Y, Hayes DN, Nobel A, and Marron JS. (2008). "Statistical
     significance of clustering for high-dimension, low–sample size
     data." *Journal of the American Statistical Association*.
+
+<a name="sessioninfo"></a> Session Information
+----------------------------------------------
+
+    sessionInfo()
+
+    ## R version 3.3.1 (2016-06-21)
+    ## Platform: x86_64-apple-darwin15.5.0 (64-bit)
+    ## Running under: OS X 10.11.5 (El Capitan)
+    ## 
+    ## locale:
+    ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+    ## 
+    ## attached base packages:
+    ## [1] stats     graphics  grDevices utils     datasets  methods   base     
+    ## 
+    ## other attached packages:
+    ## [1] sigclust2_1.1.2 Rcpp_0.12.7     GGally_1.2.0    ggplot2_2.1.0  
+    ## 
+    ## loaded via a namespace (and not attached):
+    ##  [1] lattice_0.20-34       GO.db_3.3.0           assertthat_0.1       
+    ##  [4] digest_0.6.10         foreach_1.4.3         R6_2.2.0             
+    ##  [7] plyr_1.8.4            chron_2.3-47          acepack_1.3-3.3      
+    ## [10] dynamicTreeCut_1.63-1 stats4_3.3.1          RSQLite_1.0.0        
+    ## [13] evaluate_0.10         lazyeval_0.2.0        Rclusterpp_0.2.3     
+    ## [16] data.table_1.9.6      S4Vectors_0.10.3      rpart_4.1-10         
+    ## [19] Matrix_1.2-7.1        preprocessCore_1.34.0 rmarkdown_1.1        
+    ## [22] labeling_0.3          devtools_1.12.0       splines_3.3.1        
+    ## [25] stringr_1.1.0         foreign_0.8-67        munsell_0.4.3        
+    ## [28] BiocGenerics_0.18.0   htmltools_0.3.5       nnet_7.3-12          
+    ## [31] tibble_1.2            gridExtra_2.2.1       roxygen2_5.0.1       
+    ## [34] Hmisc_3.17-4          IRanges_2.6.1         codetools_0.2-15     
+    ## [37] matrixStats_0.51.0    reshape_0.8.5         crayon_1.3.2         
+    ## [40] dplyr_0.5.0           withr_1.0.2           MASS_7.3-45          
+    ## [43] grid_3.3.1            gtable_0.2.0          DBI_0.5-1            
+    ## [46] magrittr_1.5          formatR_1.4           scales_0.4.0         
+    ## [49] stringi_1.1.2         impute_1.46.0         ggthemes_3.2.0       
+    ## [52] doParallel_1.0.10     testthat_1.0.2        latticeExtra_0.6-28  
+    ## [55] fastcluster_1.1.21    ggdendro_0.1-20       Formula_1.2-1        
+    ## [58] WGCNA_1.51            RColorBrewer_1.1-2    iterators_1.0.8      
+    ## [61] tools_3.3.1           Biobase_2.32.0        parallel_3.3.1       
+    ## [64] survival_2.39-5       AnnotationDbi_1.34.4  colorspace_1.2-7     
+    ## [67] cluster_2.0.5         memoise_1.0.0         knitr_1.14
