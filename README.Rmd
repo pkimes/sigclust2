@@ -30,7 +30,8 @@ An illustration of the basic usage of the package's testing procedure is provide
 [Testing section](#test). Variations on the basic testing procedure are described in the
 associated subsections. Basic plotting procedures are described in the [Plotting section](#plot).  
 
-To install the package, simply obtain the `devtools` package from [CRAN][devtools] and type the
+To install the package, simply obtain the `devtools` package from
+[CRAN][https://cran.r-project.org/web/packages/devtools/index.html] and type the
 following in the `R` console:  
 ```
 R> devtools::install_github("pkimes/sigclust2")
@@ -317,8 +318,8 @@ diagnostic(shc_result, K=1, pty='pvalue')
 
 ## <a name="refs"></a> References
 
-* ___Kimes PK___, Liu Y, Hayes DN, and Marron JS. "Statistical significance 
-for hierarchical clustering." _Under review._ [(arXiv preprint)][arXiv].
+* ___Kimes PK___, Liu Y, Hayes DN, and Marron JS. (2017). "Statistical significance 
+for hierarchical clustering." _Biometrics_.
 * Huang H, Liu Y, Yuan M, and Marron JS. (2015). "Statistical significance of 
 clustering using soft thresholding."
 _Journal of Computational and Graphical Statistics_.
@@ -332,10 +333,3 @@ _Journal of the American Statistical Association_.
 ```{r}
 sessionInfo()
 ```
-
-
-[devtools]:https://cran.r-project.org/web/packages/devtools/index.html
-[homebrew]: http://brew.sh
-[arXiv]: http://arxiv.org/abs/1411.5259
-[rcpp]: https://github.com/nolanlab/Rclusterpp/wiki/Getting-Started
-[shinyshc]: http://pkimes.shinyapps.io/shc_example/
