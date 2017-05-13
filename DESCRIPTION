@@ -9,6 +9,7 @@ Description: Test for statistical significance in agglomerative hierarchical
     clustering. The package builds on the sigclust package currently available
     on CRAN.
 License: GPL (>= 2)
+Encoding: UTF-8
 Depends:
     R(>= 3.2.2),
     Rcpp (>= 0.10.6)
@@ -19,11 +20,11 @@ Imports:
     ggdendro,
     ggplot2,
     ggthemes,
-    grid,
     methods
 Suggests:
     BiocStyle,
     knitr,
+    rmarkdown,
     RColorBrewer,
     testthat
 LinkingTo: Rcpp
