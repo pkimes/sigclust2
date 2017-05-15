@@ -1,11 +1,16 @@
-```{r, hide=TRUE, warning=FALSE, message=FALSE, echo=FALSE}
-suppressPackageStartupMessages(library("ggplot2"))
-suppressPackageStartupMessages(library("GGally"))
-devtools::load_all()
-```
+---
+title: `sigclust2`: Statistical Significance for Hierarchical Clustering
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{sigclust2: Statistical Significance for Hierarchical Clustering}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\usepackage[utf8]{inputenc}
+---
 
-sigclust2 [![Build Status](https://travis-ci.org/pkimes/sigclust2.svg?branch=master)](https://travis-ci.org/pkimes/sigclust2) [![codecov](https://codecov.io/gh/pkimes/sigclust2/branch/master/graph/badge.svg)](https://codecov.io/gh/pkimes/sigclust2)
-=======================
+```{r, hide=TRUE, warnings=FALSE, message=FALSE, echo=FALSE}
+library("sigclust2")
+```
 
 ## Contents
 1. [Introduction](#intro)
