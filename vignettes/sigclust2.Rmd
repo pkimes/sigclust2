@@ -1,11 +1,12 @@
 ---
-title: `sigclust2`: Statistical Significance for Hierarchical Clustering
+title: "`sigclust2`: Statistical Significance for Hierarchical Clustering"
+author: "Patrick K. Kimes"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{sigclust2: Statistical Significance for Hierarchical Clustering}
   %\VignetteEngine{knitr::rmarkdown}
-  %\usepackage[utf8]{inputenc}
+  \usepackage[utf8]{inputenc}
 ---
 
 ```{r, hide=TRUE, warnings=FALSE, message=FALSE, echo=FALSE}
