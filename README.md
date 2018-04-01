@@ -45,6 +45,7 @@ For the following examples, we will use a simple toy example with 150 samples (_
 
 
 ```r
+set.seed(1508)
 n1 <- 60; n2 <- 40; n3 <- 50; n <- n1 + n2 + n3
 p <- 100
 data <- matrix(rnorm(n*p), nrow=n, ncol=p)
@@ -75,7 +76,7 @@ three arguments:
 * `metric`: the dissimilarity metric, and  
 * `linkage`: the linkage function to be used for hierarchical clustering.  
 
-For reasons outlined in the corresponding paper [(Kimes et al. 2014)](#refs) relating to how
+For reasons outlined in the corresponding paper [(Kimes et al. 2017)](#refs) relating to how
 the method handles testing when n << p, we recommmend using `"euclidean"` as the metric,
 and any of `"ward.D2"`, `"single"`, `"average"`, `"complete"` as the linkage. If a custom
 dissimilarity metric is desired, either of `vecmet` or `matmet` should be specified, as
@@ -161,10 +162,10 @@ data.frame(result = head(shc_result$nd_type, 5),
 ```
 ##           result hclust_2CI hclust_2CI.1
 ## 1 cutoff_skipped    0.00000         0.00
-## 2 cutoff_skipped    0.00297         0.01
-## 3 cutoff_skipped    0.99976         1.00
-## 4 cutoff_skipped    0.97150         0.99
-## 5 cutoff_skipped    0.99553         1.00
+## 2 cutoff_skipped    0.41475         0.37
+## 3 cutoff_skipped    0.88019         0.90
+## 4 cutoff_skipped    0.84834         0.85
+## 5 cutoff_skipped    0.86693         0.88
 ```
 
 In addition to values between 0 and 1, some p-values are reported as `2`. These values correspond
@@ -210,7 +211,7 @@ system.time(mfun1(data))
 
 ```
 ##    user  system elapsed 
-##   0.598   0.006   0.605
+##   0.669   0.003   0.678
 ```
 
 ```r
@@ -245,12 +246,12 @@ data.frame(result = head(shc_mfun2$nd_type),
 
 ```
 ##           result hclust_2CI hclust_2CI.1
-## 1 cutoff_skipped    0.49577         0.53
-## 2 cutoff_skipped    0.96266         0.96
-## 3 cutoff_skipped    0.00579         0.02
-## 4 cutoff_skipped    0.99790         0.99
-## 5 cutoff_skipped    0.56331         0.58
-## 6 cutoff_skipped    0.80399         0.85
+## 1 cutoff_skipped    0.99845         1.00
+## 2 cutoff_skipped    0.63709         0.69
+## 3 cutoff_skipped    0.24079         0.24
+## 4 cutoff_skipped    0.94164         0.94
+## 5 cutoff_skipped    0.94411         0.96
+## 6 cutoff_skipped    0.99639         1.00
 ```
 
 Since the toy dataset is simulated with all differentiating signal lying in the
@@ -298,11 +299,11 @@ data.frame(result = head(shc_fwer$nd_type, 10),
 ```
 ##     result hclust_2CI hclust_2CI.1
 ## 1      sig    0.00000         0.00
-## 2      sig    0.00116         0.01
-## 3  not_sig    0.99648         1.00
-## 4  no_test    2.00000         2.00
-## 5  not_sig    0.99899         1.00
-## 6  not_sig    0.99444         1.00
+## 2  not_sig    0.36017         0.27
+## 3  no_test    2.00000         2.00
+## 4  not_sig    0.86606         0.88
+## 5  no_test    2.00000         2.00
+## 6  no_test    2.00000         2.00
 ## 7  no_test    2.00000         2.00
 ## 8  no_test    2.00000         2.00
 ## 9  no_test    2.00000         2.00
@@ -330,12 +331,12 @@ round(head(data_2tests$p_norm), 5)
 
 ```
 ##      hclust_2CI hclust_linkage
-## [1,]    0.00001        0.00040
-## [2,]    0.00111        0.03517
-## [3,]    0.99495        1.00000
-## [4,]    0.96745        1.00000
-## [5,]    0.99703        1.00000
-## [6,]    0.98891        1.00000
+## [1,]    0.00001        0.00152
+## [2,]    0.42544        0.97613
+## [3,]    0.83015        0.99999
+## [4,]    0.86116        1.00000
+## [5,]    0.81640        1.00000
+## [6,]    0.98948        1.00000
 ```
 
 The results of clustering using `hclust_2CI` and `hclust_linkage` are reported in the columns
@@ -441,9 +442,12 @@ sessionInfo()
 ```
 
 ```
-## R version 3.3.1 (2016-06-21)
-## Platform: x86_64-apple-darwin15.5.0 (64-bit)
-## Running under: OS X 10.11.6 (El Capitan)
+## R version 3.4.2 (2017-09-28)
+## Platform: x86_64-apple-darwin15.6.0 (64-bit)
+## Running under: OS X El Capitan 10.11.6
+## 
+## Matrix products: default
+## BLAS/LAPACK: /usr/local/Cellar/openblas/0.2.20/lib/libopenblasp-r0.2.20.dylib
 ## 
 ## locale:
 ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -452,30 +456,38 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] sigclust2_1.1.2 Rcpp_0.12.7     GGally_1.2.0    ggplot2_2.1.0  
+## [1] bindrcpp_0.2    sigclust2_1.2.1 Rcpp_0.12.16    GGally_1.3.2   
+## [5] ggplot2_2.2.1  
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] lattice_0.20-34       GO.db_3.3.0           assertthat_0.1       
-##  [4] digest_0.6.10         foreach_1.4.3         R6_2.2.0             
-##  [7] plyr_1.8.4            chron_2.3-47          acepack_1.4.1        
-## [10] dynamicTreeCut_1.63-1 stats4_3.3.1          RSQLite_1.0.0        
-## [13] evaluate_0.10         lazyeval_0.2.0        Rclusterpp_0.2.3     
-## [16] data.table_1.9.6      S4Vectors_0.10.3      rpart_4.1-10         
-## [19] Matrix_1.2-7.1        preprocessCore_1.34.0 labeling_0.3         
-## [22] devtools_1.12.0       splines_3.3.1         stringr_1.1.0        
-## [25] foreign_0.8-67        munsell_0.4.3         BiocGenerics_0.18.0  
-## [28] htmltools_0.3.5       nnet_7.3-12           tibble_1.2           
-## [31] gridExtra_2.2.1       htmlTable_1.7         roxygen2_5.0.1       
-## [34] Hmisc_4.0-0           IRanges_2.6.1         codetools_0.2-15     
-## [37] matrixStats_0.51.0    reshape_0.8.6         crayon_1.3.2         
-## [40] dplyr_0.5.0           withr_1.0.2           MASS_7.3-45          
-## [43] grid_3.3.1            gtable_0.2.0          DBI_0.5-1            
-## [46] magrittr_1.5          formatR_1.4           scales_0.4.0         
-## [49] stringi_1.1.2         impute_1.46.0         ggthemes_3.2.0       
-## [52] doParallel_1.0.10     testthat_1.0.2        latticeExtra_0.6-28  
-## [55] fastcluster_1.1.21    ggdendro_0.1-20       Formula_1.2-1        
-## [58] WGCNA_1.51            RColorBrewer_1.1-2    iterators_1.0.8      
-## [61] tools_3.3.1           Biobase_2.32.0        parallel_3.3.1       
-## [64] survival_2.40-1       AnnotationDbi_1.36.0  colorspace_1.2-7     
-## [67] cluster_2.0.5         memoise_1.0.0         knitr_1.14
+##  [1] ggdendro_0.1-20       Biobase_2.38.0        dynamicTreeCut_1.63-1
+##  [4] bit64_0.9-7           splines_3.4.2         foreach_1.4.4        
+##  [7] assertthat_0.2.0      Formula_1.2-2         highr_0.6            
+## [10] stats4_3.4.2          latticeExtra_0.6-28   blob_1.1.0           
+## [13] fit.models_0.5-14     robustbase_0.92-8     impute_1.52.0        
+## [16] Rclusterpp_0.2.3      pillar_1.1.0          RSQLite_2.0          
+## [19] backports_1.1.2       lattice_0.20-35       glue_1.2.0           
+## [22] digest_0.6.14         RColorBrewer_1.1-2    checkmate_1.8.5      
+## [25] colorspace_1.3-2      htmltools_0.3.6       preprocessCore_1.40.0
+## [28] Matrix_1.2-12         plyr_1.8.4            pcaPP_1.9-73         
+## [31] pkgconfig_2.0.1       devtools_1.13.4       mvtnorm_1.0-6        
+## [34] GO.db_3.5.0           scales_0.5.0          htmlTable_1.11.2     
+## [37] tibble_1.4.2          IRanges_2.12.0        withr_2.1.1          
+## [40] fastcluster_1.1.24    nnet_7.3-12           BiocGenerics_0.24.0  
+## [43] lazyeval_0.2.1        survival_2.41-3       magrittr_1.5         
+## [46] memoise_1.1.0         evaluate_0.10.1       doParallel_1.0.11    
+## [49] MASS_7.3-47           xml2_1.1.1            foreign_0.8-69       
+## [52] ggthemes_3.4.0        tools_3.4.2           data.table_1.10.4-3  
+## [55] matrixStats_0.52.2    stringr_1.3.0         S4Vectors_0.16.0     
+## [58] munsell_0.4.3         cluster_2.0.6         AnnotationDbi_1.40.0 
+## [61] compiler_3.4.2        rlang_0.2.0.9001      grid_3.4.2           
+## [64] iterators_1.0.9       rstudioapi_0.7        htmlwidgets_1.0      
+## [67] WGCNA_1.61            robust_0.4-18         labeling_0.3         
+## [70] base64enc_0.1-3       testthat_2.0.0        gtable_0.2.0         
+## [73] codetools_0.2-15      DBI_0.7               reshape_0.8.7        
+## [76] roxygen2_6.0.1        rrcov_1.4-3           R6_2.2.2             
+## [79] gridExtra_2.3         dplyr_0.7.4           knitr_1.18           
+## [82] bit_1.1-12            bindr_0.1             commonmark_1.4       
+## [85] Hmisc_4.0-3           stringi_1.1.7         parallel_3.4.2       
+## [88] rpart_4.1-11          acepack_1.4.1         DEoptimR_1.0-8
 ```

@@ -32,4 +32,3 @@ Returns the cluster labels based on cutting the tree at the specified
 \author{
 Patrick Kimes
 }
-

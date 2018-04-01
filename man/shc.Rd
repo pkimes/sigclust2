@@ -115,7 +115,7 @@ object has following attributes:
 }
 \description{
 Implements the Monte Carlo simulation based significance testing
-procedure for hierarchical clustering described in Kimes et al. (2016+).
+procedure for hierarchical clustering described in Kimes et al. (Biometrics, 2017).
 Statistical significance is evaluated at each node along the hierarchical
 tree (dendrogram) starting from the root using a Gaussian null hypothesis test. 
 A corresponding family-wise error rate (FWER) controlling procedure is
@@ -176,9 +176,6 @@ shc_mfun <- shc(data, matmet=mfun, linkage="average", alpha=0.05)
 tail(shc_mfun$p_norm, 10)
 
 }
-\author{
-Patrick Kimes
-}
 \references{
 \itemize{
     \item Kimes, P. K., Hayes, D. N., Liu Y., and Marron, J. S. (2016)
@@ -189,4 +186,6 @@ Patrick Kimes
 \seealso{
 \code{\link{plot-shc}} \code{\link{diagnostic}}
 }
-
+\author{
+Patrick Kimes
+}

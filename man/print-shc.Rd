@@ -18,4 +18,3 @@ Provides information about \code{shc}
 \author{
 Patrick Kimes
 }
-

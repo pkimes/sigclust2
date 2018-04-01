@@ -20,4 +20,3 @@ get FWER cutoffs for shc oject
 \author{
 Patrick Kimes
 }
-

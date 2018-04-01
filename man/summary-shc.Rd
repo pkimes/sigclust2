@@ -18,4 +18,3 @@ Provides information about \code{shc} object similar to call to \code{print}
 \author{
 Patrick Kimes
 }
-

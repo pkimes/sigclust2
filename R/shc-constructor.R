@@ -1,7 +1,7 @@
 #' statistical Significance for Hierarchical Clustering (SHC) 
 #'
 #' Implements the Monte Carlo simulation based significance testing
-#' procedure for hierarchical clustering described in Kimes et al. (2016+).
+#' procedure for hierarchical clustering described in Kimes et al. (Biometrics, 2017).
 #' Statistical significance is evaluated at each node along the hierarchical
 #' tree (dendrogram) starting from the root using a Gaussian null hypothesis test. 
 #' A corresponding family-wise error rate (FWER) controlling procedure is

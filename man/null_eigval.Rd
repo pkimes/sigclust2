@@ -49,9 +49,6 @@ The following possible options are given for null covariance estimation
           recommended - retained for historical purposes
 }
 }
-\author{
-Patrick Kimes
-}
 \references{
 \itemize{
     \item Huang, H., Liu, Y., Yuan, M., and Marron, J. S. (2014).
@@ -62,4 +59,6 @@ Patrick Kimes
           Journal of the American Statistical Association, 103(483):1281-1293.
 }
 }
-
+\author{
+Patrick Kimes
+}

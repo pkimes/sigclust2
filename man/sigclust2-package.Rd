@@ -2,8 +2,8 @@
 % Please edit documentation in R/package-sigclust2.R
 \docType{package}
 \name{sigclust2-package}
-\alias{sigclust2}
 \alias{sigclust2-package}
+\alias{sigclust2}
 \title{Statistical Significance for Clustering}
 \description{
 This package implements statistical significance of clustering procedures
@@ -19,4 +19,3 @@ more substantially, to test for significance in hierarchical clustering.
 Patrick Kimes \email{patrick.kimes@gmail.com}
 }
 \keyword{package}
-

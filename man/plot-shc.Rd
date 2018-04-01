@@ -64,4 +64,3 @@ available through the \pkg{ggdendro} package which provides a
 \author{
 Patrick Kimes
 }
-

@@ -47,6 +47,7 @@ For the following examples, we will use a simple toy example with 150 samples (_
 100 measurements (_p_). The data are simulated from three Gaussian (normal) distributions.  
 
 ```{r}
+set.seed(1508)
 n1 <- 60; n2 <- 40; n3 <- 50; n <- n1 + n2 + n3
 p <- 100
 data <- matrix(rnorm(n*p), nrow=n, ncol=p)
@@ -74,7 +75,7 @@ three arguments:
 * `metric`: the dissimilarity metric, and  
 * `linkage`: the linkage function to be used for hierarchical clustering.  
 
-For reasons outlined in the corresponding paper [(Kimes et al. 2014)](#refs) relating to how
+For reasons outlined in the corresponding paper [(Kimes et al. 2017)](#refs) relating to how
 the method handles testing when n << p, we recommmend using `"euclidean"` as the metric,
 and any of `"ward.D2"`, `"single"`, `"average"`, `"complete"` as the linkage. If a custom
 dissimilarity metric is desired, either of `vecmet` or `matmet` should be specified, as

@@ -2,8 +2,10 @@
 % Please edit documentation in R/AllGenerics.R, R/shc-fwer_control.R
 \docType{methods}
 \name{fwer_cutoff-generic}
+\alias{fwer_cutoff-generic}
 \alias{fwer_cutoff}
 \alias{fwer_cutoff-generic}
+\alias{fwer_cutoff}
 \title{return Family-Wise Error Rate (FWER) cutoffs}
 \usage{
 fwer_cutoff(obj, ...)
@@ -16,4 +18,3 @@ return Family-Wise Error Rate (FWER) cutoffs
 return Family-Wise Error Rate (FWER) cutoffs
 }
 \keyword{internal}
-

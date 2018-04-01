@@ -41,9 +41,6 @@ resulting p-values. The \code{sigclust} object has following attributes:
 Re-implementation of the Monte Carlo simulation based
 significance testing procedure described in Liu et al. (2008).
 }
-\author{
-Patrick Kimes
-}
 \references{
 \itemize{
     \item Liu Y., Hayes, D. N., Nobel, A., and Marron, J. S. (2008)
@@ -51,4 +48,6 @@ Patrick Kimes
           Journal of the American Statistical Association.
 }
 }
-
+\author{
+Patrick Kimes
+}

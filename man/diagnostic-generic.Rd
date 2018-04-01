@@ -2,8 +2,8 @@
 % Please edit documentation in R/AllGenerics.R
 \docType{methods}
 \name{diagnostic-generic}
-\alias{diagnostic}
 \alias{diagnostic-generic}
+\alias{diagnostic}
 \title{null assumption diagnostic plots}
 \usage{
 diagnostic(obj, ...)
@@ -12,4 +12,3 @@ diagnostic(obj, ...)
 null assumption diagnostic plots
 }
 \keyword{internal}
-

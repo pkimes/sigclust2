@@ -53,4 +53,3 @@ The \code{pty} parameter accepts the following options:
 \author{
 Patrick Kimes
 }
-

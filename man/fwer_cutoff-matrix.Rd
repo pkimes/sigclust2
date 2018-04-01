@@ -21,4 +21,3 @@ get FWER from idx_hc attribute of shc object
 Patrick Kimes
 }
 \keyword{internal}
-
