@@ -213,6 +213,7 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
             stop(paste("vecmet must be a function taking two vectors as input",
                        "and returning a real-valued dissimilarity"))
         }
+        metric <- NULL
     }
         
     if (!is.null(matmet)) {
@@ -220,6 +221,7 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
             stop(paste("matmet must be a function taking a data matrix as input",
                        "and returning an object of class dist"))
         }
+        metric <- NULL
     }
 
     ## test vecmet and assign matmet if vecmet specified
