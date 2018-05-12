@@ -47,6 +47,7 @@
 #'           Journal of the American Statistical Association, 103(483):1281-1293.
 #' }
 #'
+#' @importFrom stats prcomp mad
 #' @export
 #' @author Patrick Kimes
 null_eigval <- function(x, n, p, icovest = 1, bkgd_pca = FALSE) {

@@ -158,6 +158,7 @@
 #' @export
 #' @seealso \code{\link{plot-shc}} \code{\link{diagnostic}}
 #' @import Rclusterpp WGCNA methods
+#' @importFrom stats as.dendrogram as.dist cutree dist dnorm hclust kmeans rnorm sd pnorm
 #' @name shc
 #' @aliases shc-constructor
 #' @author Patrick Kimes

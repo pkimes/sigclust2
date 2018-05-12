@@ -44,6 +44,7 @@
 #' \pkg{ggplot2}-like grammer for working with dendrograms.
 #' 
 #' @import ggplot2 ggdendro dplyr
+#' @importFrom stats as.dendrogram hclust is.leaf
 #' @name plot-shc
 #' @export
 #' @method plot shc
@@ -223,8 +224,8 @@ plot.shc <- function(x, groups = NULL, use_labs = TRUE, hang = -1,
         shc_labs$color_y <- shc_labs$y - ax_y_range/30
         plot_dend <- plot_dend +
             geom_tile(data=shc_labs,
-                      aes(x=x, y=color_y, height=ax_y_range/30,
-                          fill=as.factor(clusters)), alpha=1) +
+                      aes(x=x, y=color_y, fill=as.factor(clusters)),
+                      height=ax_y_range/30, alpha=1) +
             scale_fill_discrete('Labels')
     }
     

@@ -3,6 +3,7 @@ context("shc constructor method")
 
 test_that("shc accepts only matrix data input", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     ## check constructor works on original data
@@ -16,6 +17,7 @@ test_that("shc accepts only matrix data input", {
 
 test_that("shc accepts common clustering algorithm parameters", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     ## list of valid parameter settings to test
@@ -58,6 +60,7 @@ test_that("shc accepts common clustering algorithm parameters", {
 
 test_that("shc accepts alpha values between 0 and 1", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     ##  check still valid, but nothing significant
@@ -81,6 +84,7 @@ test_that("shc accepts alpha values between 0 and 1", {
 
 test_that("shc accepts n_sim values", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     ## some simulation sizes to test
@@ -96,6 +100,7 @@ test_that("shc accepts n_sim values", {
 
 test_that("shc accepts n_min values between 3 and n", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     ## check valid input values
@@ -111,6 +116,7 @@ test_that("shc accepts n_min values between 3 and n", {
 
 test_that("shc accepts icovest values in {1, 2, 3}", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     ## check valid input values
@@ -128,6 +134,7 @@ test_that("shc accepts icovest values in {1, 2, 3}", {
 
 test_that("shc accepts expected ci/null_alg parameter values", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     ## check that common pairs are accepted
@@ -152,6 +159,7 @@ test_that("shc accepts expected ci/null_alg parameter values", {
 
 test_that("shc accepts only valid ci_idx/ci_emp parameters", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     ci_vec <- c("2CI", "2CI")
@@ -173,6 +181,7 @@ test_that("shc accepts only valid ci_idx/ci_emp parameters", {
 
 test_that("shc accepts user specified metric functions w/ vecmet and matmet", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(100), ncol=2, nrow=50)
 
     ## valid vecmet function and matrix extension
@@ -220,6 +229,7 @@ test_that("shc accepts user specified metric functions w/ vecmet and matmet", {
 
 test_that("shc accepts different bkgd noise calculations w/ bkgd_pca", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(100*100), ncol=100, nrow=100)
 
     ## run shc with/without PCA-based background noise estimation
@@ -242,6 +252,7 @@ test_that("shc accepts different bkgd noise calculations w/ bkgd_pca", {
 
 test_that("shc accepts rcpp specification to call rclusterpp", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     ## run shc with/without PCA-based background noise estimation

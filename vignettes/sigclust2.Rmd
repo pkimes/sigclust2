@@ -6,7 +6,7 @@ output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{sigclust2: Statistical Significance for Hierarchical Clustering}
   %\VignetteEngine{knitr::rmarkdown}
-  \usepackage[utf8]{inputenc}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, hide=TRUE, warnings=FALSE, message=FALSE, echo=FALSE}

@@ -1,7 +1,7 @@
 Package: sigclust2
 Type: Package
 Title: sigclust2: Statistical Significance of Clustering
-Version: 1.2.2
+Version: 1.2.3
 Date: 2018-04-02
 Author: Patrick Kimes
 Maintainer: <patrick.kimes@gmail.com>
@@ -20,7 +20,10 @@ Imports:
     ggdendro,
     ggplot2,
     ggthemes,
-    methods
+    methods,
+    grDevices,
+    graphics,
+    stats
 Suggests:
     BiocStyle,
     knitr,

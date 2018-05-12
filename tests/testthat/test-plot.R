@@ -3,6 +3,7 @@ context("shc plotting")
 
 test_that("plot default call works properly", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     out <- shc(dm, n_sim=10, n_min=30)
 
@@ -13,6 +14,7 @@ test_that("plot default call works properly", {
 
 test_that("plot accepts group labels", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     out <- shc(dm, n_sim=10, n_min=30)
 
@@ -50,6 +52,7 @@ test_that("plot accepts group labels", {
 
 test_that("plot accepts use_labs parameter value", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     out <- shc(dm, n_sim=10, n_min=30)
 
@@ -81,6 +84,7 @@ test_that("plot accepts use_labs parameter value", {
 
 test_that("plot accepts alpha, fwer parameter values", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     
     out_100 <- shc(dm, alpha = 1.00)
@@ -123,6 +127,7 @@ test_that("plot accepts alpha, fwer parameter values", {
 
 test_that("plot accepts ci_idx, ci_emp parameter values", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     out_100 <- shc(dm, alpha = 1, ci = c("2CI", "2CI"), null_alg = c("hclust", "2means"))
@@ -170,6 +175,7 @@ test_that("plot accepts ci_idx, ci_emp parameter values", {
 
 test_that("plot accpets hang parameter values", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     out <- shc(dm, alpha = 1)
 

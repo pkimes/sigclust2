@@ -36,6 +36,9 @@
 #' }
 #' 
 #' @import ggplot2 ggthemes
+#' @importFrom grDevices dev.off pdf
+#' @importFrom graphics plot text
+#' @importFrom stats density dnorm mad median qnorm qqnorm quantile runif sd
 #' @name diagnostic-shc
 #' @export
 #' @method diagnostic shc

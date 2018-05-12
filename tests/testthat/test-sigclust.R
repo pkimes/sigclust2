@@ -3,6 +3,7 @@ context("sigclust constructor method")
 
 test_that("sigclust accepts only matrix data input", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     ## check constructor works on original data
@@ -16,6 +17,7 @@ test_that("sigclust accepts only matrix data input", {
 
 test_that("sigclust accepts n_sim values", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     ## some simulation sizes to test
@@ -31,6 +33,7 @@ test_that("sigclust accepts n_sim values", {
 
 test_that("sigclust accepts icovest values in {1, 2, 3}", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     ## check valid input values
@@ -48,6 +51,7 @@ test_that("sigclust accepts icovest values in {1, 2, 3}", {
 
 test_that("sigclust accepts different bkgd noise calculations w/ bkgd_pca", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(100*100), ncol=100, nrow=100)
 
     ## run sigclust with/without PCA-based background noise estimation
@@ -69,6 +73,7 @@ test_that("sigclust accepts different bkgd noise calculations w/ bkgd_pca", {
 
 test_that("sigclust accepts user-specified cluster labels", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     ## valid and invalid label options

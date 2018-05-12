@@ -3,6 +3,7 @@ context("shc diagnostics plotting")
 
 test_that("plot default call works properly", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     out <- shc(dm, n_sim = 10, n_min = 30, alpha = 1)
 
@@ -30,6 +31,7 @@ test_that("plot default call works properly", {
 
 test_that("plot accepts fname input", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     out <- shc(dm, n_sim = 10, n_min = 30, alpha = 1)
 
@@ -59,6 +61,7 @@ test_that("plot accepts fname input", {
 
 test_that("plot accpets K parameter input", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     out <- shc(dm, n_sim = 10, n_min = 30, alpha = 1)
 
@@ -86,6 +89,7 @@ test_that("plot accpets K parameter input", {
 
 test_that("plot accepts ci_idx parameter input", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
     out <- shc(dm, n_sim = 10, n_min = 30, alpha = 1,

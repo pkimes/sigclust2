@@ -3,6 +3,7 @@ context("miscellaneous exported functions")
 
 test_that("fwer_cutoff called on shc object gives same results as internal function", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     out <- shc(dm)
 
@@ -14,6 +15,7 @@ test_that("fwer_cutoff called on shc object gives same results as internal funct
 
 test_that("null_eigval procedure can be called externally", {
     ## simple dataset
+    set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
     
     ## check outputs list
@@ -40,6 +42,8 @@ test_that("null_eigval procedure can be called externally", {
 
 
 test_that("shcutree returns cluster labels for shc object", {
+    set.seed(100)
+
     ## per cluster dimensions
     n <- 100
     p <- 2
@@ -95,6 +99,8 @@ test_that("shcutree returns cluster labels for shc object", {
 
 
 test_that("summary and print return expected results", {
+    set.seed(100)
+
     ## non-default parameters for testing print/summary
     .metric <- "manhattan"
     .linkage <- "ward.D"
