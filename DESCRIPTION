@@ -2,7 +2,7 @@ Package: sigclust2
 Type: Package
 Title: sigclust2: Statistical Significance of Clustering
 Version: 1.2.3
-Date: 2018-04-02
+Date: 2018-05-12
 Author: Patrick Kimes
 Maintainer: <patrick.kimes@gmail.com>
 Description: Test for statistical significance in agglomerative hierarchical
