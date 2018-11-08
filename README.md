@@ -26,9 +26,17 @@ An illustration of the basic usage of the package's testing procedure is provide
 [Testing section](#test). Variations on the basic testing procedure are described in the
 associated subsections. Basic plotting procedures are described in the [Plotting section](#plot).  
 
-To install the package, simply obtain the `devtools` package from
-[CRAN][https://cran.r-project.org/web/packages/devtools/index.html] and type the
-following in the `R` console:  
+**The package currently depends on the `Rclusterpp` package which is no longer available on 
+CRAN.** To install the `sigclust2` package, first installed `Rclusterpp` from 
+[the GitHub repo](https://github.com/nolanlab/Rclusterpp/)
+with the following command from [the `devtools` package](https://CRAN.R-project.org/package=devtools):
+
+```
+R> devtools::install_github("nolanlab/Rclusterpp")
+```
+
+To install the `sigclust` package, similarly type the following in the `R` console:  
+
 ```
 R> devtools::install_github("pkimes/sigclust2")
 ```
