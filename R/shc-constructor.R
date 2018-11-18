@@ -43,6 +43,7 @@
 #'        is used; when TRUE, minimum of PCA and raw estimates is used.
 #'        (default = FALSE)
 #' @param rcpp a logical value whether to use the \code{Rclusterpp} package.
+#'        Will only be used if the \code{Rclusterpp} package is available.
 #'        (default = FALSE)
 #' @param ci a string vector specifying the cluster indices to be used for 
 #'        testing along the dendrogram. Currently, options include: "2CI", 
@@ -95,11 +96,14 @@
 #' }
 #' 
 #' @details
-#' When possible, \code{Rclusterpp::Rclusterpp.hclust} should be used for
-#' hierarchical clustering except in the case of clustering by Pearson
+#' When possible, the \code{Rclusterpp} should be used for
+#' hierarchical clustering by specifying \code{rcpp = TRUE}, except in the case of clustering by Pearson
 #' correlation (\code{dist="cor"}), for which we make use of
 #' \code{WGCNA::cor} with the usual \code{stats::hclust}.
 #'
+#' The \code{Rclusterpp} package is no longer available on CRAN and must be
+#' installed from GitHub using \code{devtools::install_github("nolanlab/Rclusterpp")}.
+#' 
 #' For standard minimum variance Ward's linkage clustering, if \code{rcpp} is
 #' \code{TRUE}, specify "ward" for \code{linkage}. However, if \code{rcpp} is
 #' \code{FALSE}, then "ward.D2" should be specified. See \code{stats::hclust}
@@ -157,7 +161,7 @@
 #'
 #' @export
 #' @seealso \code{\link{plot-shc}} \code{\link{diagnostic}}
-#' @import Rclusterpp WGCNA methods
+#' @import WGCNA methods
 #' @importFrom stats as.dendrogram as.dist cutree dist dnorm hclust kmeans rnorm sd pnorm
 #' @name shc
 #' @aliases shc-constructor
@@ -223,6 +227,12 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
                        "and returning an object of class dist"))
         }
         metric <- NULL
+    }
+
+    if (rcpp && !requireNamespace("Rclusterpp", quietly = TRUE)) {
+        stop("'Rclusterpp' package is not available.\n",
+             "Either specify 'rcpp = FALSE' or install 'Rclusterpp' from GitHub using:\n",
+             "> devtools::install_github('nolanlab/Rclusterpp')")
     }
 
     ## test vecmet and assign matmet if vecmet specified
@@ -425,8 +435,8 @@ shc <- function(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
         dmat <- 1 - WGCNA::cor(t(x))
         hc_dat <- hclust(as.dist(dmat), method=linkage)
     } else if (rcpp) {
-        hc_dat <- Rclusterpp.hclust(x, method=linkage, 
-                                    distance=metric, p=l)
+        hc_dat <- Rclusterpp::Rclusterpp.hclust(x, method=linkage, 
+                                                distance=metric, p=l)
     } else {
         hc_dat <- hclust(dist(x, method=metric, p=l), method=linkage)
     }

@@ -7,8 +7,8 @@
 \usage{
 shc(x, metric = "euclidean", vecmet = NULL, matmet = NULL,
   linkage = "ward.D2", l = 2, alpha = 1, icovest = 1,
-  bkgd_pca = FALSE, n_sim = 100, n_min = 10, rcpp = FALSE, ci = "2CI",
-  null_alg = "hclust", ci_idx = 1, ci_emp = FALSE)
+  bkgd_pca = FALSE, n_sim = 100, n_min = 10, rcpp = FALSE,
+  ci = "2CI", null_alg = "hclust", ci_idx = 1, ci_emp = FALSE)
 }
 \arguments{
 \item{x}{a dataset with n rows and p columns, with observations in rows and
@@ -58,6 +58,7 @@ for Monte Carlo testing. (default = 100)}
 to calculate a p-value. (default = 10)}
 
 \item{rcpp}{a logical value whether to use the \code{Rclusterpp} package.
+Will only be used if the \code{Rclusterpp} package is available.
 (default = FALSE)}
 
 \item{ci}{a string vector specifying the cluster indices to be used for 
@@ -122,10 +123,13 @@ A corresponding family-wise error rate (FWER) controlling procedure is
 provided.
 }
 \details{
-When possible, \code{Rclusterpp::Rclusterpp.hclust} should be used for
-hierarchical clustering except in the case of clustering by Pearson
+When possible, the \code{Rclusterpp} should be used for
+hierarchical clustering by specifying \code{rcpp = TRUE}, except in the case of clustering by Pearson
 correlation (\code{dist="cor"}), for which we make use of
 \code{WGCNA::cor} with the usual \code{stats::hclust}.
+
+The \code{Rclusterpp} package is no longer available on CRAN and must be
+installed from GitHub using \code{devtools::install_github("nolanlab/Rclusterpp")}.
 
 For standard minimum variance Ward's linkage clustering, if \code{rcpp} is
 \code{TRUE}, specify "ward" for \code{linkage}. However, if \code{rcpp} is

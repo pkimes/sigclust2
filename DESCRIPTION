@@ -1,8 +1,8 @@
 Package: sigclust2
 Type: Package
 Title: sigclust2: Statistical Significance of Clustering
-Version: 1.2.3
-Date: 2018-05-12
+Version: 1.2.4
+Date: 2018-11-18
 Author: Patrick Kimes
 Maintainer: <patrick.kimes@gmail.com>
 Description: Test for statistical significance in agglomerative hierarchical
@@ -14,7 +14,6 @@ Depends:
     R(>= 3.2.2),
     Rcpp (>= 0.10.6)
 Imports:
-    Rclusterpp,
     WGCNA,
     dplyr,
     ggdendro,
@@ -30,6 +29,8 @@ Suggests:
     rmarkdown,
     RColorBrewer,
     testthat
+Enhances:
+    Rclusterpp
 LinkingTo: Rcpp
 VignetteBuilder: knitr
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.0

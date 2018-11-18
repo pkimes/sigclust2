@@ -4,8 +4,6 @@
 \name{fwer_cutoff-generic}
 \alias{fwer_cutoff-generic}
 \alias{fwer_cutoff}
-\alias{fwer_cutoff-generic}
-\alias{fwer_cutoff}
 \title{return Family-Wise Error Rate (FWER) cutoffs}
 \usage{
 fwer_cutoff(obj, ...)

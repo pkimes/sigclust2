@@ -5,8 +5,8 @@
 \alias{sigclust-constructor}
 \title{Statistical Significance of Clustering (sigclust)}
 \usage{
-sigclust(x, n_sim = 100, n_start = 1, icovest = 1, bkgd_pca = FALSE,
-  labels = NULL)
+sigclust(x, n_sim = 100, n_start = 1, icovest = 1,
+  bkgd_pca = FALSE, labels = NULL)
 }
 \arguments{
 \item{x}{a dataset with n rows and p columns, with observations in rows and

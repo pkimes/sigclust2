@@ -249,21 +249,27 @@ test_that("shc accepts different bkgd noise calculations w/ bkgd_pca", {
 })
 
 
-
 test_that("shc accepts rcpp specification to call rclusterpp", {
     ## simple dataset
     set.seed(100)
     dm <- matrix(rnorm(200), ncol=2, nrow=100)
 
-    ## run shc with/without PCA-based background noise estimation
+    ## run shc without Rclusterpp
     out_base <- shc(dm, n_sim=10, n_min=30, rcpp=FALSE)
-    out_cpp <- shc(dm, n_sim=10, n_min=30, linkage="ward", rcpp=TRUE)
 
-    ## check that clustering returns same result
-    expect_equal(out_cpp$hc_dat$height, out_base$hc_dat$height)
-    
-    ## check that error returned with linakge = 'ward.D2', rcpp = TRUE
-    expect_error(shc(dm, n_sim=10, n_min=30, rcpp=TRUE),
-                 "for linkage when rcpp = TRUE.")
+    ## run shc with Rclusterpp
+    if (requireNamespace("Rclusterpp", quietly = TRUE)) {
+        out_cpp <- shc(dm, n_sim=10, n_min=30, linkage="ward", rcpp=TRUE)
+        
+        ## check that clustering returns same result
+        expect_equal(out_cpp$hc_dat$height, out_base$hc_dat$height)
+        
+        ## check that error returned with linakge = 'ward.D2', rcpp = TRUE
+        expect_error(shc(dm, n_sim=10, n_min=30, rcpp=TRUE),
+                     "for linkage when rcpp = TRUE.")
+    } else {
+        expect_error(shc(dm, n_sim=10, n_min=30, linkage="ward", rcpp=TRUE),
+                     "package is not available")
+    }        
 })
 
