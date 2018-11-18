@@ -26,16 +26,16 @@ An illustration of the basic usage of the package's testing procedure is provide
 [Testing section](#test). Variations on the basic testing procedure are described in the
 associated subsections. Basic plotting procedures are described in the [Plotting section](#plot).  
 
-**The package currently depends on the `Rclusterpp` package which is no longer available on 
-CRAN.** To install the `sigclust2` package, first installed `Rclusterpp` from 
-[the GitHub repo](https://github.com/nolanlab/Rclusterpp/)
+**While not necessary, installing the `Rclusterpp` package for faster clustering is recommended
+when using `sigclust2`.** Unforunately, the `Rclusterpp` package is no longer available on CRAN.
+However, `Rclusterpp` can still be installed from [the author's GitHub repo](https://github.com/nolanlab/Rclusterpp/)
 with the following command from [the `devtools` package](https://CRAN.R-project.org/package=devtools):
 
 ```
 R> devtools::install_github("nolanlab/Rclusterpp")
 ```
 
-To install the `sigclust` package, similarly type the following in the `R` console:  
+To install the `sigclust2` package, similarly type the following in the `R` console:  
 
 ```
 R> devtools::install_github("pkimes/sigclust2")
@@ -219,7 +219,7 @@ system.time(mfun1(data))
 
 ```
 ##    user  system elapsed 
-##   0.669   0.003   0.678
+##   2.154   0.055   2.312
 ```
 
 ```r
@@ -228,7 +228,7 @@ system.time(mfun2(data))
 
 ```
 ##    user  system elapsed 
-##   0.002   0.000   0.002
+##   0.002   0.001   0.001
 ```
 
 The first matrix correlation function, `mfun1`, is written it
@@ -450,12 +450,12 @@ sessionInfo()
 ```
 
 ```
-## R version 3.4.2 (2017-09-28)
+## R version 3.5.0 (2018-04-23)
 ## Platform: x86_64-apple-darwin15.6.0 (64-bit)
 ## Running under: OS X El Capitan 10.11.6
 ## 
 ## Matrix products: default
-## BLAS/LAPACK: /usr/local/Cellar/openblas/0.2.20/lib/libopenblasp-r0.2.20.dylib
+## BLAS/LAPACK: /usr/local/Cellar/openblas/0.2.20_2/lib/libopenblasp-r0.2.20.dylib
 ## 
 ## locale:
 ## [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -464,38 +464,43 @@ sessionInfo()
 ## [1] stats     graphics  grDevices utils     datasets  methods   base     
 ## 
 ## other attached packages:
-## [1] bindrcpp_0.2    sigclust2_1.2.1 Rcpp_0.12.16    GGally_1.3.2   
-## [5] ggplot2_2.2.1  
+## [1] sigclust2_1.2.4 bindrcpp_0.2.2  testthat_2.0.0  Rcpp_1.0.0     
+## [5] GGally_1.4.0    ggplot2_3.1.0  
 ## 
 ## loaded via a namespace (and not attached):
-##  [1] ggdendro_0.1-20       Biobase_2.38.0        dynamicTreeCut_1.63-1
-##  [4] bit64_0.9-7           splines_3.4.2         foreach_1.4.4        
-##  [7] assertthat_0.2.0      Formula_1.2-2         highr_0.6            
-## [10] stats4_3.4.2          latticeExtra_0.6-28   blob_1.1.0           
-## [13] fit.models_0.5-14     robustbase_0.92-8     impute_1.52.0        
-## [16] Rclusterpp_0.2.3      pillar_1.1.0          RSQLite_2.0          
-## [19] backports_1.1.2       lattice_0.20-35       glue_1.2.0           
-## [22] digest_0.6.14         RColorBrewer_1.1-2    checkmate_1.8.5      
-## [25] colorspace_1.3-2      htmltools_0.3.6       preprocessCore_1.40.0
-## [28] Matrix_1.2-12         plyr_1.8.4            pcaPP_1.9-73         
-## [31] pkgconfig_2.0.1       devtools_1.13.4       mvtnorm_1.0-6        
-## [34] GO.db_3.5.0           scales_0.5.0          htmlTable_1.11.2     
-## [37] tibble_1.4.2          IRanges_2.12.0        withr_2.1.1          
-## [40] fastcluster_1.1.24    nnet_7.3-12           BiocGenerics_0.24.0  
-## [43] lazyeval_0.2.1        survival_2.41-3       magrittr_1.5         
-## [46] memoise_1.1.0         evaluate_0.10.1       doParallel_1.0.11    
-## [49] MASS_7.3-47           xml2_1.1.1            foreign_0.8-69       
-## [52] ggthemes_3.4.0        tools_3.4.2           data.table_1.10.4-3  
-## [55] matrixStats_0.52.2    stringr_1.3.0         S4Vectors_0.16.0     
-## [58] munsell_0.4.3         cluster_2.0.6         AnnotationDbi_1.40.0 
-## [61] compiler_3.4.2        rlang_0.2.0.9001      grid_3.4.2           
-## [64] iterators_1.0.9       rstudioapi_0.7        htmlwidgets_1.0      
-## [67] WGCNA_1.61            robust_0.4-18         labeling_0.3         
-## [70] base64enc_0.1-3       testthat_2.0.0        gtable_0.2.0         
-## [73] codetools_0.2-15      DBI_0.7               reshape_0.8.7        
-## [76] roxygen2_6.0.1        rrcov_1.4-3           R6_2.2.2             
-## [79] gridExtra_2.3         dplyr_0.7.4           knitr_1.18           
-## [82] bit_1.1-12            bindr_0.1             commonmark_1.4       
-## [85] Hmisc_4.0-3           stringi_1.1.7         parallel_3.4.2       
-## [88] rpart_4.1-11          acepack_1.4.1         DEoptimR_1.0-8
+##   [1] matrixStats_0.54.0    fs_1.2.6              usethis_1.4.0        
+##   [4] fit.models_0.5-14     robust_0.4-18         devtools_2.0.0.9000  
+##   [7] bit64_0.9-7           doParallel_1.0.14     RColorBrewer_1.1-2   
+##  [10] rprojroot_1.3-2       dynamicTreeCut_1.63-1 tools_3.5.0          
+##  [13] backports_1.1.2       R6_2.3.0              rpart_4.1-13         
+##  [16] Hmisc_4.1-1           DBI_1.0.0             lazyeval_0.2.1       
+##  [19] BiocGenerics_0.26.0   colorspace_1.3-2      nnet_7.3-12          
+##  [22] withr_2.1.2           tidyselect_0.2.5      gridExtra_2.3        
+##  [25] prettyunits_1.0.2     processx_3.2.0        preprocessCore_1.42.0
+##  [28] bit_1.1-14            compiler_3.5.0        WGCNA_1.66           
+##  [31] cli_1.0.1             Biobase_2.40.0        htmlTable_1.12       
+##  [34] ggdendro_0.1-20       desc_1.2.0            labeling_0.3         
+##  [37] scales_1.0.0          checkmate_1.8.5       mvtnorm_1.0-8        
+##  [40] DEoptimR_1.0-8        robustbase_0.93-3     callr_3.0.0          
+##  [43] stringr_1.3.1         digest_0.6.18         foreign_0.8-71       
+##  [46] rmarkdown_1.10        rrcov_1.4-4           base64enc_0.1-3      
+##  [49] pkgconfig_2.0.2       htmltools_0.3.6       sessioninfo_1.1.1    
+##  [52] highr_0.7             ggthemes_4.0.1        htmlwidgets_1.3      
+##  [55] rlang_0.3.0.9000      rstudioapi_0.8        RSQLite_2.1.1        
+##  [58] impute_1.54.0         bindr_0.1.1           acepack_1.4.1        
+##  [61] dplyr_0.7.7           magrittr_1.5          GO.db_3.6.0          
+##  [64] Formula_1.2-3         Matrix_1.2-14         munsell_0.5.0        
+##  [67] S4Vectors_0.18.3      stringi_1.2.4         MASS_7.3-50          
+##  [70] debugme_1.1.0         pkgbuild_1.0.2.9000   plyr_1.8.4           
+##  [73] grid_3.5.0            blob_1.1.1            parallel_3.5.0       
+##  [76] crayon_1.3.4          lattice_0.20-35       splines_3.5.0        
+##  [79] knitr_1.20            ps_1.2.0              pillar_1.3.0         
+##  [82] fastcluster_1.1.25    codetools_0.2-15      stats4_3.5.0         
+##  [85] pkgload_1.0.1.9000    glue_1.3.0            evaluate_0.12        
+##  [88] latticeExtra_0.6-28   data.table_1.11.8     remotes_2.0.1        
+##  [91] foreach_1.4.4         gtable_0.2.0          purrr_0.2.5          
+##  [94] reshape_0.8.7         assertthat_0.2.0      pcaPP_1.9-73         
+##  [97] survival_2.42-6       tibble_1.4.2          iterators_1.0.10     
+## [100] AnnotationDbi_1.42.1 
+##  [ reached getOption("max.print") -- omitted 3 entries ]
 ```
