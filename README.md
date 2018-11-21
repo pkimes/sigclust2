@@ -5,10 +5,11 @@ sigclust2 [![Build Status](https://travis-ci.org/pkimes/sigclust2.svg?branch=mas
 
 ## Contents
 1. [Introduction](#intro)
-2. [Testing](#test)
-3. [Plotting](#plot)
-4. [References](#refs)
-5. [Session Information](#sessioninfo)
+2. [Installing](#install)
+3. [Testing](#test)
+4. [Plotting](#plot)
+5. [References](#refs)
+6. [Session Information](#sessioninfo)
 
 
 ## <a name="intro"></a> Introduction
@@ -26,19 +27,13 @@ An illustration of the basic usage of the package's testing procedure is provide
 [Testing section](#test). Variations on the basic testing procedure are described in the
 associated subsections. Basic plotting procedures are described in the [Plotting section](#plot).  
 
-**While not necessary, installing the `Rclusterpp` package for faster clustering is recommended
-when using `sigclust2`.** Unforunately, the `Rclusterpp` package is no longer available on CRAN.
-However, `Rclusterpp` can still be installed from [the author's GitHub repo](https://github.com/nolanlab/Rclusterpp/)
-with the following command from [the `devtools` package](https://CRAN.R-project.org/package=devtools):
+## <a name="install"></a> Installing
+
+To install `sigclust2`, which depends on packages in both [CRAN](http://cran.r-project.org/) and [Bioconductor](https://bioconductor.org/),
+use the following call to [the `BiocManager` package](https://CRAN.R-project.org/package=BiocManager):  
 
 ```
-R> devtools::install_github("nolanlab/Rclusterpp")
-```
-
-To install the `sigclust2` package, similarly type the following in the `R` console:  
-
-```
-R> devtools::install_github("pkimes/sigclust2")
+R> BiocManager::install("pkimes/sigclust2")
 ```
 
 The package can then be loaded using the standard call to `library`.  
@@ -47,6 +42,18 @@ The package can then be loaded using the standard call to `library`.
 ```r
 suppressPackageStartupMessages(library("sigclust2"))
 ```
+
+**While not necessary, installing the `Rclusterpp` package for faster clustering is recommended
+when using `sigclust2`.** Unforunately, the `Rclusterpp` package is no longer available on CRAN.
+However, `Rclusterpp` can still be installed from [the author's GitHub repo](https://github.com/nolanlab/Rclusterpp/)
+with the following command from [the `devtools` package](https://CRAN.R-project.org/package=devtools) (or
+equivalently with a call to `BiocManager::install` again).
+
+```
+R> devtools::install_github("nolanlab/Rclusterpp")
+```
+
+## <a name="test"></a> Testing
 
 For the following examples, we will use a simple toy example with 150 samples (_n_) with
 100 measurements (_p_). The data are simulated from three Gaussian (normal) distributions.  
@@ -73,9 +80,6 @@ plot(data_pc$x[, 3], data_pc$x[, 1], xlab="PC3", ylab="PC1")
 ```
 
 ![plot of chunk unnamed-chunk-4](figure/unnamed-chunk-4-1.png)
-
-
-## <a name="test"></a> Testing
 
 The SHC testing procedure is performed using the `shc` function. The function requires the following
 three arguments:  
@@ -219,7 +223,7 @@ system.time(mfun1(data))
 
 ```
 ##    user  system elapsed 
-##   2.154   0.055   2.312
+##   1.884   0.053   1.997
 ```
 
 ```r
@@ -228,7 +232,7 @@ system.time(mfun2(data))
 
 ```
 ##    user  system elapsed 
-##   0.002   0.001   0.001
+##   0.001   0.000   0.002
 ```
 
 The first matrix correlation function, `mfun1`, is written it
